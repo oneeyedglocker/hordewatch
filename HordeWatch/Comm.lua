@@ -23,10 +23,10 @@ HW.ValidRaces = {
 --  3. Per-player rate limiting on send, so a combat-log burst against one
 --     target doesn't spam the guild channel with near-duplicate packets.
 --  4. Relayed sightings are tagged as such (method=COMM, relayed=true,
---     relayDelay) and given one confidence tier worse than the original
---     detection, so a dashboard can down-weight stale/secondhand reports.
---     Spy makes no such distinction - a relayed sighting looks identical
---     to a personal one once it lands in PlayerData.
+--     relaySender, relayDelay) so a dashboard can tell a secondhand report
+--     apart from a personal one. Spy makes no such distinction - a relayed
+--     sighting looks identical to a personal one once it lands in
+--     PlayerData.
 
 local lastBroadcastAt = {}
 
@@ -42,6 +42,7 @@ local function validatePayload(p)
 	end
 	if p.mapX ~= nil and (type(p.mapX) ~= "number" or p.mapX < 0 or p.mapX > 1) then return false end
 	if p.mapY ~= nil and (type(p.mapY) ~= "number" or p.mapY < 0 or p.mapY > 1) then return false end
+	if p.layer ~= nil and type(p.layer) ~= "number" then return false end
 	if type(p.ts) ~= "number" then return false end
 	if p.zone ~= nil and (type(p.zone) ~= "string" or #p.zone > 64) then return false end
 	if p.guild ~= nil and (type(p.guild) ~= "string" or #p.guild > 64) then return false end
@@ -72,6 +73,7 @@ function HW:OnLocalSighting(_, record)
 		mapID = record.mapID,
 		mapX = record.mapX,
 		mapY = record.mapY,
+		layer = record.layer,
 		method = record.method,
 		ts = record.ts,
 		reporter = record.reporter,
@@ -88,7 +90,6 @@ function HW:OnCommReceived(prefix, message, _, sender)
 	local ok, payload = self:Deserialize(message)
 	if not ok or not validatePayload(payload) then return end
 
-	local originalConfidence = self.MethodConfidence[payload.method] or 4
 	self:AddSighting({
 		player = payload.player,
 		class = payload.class,
@@ -101,8 +102,8 @@ function HW:OnCommReceived(prefix, message, _, sender)
 		mapID = payload.mapID,
 		mapX = payload.mapX,
 		mapY = payload.mapY,
+		layer = payload.layer,
 		method = self.Method.COMM,
-		confidence = math.min(originalConfidence + 1, 4),
 		ts = payload.ts,
 		reporter = payload.reporter or sender,
 		relayed = true,

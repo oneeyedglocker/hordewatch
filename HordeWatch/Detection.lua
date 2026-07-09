@@ -41,6 +41,7 @@ local function buildRecordFromUnit(unit, method)
 		mapID = pos.mapID,
 		mapX = pos.mapX,
 		mapY = pos.mapY,
+		layer = pos.layer,
 		method = method,
 	}
 end
@@ -83,19 +84,35 @@ local function buildRecordFromGUID(guid, name)
 	local _, class, _, raceFile, _, actualName = GetPlayerInfoByGUID(guid)
 	if not class then return nil end
 
+	-- GetPlayerInfoByGUID doesn't expose guild or level. If this GUID
+	-- happens to also be our target/mouseover/a visible nameplate right
+	-- now, backfill both from the live unit token instead of leaving them
+	-- unknown.
+	local guild, level, levelIsGuess = nil, nil, true
+	local unit = HW:FindUnitByGUID(guid)
+	if unit then
+		guild = GetGuildInfo(unit)
+		local unitLevel = UnitLevel(unit)
+		if unitLevel and unitLevel ~= -1 then
+			level = unitLevel
+			levelIsGuess = false
+		end
+	end
+
 	local pos = HW:CaptureReporterPosition()
 	return {
 		player = actualName or name,
 		class = class,
 		race = raceFile,
-		level = nil,
-		levelIsGuess = true,
-		guild = nil,
+		level = level,
+		levelIsGuess = levelIsGuess,
+		guild = guild,
 		zone = pos.zone,
 		subZone = pos.subZone,
 		mapID = pos.mapID,
 		mapX = pos.mapX,
 		mapY = pos.mapY,
+		layer = pos.layer,
 		method = HW.Method.COMBATLOG,
 	}
 end
@@ -151,6 +168,7 @@ local function scanMinimapTooltip()
 				mapID = pos.mapID,
 				mapX = pos.mapX,
 				mapY = pos.mapY,
+				layer = pos.layer,
 				method = HW.Method.MINIMAP,
 			})
 		end

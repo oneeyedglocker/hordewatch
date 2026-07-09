@@ -59,10 +59,16 @@ local function formatRow(rec)
 	if rec.mapX and rec.mapY then
 		loc = ("%s (%d,%d)"):format(loc, math.floor(rec.mapX * 100), math.floor(rec.mapY * 100))
 	end
+	if rec.layer then
+		-- "layer" here is an opaque shard fingerprint, not the game's
+		-- human-readable Layer 1/2/3 label - see Position.lua for why.
+		loc = ("%s [Shard %s]"):format(loc, tostring(rec.layer))
+	end
+	local guildText = (rec.guild and rec.guild ~= "") and (" <" .. rec.guild .. ">") or ""
 	local ago = math.floor((time() - rec.ts) / 60)
 	local agoText = ago <= 0 and "just now" or (ago .. "m ago")
 	local via = rec.relayed and (" via " .. (rec.relaySender or "?")) or ""
-	return ("%s%s|r Lvl %s - %s - %s%s"):format(classColorPrefix(rec.class), rec.player, level, loc, agoText, via)
+	return ("%s%s|r%s Lvl %s - %s - %s%s"):format(classColorPrefix(rec.class), rec.player, guildText, level, loc, agoText, via)
 end
 
 function HW:RefreshWindow()

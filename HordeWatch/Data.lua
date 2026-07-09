@@ -15,13 +15,12 @@ function HW:NormalizeName(name)
 end
 
 -- record fields: player, class, race, level, levelIsGuess, guild, zone,
--- subZone, mapID, mapX, mapY, method, confidence, reporter, relayed
+-- subZone, mapID, mapX, mapY, layer, method, reporter, relayed
 function HW:AddSighting(record)
 	if not record or not record.player then return end
 	record.player = normalizeName(record.player)
 	record.ts = record.ts or time()
 	record.reporter = record.reporter or self.CharacterName
-	record.confidence = record.confidence or self.MethodConfidence[record.method] or 4
 
 	local db = self.charDB
 	record.id = db.NextId
