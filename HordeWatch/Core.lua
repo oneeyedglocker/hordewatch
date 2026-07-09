@@ -27,6 +27,12 @@ local Defaults = {
 
 		-- comm mesh
 		CommRateLimitSeconds = 2,	-- min seconds between broadcasts for the same player
+
+		-- collapse near-duplicate sightings of the same player (same
+		-- reporter re-detected via multiple methods, or several guildmates
+		-- corroborating one encounter) into a single row instead of one
+		-- row per detection
+		CollapseWindowSeconds = 8,
 	},
 }
 

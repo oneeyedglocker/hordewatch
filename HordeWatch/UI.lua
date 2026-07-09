@@ -68,7 +68,8 @@ local function formatRow(rec)
 	local ago = math.floor((time() - rec.ts) / 60)
 	local agoText = ago <= 0 and "just now" or (ago .. "m ago")
 	local via = rec.relayed and (" via " .. (rec.relaySender or "?")) or ""
-	return ("%s%s|r%s Lvl %s - %s - %s%s"):format(classColorPrefix(rec.class), rec.player, guildText, level, loc, agoText, via)
+	local corroborated = (rec.reportCount and rec.reportCount > 1) and (" x" .. rec.reportCount) or ""
+	return ("%s%s|r%s Lvl %s - %s - %s%s%s"):format(classColorPrefix(rec.class), rec.player, guildText, level, loc, agoText, via, corroborated)
 end
 
 function HW:RefreshWindow()
