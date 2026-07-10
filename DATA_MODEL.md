@@ -238,14 +238,24 @@ projection) when present, falling back to the placeholder scatter square
 otherwise. `web/public/maps/README.md` documents extracting your own copy
 with [wow.export](https://github.com/Kruithne/wow.export) against your own
 licensed client - nothing here is scraped or redistributed automatically.
-Continent-level (`worldX`/`worldY`) rendering isn't built yet, only per-zone.
+
+The Zone Map view also has an "Outland (all zones)" toggle that plots
+`worldX`/`worldY`/`continentID` on one continuous continent image instead of
+one zone at a time (`web/src/components/LeafletContinentMap.tsx`,
+`web/src/lib/useContinentImage.ts`), using the same locally-supplied-image
+model plus a small JSON sidecar (`web/public/maps/<continent mapID>.json`)
+giving the image's exact world-coordinate corners - see "Continent map
+images" in `web/public/maps/README.md`. Only Outland is wired up so far;
+Eastern Kingdoms/Kalimdor would need their own continent image + sidecar
+following the same pattern.
 
 ## What's still missing (the actual gap)
 
 1. **`HereBeDragons-2.0` coordinate output is unverified against a live client** — built and syntax-checked by reading the library's documented API, but there's no WoW client in the dev environment this was built in to confirm the numbers come out sane in practice. Worth a sanity check in-game before building extensively on top of `worldX`/`worldY`.
 2. **The addon's export/JS-decode pipeline is unverified against a live client too** — round-tripped against the *real* vendored `LibDeflate.lua`/`AceSerializer-3.0.lua` under a standalone Lua interpreter (not WoW), and the JS port matches that byte-for-byte, but `/hw export` itself hasn't been run in an actual WoW client. Worth confirming the popup/edit-box UI behaves and the string pastes cleanly before relying on it.
-3. **No continent/world map view** — only per-zone maps are wired up; a cross-zone view using `worldX`/`worldY`/`continentID` would need continent-scale images (Eastern Kingdoms, Kalimdor, Outland) through the same locally-supplied-image mechanism.
-4. **No time-based playback** — every sighting already carries `ts`; a time-slider style scrub through the log (à la ArcGIS's TimeSlider or kepler.gl's trajectory playback) to watch movement patterns emerge over a session was considered and deliberately deferred as lower priority than getting the basemap itself working.
+3. **Only Outland has a continent map** — Eastern Kingdoms/Kalimdor would need their own continent image + coordinate-sidecar through the same mechanism (see "Zone map imagery" above) before the continent toggle covers them.
+4. **The Outland continent → pixel transform is unverified against real play data** — the math uses wow.export's own exact world-coordinate corners for the image (not a guess), and was validated against synthetic test points, but hasn't yet been checked against a real in-game sighting. There's also a specific known risk worth checking first: HereBeDragons has an internal coordinate-transform table for Outland (`HordeWatch/Libs/HereBeDragons/HereBeDragons-2.0.lua`, `instanceIDOverrides`/transform table for instance 530) that can remap the `continentID`/offset it hands back for part of the map - if real Outland sightings ever show a `continentID` other than 530, or land in the wrong spot on the continent map, that table is the first place to look.
+5. **No time-based playback** — every sighting already carries `ts`; a time-slider style scrub through the log (à la ArcGIS's TimeSlider or kepler.gl's trajectory playback) to watch movement patterns emerge over a session was considered and deliberately deferred as lower priority than getting the basemap itself working.
 
 ## File map (addon source, for anything not covered above)
 

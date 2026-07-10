@@ -72,3 +72,55 @@ map IDs occasionally shift between client versions.)
   zoom in as far as the source image supports.
 - Nothing here is committed automatically - these are real image files, add
   them the normal way (`git add web/public/maps/100.jpg`).
+
+## Continent map images
+
+The "Outland (all zones)" toggle on the Zone Map view plots every sighting
+that has `worldX`/`worldY`/`continentID` (continuous coordinates from
+HereBeDragons - see `HordeWatch/Position.lua`) on one continuous continent
+image, instead of one image per zone. This needs a different kind of asset
+than the per-zone parchment art above: real stitched terrain, plus a small
+JSON sidecar giving the exact world-coordinate corners of the image, e.g.
+`530.jpg` + `530.json` for Outland (`530` is Outland's continent-level
+`UiMapID`, confirmed directly from wow.export's own export metadata, not
+guessed).
+
+To produce one:
+
+1. In wow.export, open the **Maps** tab (not Textures - that's for the
+   per-zone parchment art above) and select the continent, e.g.
+   `[530] Outland (Expansion01)`.
+2. Under **Terrain Texture Quality**, pick something well below "High (8k)" -
+   continent-scale exports are dozens of tiles; a whole-continent stitch at
+   8k/tile is enormous. "Low" or "Medium" is plenty for a web map you can
+   already zoom into.
+3. Leave Export WMO/M2/Foliage/Liquids/G-Objects unchecked - just the flat
+   ground texture is needed.
+4. Export it. wow.export writes one already-composited image (e.g.
+   `expansion01_<hash>.png`) plus a `.json` sidecar with the tile grid and
+   the exact world-coordinate corners it used.
+5. Convert the PNG to `.jpg` if it's large (a full Outland export easily
+   lands in the tens of MB as PNG; JPEG at quality ~85-90 shrinks that by
+   5-6x with no visible loss for terrain - unlike the per-zone art, there's
+   no transparency to preserve here).
+6. Save it as `web/public/maps/<continent mapID>.jpg`, and write a matching
+   `<continent mapID>.json` with this shape (trim wow.export's sidecar down
+   to just these fields):
+   ```json
+   {
+     "mapID": 530,
+     "mapName": "Outland",
+     "imageWidth": 16384,
+     "imageHeight": 12800,
+     "corners": {
+       "top_left": { "world_x": 7466.67, "world_y": 10133.33 },
+       "bottom_right": { "world_x": -5866.67, "world_y": -6933.33 }
+     }
+   }
+   ```
+   `imageWidth`/`imageHeight` must match the actual (possibly resized) image
+   file, not necessarily wow.export's original dimensions.
+
+Note the axis swap: WoW's world X is north/south and Y is east/west, which
+is transposed relative to image row/col - see the comment on `toLatLng` in
+`web/src/components/LeafletContinentMap.tsx` for the actual conversion.
