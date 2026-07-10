@@ -176,7 +176,12 @@ function HW:SlashCommand(input)
 		if self.ShowExportDialog then self:ShowExportDialog(false) end
 	elseif input == "export all" then
 		if self.ShowExportDialog then self:ShowExportDialog(true) end
+	elseif input == "pos" or input == "whereami" then
+		local pos = self:CaptureReporterPosition()
+		print(("|cff33ff99HordeWatch|r zone=%s mapID=%s mapX=%s mapY=%s worldX=%s worldY=%s continentID=%s"):format(
+			tostring(pos.zone), tostring(pos.mapID), tostring(pos.mapX), tostring(pos.mapY),
+			tostring(pos.worldX), tostring(pos.worldY), tostring(pos.continentID)))
 	else
-		print("|cff33ff99HordeWatch|r commands: show, hide, enable, disable, clear, status, config, export, export all")
+		print("|cff33ff99HordeWatch|r commands: show, hide, enable, disable, clear, status, config, export, export all, pos")
 	end
 end
