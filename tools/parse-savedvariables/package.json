@@ -1,0 +1,17 @@
+{
+  "name": "parse-savedvariables",
+  "version": "1.0.0",
+  "description": "Converts HordeWatch's per-character SavedVariables (WoW Lua) into JSON the web app can import. See DATA_MODEL.md.",
+  "type": "module",
+  "main": "index.mjs",
+  "bin": {
+    "hw-parse-savedvariables": "./index.mjs"
+  },
+  "scripts": {
+    "start": "node index.mjs"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "luaparse": "^0.3.1"
+  }
+}

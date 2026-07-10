@@ -59,6 +59,7 @@ function HW:OnInitialize()
 	if type(HordeWatchCharDB.Sightings) ~= "table" then HordeWatchCharDB.Sightings = {} end
 	if type(HordeWatchCharDB.CurrentState) ~= "table" then HordeWatchCharDB.CurrentState = {} end
 	if type(HordeWatchCharDB.NextId) ~= "number" then HordeWatchCharDB.NextId = 1 end
+	if type(HordeWatchCharDB.LastExportedId) ~= "number" then HordeWatchCharDB.LastExportedId = 0 end
 	self.charDB = HordeWatchCharDB
 
 	self.RealmName = GetRealmName()
@@ -171,7 +172,11 @@ function HW:SlashCommand(input)
 			tostring(self.db.profile.Enabled), tostring(self.EnabledInZone), count, #self.charDB.Sightings))
 	elseif input == "config" or input == "options" then
 		if self.OpenConfig then self:OpenConfig() end
+	elseif input == "export" then
+		if self.ShowExportDialog then self:ShowExportDialog(false) end
+	elseif input == "export all" then
+		if self.ShowExportDialog then self:ShowExportDialog(true) end
 	else
-		print("|cff33ff99HordeWatch|r commands: show, hide, enable, disable, clear, status, config")
+		print("|cff33ff99HordeWatch|r commands: show, hide, enable, disable, clear, status, config, export, export all")
 	end
 end
