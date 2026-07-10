@@ -14,6 +14,7 @@ Position.lua
 Data.lua
 Detection.lua
 Comm.lua
+Export.lua
 UI.lua
 Options.lua
 MinimapIcon.lua
