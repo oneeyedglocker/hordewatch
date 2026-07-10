@@ -193,11 +193,49 @@ local options = {
 			},
 		},
 
+		appearance = {
+			type = "group",
+			name = "Window Appearance",
+			inline = true,
+			order = 4,
+			args = {
+				bgAlpha = {
+					type = "range",
+					name = "Background opacity",
+					desc = "How solid the status window's background looks. Text stays fully readable regardless of this setting.",
+					order = 1,
+					min = 0.1, max = 1, step = 0.05,
+					isPercent = true,
+					get = function() return HW.db.profile.window.bgAlpha end,
+					set = function(_, value) HW:SetBackgroundAlpha(value) end,
+				},
+				locked = {
+					type = "toggle",
+					name = "Lock window",
+					desc = "Prevents dragging to move or using the resize handle, so you don't bump it by accident.",
+					order = 2,
+					get = function() return HW.db.profile.window.locked end,
+					set = function(_, value) HW:SetWindowLocked(value) end,
+				},
+				resetDesc = {
+					type = "description",
+					order = 3,
+					name = "\nDrag the title bar to move the window. Drag the bottom-right corner to resize it - taller windows show more entries.",
+				},
+				ResetLayout = {
+					type = "execute",
+					name = "Reset window position & size",
+					order = 4,
+					func = function() HW:ResetWindowLayout() end,
+				},
+			},
+		},
+
 		actions = {
 			type = "group",
 			name = "Actions",
 			inline = true,
-			order = 4,
+			order = 5,
 			args = {
 				ClearNearby = {
 					type = "execute",
