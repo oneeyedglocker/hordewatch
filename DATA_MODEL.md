@@ -216,15 +216,36 @@ Both transport options described above are now implemented:
   client-side (a byte-exact JS port of LibDeflate's print encoding + AceSerializer's
   deserializer, verified against real Lua-produced output — see
   `web/scripts/manual-fixture-test.ts`) or ingests the parser's JSON, merges
-  multiple imports/characters, and persists to `localStorage`. Table view
-  (filter/sort) is primary; a zone scatter view plots `mapX`/`mapY` against a
-  plain placeholder square (see gap #1 below — no real map art yet).
+  multiple imports/characters, and persists to `localStorage`. Sightings table
+  (filter/sort), Guilds, Trends, History, and Data Import are all separate
+  sidebar sections; Zone Map renders a real basemap per zone when one's been
+  supplied locally (see "Zone map imagery" below), falling back to a plain
+  scatter square otherwise.
+
+## Zone map imagery
+
+`worldX`/`worldY`/`continentID`/`mapX`/`mapY` are coordinates, not the
+underlying map images to render them against - that's Blizzard's own game
+art, which this project doesn't extract or ship (copyright/ToS territory
+distinct from the gameplay-API data collection everything else here relies
+on; see `web/public/maps/README.md` for the reasoning).
+
+Instead, the web app looks for a locally-supplied image at
+`web/public/maps/<mapID>.jpg` (`mapID` is the addon's stable per-zone key)
+and renders it via Leaflet + `L.CRS.Simple` (the standard technique for
+non-geographic/game maps - one static image, pixel coordinates, no real-world
+projection) when present, falling back to the placeholder scatter square
+otherwise. `web/public/maps/README.md` documents extracting your own copy
+with [wow.export](https://github.com/Kruithne/wow.export) against your own
+licensed client - nothing here is scraped or redistributed automatically.
+Continent-level (`worldX`/`worldY`) rendering isn't built yet, only per-zone.
 
 ## What's still missing (the actual gap)
 
-1. **No basemap imagery** — `worldX`/`worldY`/`continentID` give coordinates, not the underlying continent map images to render them against. That's Blizzard game art, not something this addon extracts or ships (copyright/ToS territory distinct from the gameplay-API data collection everything else here relies on). Source separately (community projects like Wowhead's interactive maps or wow.tools' asset exports are the normal route). The web app's zone view currently plots `mapX`/`mapY` in a plain square for this reason.
-2. **`HereBeDragons-2.0` coordinate output is unverified against a live client** — built and syntax-checked by reading the library's documented API, but there's no WoW client in the dev environment this was built in to confirm the numbers come out sane in practice. Worth a sanity check in-game before building extensively on top of `worldX`/`worldY`.
-3. **The addon's export/JS-decode pipeline is unverified against a live client too** — round-tripped against the *real* vendored `LibDeflate.lua`/`AceSerializer-3.0.lua` under a standalone Lua interpreter (not WoW), and the JS port matches that byte-for-byte, but `/hw export` itself hasn't been run in an actual WoW client. Worth confirming the popup/edit-box UI behaves and the string pastes cleanly before relying on it.
+1. **`HereBeDragons-2.0` coordinate output is unverified against a live client** — built and syntax-checked by reading the library's documented API, but there's no WoW client in the dev environment this was built in to confirm the numbers come out sane in practice. Worth a sanity check in-game before building extensively on top of `worldX`/`worldY`.
+2. **The addon's export/JS-decode pipeline is unverified against a live client too** — round-tripped against the *real* vendored `LibDeflate.lua`/`AceSerializer-3.0.lua` under a standalone Lua interpreter (not WoW), and the JS port matches that byte-for-byte, but `/hw export` itself hasn't been run in an actual WoW client. Worth confirming the popup/edit-box UI behaves and the string pastes cleanly before relying on it.
+3. **No continent/world map view** — only per-zone maps are wired up; a cross-zone view using `worldX`/`worldY`/`continentID` would need continent-scale images (Eastern Kingdoms, Kalimdor, Outland) through the same locally-supplied-image mechanism.
+4. **No time-based playback** — every sighting already carries `ts`; a time-slider style scrub through the log (à la ArcGIS's TimeSlider or kepler.gl's trajectory playback) to watch movement patterns emerge over a session was considered and deliberately deferred as lower priority than getting the basemap itself working.
 
 ## File map (addon source, for anything not covered above)
 
