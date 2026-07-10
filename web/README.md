@@ -22,6 +22,13 @@ Two ways in, both handled entirely client-side (no backend):
 
 Imported sightings merge (deduped by character+id) and persist to `localStorage`.
 
+## Zone map imagery
+
+The Zone Map view renders a real basemap (Leaflet + `L.CRS.Simple`) once you've
+supplied one - see `public/maps/README.md` for how to extract your own from
+your own licensed client with wow.export. Falls back to a placeholder scatter
+square for any zone you haven't added an image for yet.
+
 ## Verifying the decode pipeline
 
 `scripts/manual-fixture-test.ts` checks the JS decoder against a string
