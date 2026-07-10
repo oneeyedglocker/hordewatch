@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import type { Sighting } from "../lib/types";
 import { classColor } from "../lib/classColors";
 import { absoluteTime, relativeTime } from "../lib/format";
@@ -134,7 +134,7 @@ export function SightingsTable({ sightings }: Props) {
               <th>Method</th>
               <SortableHeader label="Seen" active={sortKey === "ts"} dir={sortDir} onClick={() => toggleSort("ts")} />
               <SortableHeader
-                label="Corrob."
+                label="Corroboration"
                 active={sortKey === "reportCount"}
                 dir={sortDir}
                 onClick={() => toggleSort("reportCount")}
@@ -164,20 +164,22 @@ function rowKey(s: Sighting, i: number): string {
 }
 
 function SightingRow({ sighting: s }: { sighting: Sighting }) {
-  const guildText = s.guild ? `<${s.guild}>` : "";
   const via = s.relayed ? ` via ${s.relaySender ?? "?"}` : "";
+  const rowColor = s.class ? classColor(s.class) : undefined;
   return (
     <tr>
-      <td className="player-cell">{s.player}</td>
+      <td className="player-cell" style={rowColor ? ({ "--row-color": rowColor } as CSSProperties) : undefined}>
+        {s.player}
+      </td>
       <td>
         {s.class && (
           <span className="class-dot" style={{ background: classColor(s.class) }} aria-hidden />
         )}
-        <span style={{ color: s.class ? classColor(s.class) : undefined }}>{s.class ?? "?"}</span>
+        <span style={{ color: rowColor }}>{s.class ?? "Unknown"}</span>
         {s.race && <span className="muted"> {s.race}</span>}
       </td>
       <td>{s.level ?? "??"}{s.levelIsGuess && s.level ? "*" : ""}</td>
-      <td className="muted">{guildText}</td>
+      <td className="muted">{s.guild ?? "—"}</td>
       <td>
         {s.zone}
         {s.subZone ? <span className="muted"> / {s.subZone}</span> : null}
@@ -187,8 +189,24 @@ function SightingRow({ sighting: s }: { sighting: Sighting }) {
         {via}
       </td>
       <td title={absoluteTime(s.ts)}>{relativeTime(s.ts)}</td>
-      <td>{s.reportCount && s.reportCount > 1 ? `x${s.reportCount}` : ""}</td>
+      <td>
+        <CorroborationCell count={s.reportCount} />
+      </td>
     </tr>
+  );
+}
+
+function CorroborationCell({ count }: { count?: number }) {
+  if (!count || count <= 1) return <span className="muted">—</span>;
+  const pct = Math.min(100, (count / 5) * 100);
+  const flagged = count >= 3;
+  return (
+    <div className="corr-bar-wrap">
+      <div className={`corr-bar${flagged ? " flag" : ""}`}>
+        <span style={{ width: `${pct}%` }} />
+      </div>
+      <span className="muted">×{count}</span>
+    </div>
   );
 }
 
