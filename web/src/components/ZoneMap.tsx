@@ -3,7 +3,9 @@ import type { Sighting } from "../lib/types";
 import { classColor } from "../lib/classColors";
 import { relativeTime } from "../lib/format";
 import { useZoneImage } from "../lib/useZoneImage";
+import { useContinentImage } from "../lib/useContinentImage";
 import { LeafletZoneMap } from "./LeafletZoneMap";
+import { LeafletContinentMap } from "./LeafletContinentMap";
 
 interface Props {
   sightings: Sighting[];
@@ -12,6 +14,15 @@ interface Props {
 const SIZE = 560;
 const DOT_R = 5;
 
+// Outland's continent-level UiMapID (confirmed directly from wow.export's
+// own export metadata - see web/public/maps/530.json). HereBeDragons has a
+// documented internal coordinate-split for Outland (see the
+// instanceIDOverrides/transform table in
+// HordeWatch/Libs/HereBeDragons/HereBeDragons-2.0.lua) that can in theory
+// remap the continentID it hands back - if real sightings ever show a
+// continentID other than 530 for an Outland zone, add it here.
+const OUTLAND_CONTINENT_ID = 530;
+
 interface Tooltip {
   x: number;
   y: number;
@@ -19,6 +30,14 @@ interface Tooltip {
 }
 
 export function ZoneMap({ sightings }: Props) {
+  const [view, setView] = useState<"zone" | "continent">("zone");
+
+  const continentPoints = useMemo(
+    () => sightings.filter((s) => s.continentID === OUTLAND_CONTINENT_ID && s.worldX !== undefined && s.worldY !== undefined),
+    [sightings],
+  );
+  const continentImage = useContinentImage(OUTLAND_CONTINENT_ID);
+
   const zoneStats = useMemo(() => {
     const counts = new Map<string, number>();
     for (const s of sightings) {
@@ -50,13 +69,87 @@ export function ZoneMap({ sightings }: Props) {
   const [tooltip, setTooltip] = useState<Tooltip | null>(null);
   const zoneImage = useZoneImage(mapID);
 
-  if (zoneStats.length === 0) {
-    return <div className="empty-state">No sightings with zone-local coordinates (mapX/mapY) to plot yet.</div>;
+  const continentClassesPresent = useMemo(() => {
+    const set = new Set<string>();
+    for (const p of continentPoints) if (p.class) set.add(p.class);
+    return Array.from(set).sort();
+  }, [continentPoints]);
+
+  if (zoneStats.length === 0 && continentPoints.length === 0) {
+    return <div className="empty-state">No sightings with positional data (mapX/mapY or worldX/worldY) to plot yet.</div>;
+  }
+
+  const viewToggle = (
+    <div className="view-toggle">
+      <button className="view-toggle-btn" aria-current={view === "zone"} onClick={() => setView("zone")}>
+        Zone
+      </button>
+      <button className="view-toggle-btn" aria-current={view === "continent"} onClick={() => setView("continent")}>
+        Outland (all zones)
+      </button>
+    </div>
+  );
+
+  if (view === "continent") {
+    return (
+      <div className="zone-map-view">
+        <div className="table-controls">
+          {viewToggle}
+          {continentImage.status === "found" ? (
+            <span className="muted">
+              Continuous map across every Outland zone - positions come from worldX/worldY (HereBeDragons), not the
+              per-zone coordinates.
+            </span>
+          ) : (
+            <span className="muted">No continent image yet.</span>
+          )}
+        </div>
+
+        <div className="zone-map-body">
+          {continentImage.status === "found" ? (
+            <div className="zone-map-canvas-wrap">
+              <LeafletContinentMap
+                imageUrl={continentImage.url}
+                imageWidth={continentImage.meta.imageWidth}
+                imageHeight={continentImage.meta.imageHeight}
+                corners={continentImage.meta.corners}
+                points={continentPoints}
+                mapName={continentImage.meta.mapName}
+              />
+            </div>
+          ) : (
+            <div className="empty-state">
+              No continent image at <code>web/public/maps/{OUTLAND_CONTINENT_ID}.jpg</code> (plus its{" "}
+              <code>.json</code> coordinate sidecar) yet - see <code>web/public/maps/README.md</code>.
+            </div>
+          )}
+
+          <div className="zone-map-legend">
+            {continentClassesPresent.length > 0 && (
+              <>
+                <h3>Classes in view</h3>
+                {continentClassesPresent.map((c) => (
+                  <div key={c} className="legend-row">
+                    <span className="class-dot" style={{ background: classColor(c) }} aria-hidden />
+                    <span>{c}</span>
+                  </div>
+                ))}
+                <p className="muted legend-note">{continentPoints.length} plotted sighting(s)</p>
+              </>
+            )}
+            {continentPoints.length === 0 && (
+              <p className="muted">No sightings with worldX/worldY on this continent yet.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="zone-map-view">
       <div className="table-controls">
+        {viewToggle}
         <select value={activeZone ?? ""} onChange={(e) => setZone(e.target.value)}>
           {zoneStats.map(([z, count]) => (
             <option key={z} value={z}>

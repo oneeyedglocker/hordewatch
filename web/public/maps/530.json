@@ -1,0 +1,16 @@
+{
+  "mapID": 530,
+  "mapName": "Outland",
+  "imageWidth": 16384,
+  "imageHeight": 12800,
+  "corners": {
+    "top_left": {
+      "world_x": 7466.666666666667,
+      "world_y": 10133.333333333334
+    },
+    "bottom_right": {
+      "world_x": -5866.666666666667,
+      "world_y": -6933.333333333334
+    }
+  }
+}
