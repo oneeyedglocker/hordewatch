@@ -63,6 +63,8 @@ function HW:OnInitialize()
 
 	self:RegisterChatCommand("hw", "SlashCommand")
 	self:RegisterChatCommand("hordewatch", "SlashCommand")
+
+	if self.SetupOptions then self:SetupOptions() end
 end
 
 function HW:OnEnable()
@@ -152,7 +154,9 @@ function HW:SlashCommand(input)
 		for _ in pairs(self.charDB.CurrentState) do count = count + 1 end
 		print(("|cff33ff99HordeWatch|r enabled=%s inZone=%s tracked=%d totalRecords=%d"):format(
 			tostring(self.db.profile.Enabled), tostring(self.EnabledInZone), count, #self.charDB.Sightings))
+	elseif input == "config" or input == "options" then
+		if self.OpenConfig then self:OpenConfig() end
 	else
-		print("|cff33ff99HordeWatch|r commands: show, hide, enable, disable, clear, status")
+		print("|cff33ff99HordeWatch|r commands: show, hide, enable, disable, clear, status, config")
 	end
 end

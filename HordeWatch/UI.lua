@@ -38,6 +38,14 @@ closeBtn:SetScript("OnClick", function()
 	frame:Hide()
 end)
 
+local settingsBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
+settingsBtn:SetSize(72, 20)
+settingsBtn:SetPoint("TOPLEFT", 8, -8)
+settingsBtn:SetText("Settings")
+settingsBtn:SetScript("OnClick", function()
+	if HW.OpenConfig then HW:OpenConfig() end
+end)
+
 local rows = {}
 for i = 1, NUM_ROWS do
 	local row = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
