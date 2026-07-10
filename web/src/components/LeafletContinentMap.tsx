@@ -15,6 +15,24 @@ interface Props {
   mapName: string;
 }
 
+// wow.export's corners describe Outland's RAW per-ADT world coordinates
+// (continentID 530's native frame, straight from Blizzard's map data).
+// HereBeDragons doesn't hand back that raw frame for most real positions,
+// though: per its own transform table for TBC Classic
+// (HordeWatch/Libs/HereBeDragons/HereBeDragons-2.0.lua, the `WoWBC` block),
+// most of Outland's raw coordinate space gets bucketed into continentID 0
+// or 1 with an offset ADDED to worldX/worldY before the addon ever sees it
+// - only a small "leftover" pocket keeps continentID 530 unmodified. To
+// plot correctly against wow.export's raw-frame image, that offset has to
+// be subtracted back out first. Table format matches HBD's own
+// (offsetY, offsetX) order for each continentID it can produce for
+// Outland.
+const OUTLAND_OFFSETS: Record<number, { offsetX: number; offsetY: number }> = {
+  530: { offsetX: 0, offsetY: 0 },
+  0: { offsetX: 2662.8, offsetY: -2400 },
+  1: { offsetX: 17600, offsetY: 10339.7 },
+};
+
 // Converts a sighting's worldX/worldY (continuous yards, from HereBeDragons -
 // see HordeWatch/Position.lua) to a pixel on the continent image, using the
 // exact world-space corners wow.export reported for that image (see
@@ -23,10 +41,21 @@ interface Props {
 // transposed relative to image row/col - the image's horizontal axis
 // tracks worldY, and its vertical axis tracks worldX. Then negate the
 // resulting pixel-Y for CRS.Simple, same trick as LeafletZoneMap.
-function toLatLng(worldX: number, worldY: number, corners: ContinentCorners, width: number, height: number): L.LatLngTuple {
+function toLatLng(
+  worldX: number,
+  worldY: number,
+  continentID: number,
+  corners: ContinentCorners,
+  width: number,
+  height: number,
+): L.LatLngTuple {
+  const offset = OUTLAND_OFFSETS[continentID] ?? { offsetX: 0, offsetY: 0 };
+  const rawX = worldX - offset.offsetX;
+  const rawY = worldY - offset.offsetY;
+
   const { top_left, bottom_right } = corners;
-  const px = ((top_left.world_y - worldY) / (top_left.world_y - bottom_right.world_y)) * width;
-  const py = ((top_left.world_x - worldX) / (top_left.world_x - bottom_right.world_x)) * height;
+  const px = ((top_left.world_y - rawY) / (top_left.world_y - bottom_right.world_y)) * width;
+  const py = ((top_left.world_x - rawX) / (top_left.world_x - bottom_right.world_x)) * height;
   return [-py, px];
 }
 
@@ -79,7 +108,7 @@ export function LeafletContinentMap({ imageUrl, imageWidth, imageHeight, corners
     const markers = points
       .filter((p) => p.worldX !== undefined && p.worldY !== undefined)
       .map((p) => {
-        const marker = L.circleMarker(toLatLng(p.worldX!, p.worldY!, corners, imageWidth, imageHeight), {
+        const marker = L.circleMarker(toLatLng(p.worldX!, p.worldY!, p.continentID ?? 530, corners, imageWidth, imageHeight), {
           radius: 5,
           weight: 2,
           color: ringColor,
