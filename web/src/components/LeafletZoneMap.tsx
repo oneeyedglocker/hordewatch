@@ -40,6 +40,11 @@ export function LeafletZoneMap({ imageUrl, imageWidth, imageHeight, points, zone
       minZoom: -2,
       maxZoom: 3,
       attributionControl: false,
+      // Extra SVG renderer padding so markers away from the initial
+      // viewport center don't land outside the renderer's bounds and
+      // render as degenerate empty paths (see LeafletContinentMap.tsx,
+      // where this was caught at the continent image's much larger scale).
+      renderer: L.svg({ padding: 10 }),
     });
     L.imageOverlay(imageUrl, bounds).addTo(map);
     map.fitBounds(bounds);
