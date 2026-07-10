@@ -15,13 +15,19 @@ const SIZE = 560;
 const DOT_R = 5;
 
 // Outland's continent-level UiMapID (confirmed directly from wow.export's
-// own export metadata - see web/public/maps/530.json). HereBeDragons has a
-// documented internal coordinate-split for Outland (see the
-// instanceIDOverrides/transform table in
-// HordeWatch/Libs/HereBeDragons/HereBeDragons-2.0.lua) that can in theory
-// remap the continentID it hands back - if real sightings ever show a
-// continentID other than 530 for an Outland zone, add it here.
+// own export metadata - see web/public/maps/530.json) - this is what the
+// continent image/sidecar are keyed by.
 const OUTLAND_CONTINENT_ID = 530;
+
+// The set of continentID values HereBeDragons can actually hand back for a
+// real Outland position. Per its own transform table for TBC Classic
+// (HordeWatch/Libs/HereBeDragons/HereBeDragons-2.0.lua, the WoWBC block),
+// most of Outland's raw coordinate space gets bucketed into 0 or 1 (with an
+// offset applied to worldX/worldY) rather than staying 530 - see the
+// OUTLAND_OFFSETS comment in LeafletContinentMap.tsx for how that offset
+// gets reversed for pixel placement. All three need to be accepted here or
+// most real Outland sightings silently don't show up on the continent view.
+const OUTLAND_CONTINENT_IDS = new Set([530, 0, 1]);
 
 interface Tooltip {
   x: number;
@@ -33,7 +39,10 @@ export function ZoneMap({ sightings }: Props) {
   const [view, setView] = useState<"zone" | "continent">("zone");
 
   const continentPoints = useMemo(
-    () => sightings.filter((s) => s.continentID === OUTLAND_CONTINENT_ID && s.worldX !== undefined && s.worldY !== undefined),
+    () =>
+      sightings.filter(
+        (s) => s.continentID !== undefined && OUTLAND_CONTINENT_IDS.has(s.continentID) && s.worldX !== undefined && s.worldY !== undefined,
+      ),
     [sightings],
   );
   const continentImage = useContinentImage(OUTLAND_CONTINENT_ID);
