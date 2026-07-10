@@ -71,8 +71,21 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   margin: 0;
+  background: var(--surface-0);
+  color: var(--text-primary);
+}
+
+#root {
+  min-height: 100vh;
+  background: var(--surface-0);
+  color: var(--text-primary);
 }
 
 h1,

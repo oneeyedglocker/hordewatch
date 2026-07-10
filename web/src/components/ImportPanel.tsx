@@ -4,7 +4,7 @@ import { parseSightingsJson } from "../lib/parseFromJson";
 import type { Sighting } from "../lib/types";
 
 interface Props {
-  onImport: (sightings: Sighting[], label: string) => void;
+  onImport: (sightings: Sighting[], label: string, source: "string" | "json") => void;
 }
 
 export function ImportPanel({ onImport }: Props) {
@@ -16,7 +16,7 @@ export function ImportPanel({ onImport }: Props) {
     if (!pasteValue.trim()) return;
     try {
       const payload = decodeExportString(pasteValue);
-      onImport(payload.sightings, `${payload.char}-${payload.realm}`);
+      onImport(payload.sightings, `${payload.char}-${payload.realm}`, "string");
       setMessage({
         kind: "ok",
         text: `Imported ${payload.sightings.length} sighting(s) from ${payload.char}-${payload.realm}.`,
@@ -35,7 +35,7 @@ export function ImportPanel({ onImport }: Props) {
       const text = await file.text();
       const json = JSON.parse(text);
       const sightings = parseSightingsJson(json);
-      onImport(sightings, file.name);
+      onImport(sightings, file.name, "json");
       setMessage({ kind: "ok", text: `Imported ${sightings.length} sighting(s) from ${file.name}.` });
     } catch (err) {
       setMessage({ kind: "error", text: `Import failed: ${(err as Error).message}` });

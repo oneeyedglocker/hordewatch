@@ -2,28 +2,68 @@ import { useEffect, useMemo, useState } from "react";
 import { ImportPanel } from "./components/ImportPanel";
 import { SightingsTable } from "./components/SightingsTable";
 import { ZoneMap } from "./components/ZoneMap";
-import { loadSightings, mergeSightings, saveSightings, clearSightings } from "./lib/store";
-import type { Sighting } from "./lib/types";
+import { GuildsView } from "./components/GuildsView";
+import { TrendsView } from "./components/TrendsView";
+import { HistoryView } from "./components/HistoryView";
+import {
+  loadSightings,
+  mergeSightings,
+  saveSightings,
+  clearSightings,
+  loadImportHistory,
+  saveImportHistory,
+} from "./lib/store";
+import type { ImportEvent, Sighting } from "./lib/types";
 import "./App.css";
 
-type Tab = "table" | "map";
+type Tab = "table" | "map" | "guilds" | "trends" | "history" | "import";
+
+const PAGE_INFO: Record<Tab, { title: string; subtitle: string }> = {
+  table: { title: "Sightings", subtitle: "Guild-shared PvP intel, most recent first" },
+  map: { title: "Zone map", subtitle: "Zone-relative positions at detection time" },
+  guilds: { title: "Guilds", subtitle: "Enemy guilds seen, aggregated across all sightings" },
+  trends: { title: "Trends", subtitle: "Activity over time, top zones, top classes" },
+  history: { title: "History", subtitle: "Import log for this browser" },
+  import: { title: "Data Import", subtitle: "Bring sightings in from the addon or the offline parser" },
+};
 
 function App() {
   const [sightings, setSightings] = useState<Sighting[]>(() => loadSightings());
-  const [tab, setTab] = useState<Tab>("table");
+  const [importHistory, setImportHistory] = useState<ImportEvent[]>(() => loadImportHistory());
+  const [tab, setTab] = useState<Tab>(() => (loadSightings().length === 0 ? "import" : "table"));
 
   useEffect(() => {
     saveSightings(sightings);
   }, [sightings]);
 
-  function handleImport(incoming: Sighting[]) {
-    setSightings((prev) => mergeSightings(prev, incoming));
+  useEffect(() => {
+    saveImportHistory(importHistory);
+  }, [importHistory]);
+
+  function handleImport(incoming: Sighting[], label: string, source: "string" | "json") {
+    setSightings((prev) => {
+      const { merged, newCount } = mergeSightings(prev, incoming);
+      setImportHistory((h) => [
+        {
+          id: `${Date.now()}-${h.length}`,
+          at: Math.floor(Date.now() / 1000),
+          source,
+          label,
+          count: incoming.length,
+          newCount,
+        },
+        ...h,
+      ]);
+      return merged;
+    });
   }
 
   function handleClear() {
-    if (!confirm("Clear all imported sightings from this browser? This can't be undone.")) return;
+    if (!confirm("Clear all imported sightings and import history from this browser? This can't be undone.")) return;
     clearSightings();
     setSightings([]);
+    setImportHistory([]);
+    setTab("import");
   }
 
   const stats = useMemo(() => {
@@ -51,6 +91,9 @@ function App() {
     };
   }, [sightings]);
 
+  const showStats = sightings.length > 0 && (tab === "table" || tab === "map" || tab === "guilds" || tab === "trends");
+  const info = PAGE_INFO[tab];
+
   return (
     <div className="app-shell">
       <aside className="rail">
@@ -67,6 +110,23 @@ function App() {
             <MapIcon />
             Zone map
           </button>
+          <button className="navitem" aria-current={tab === "guilds"} onClick={() => setTab("guilds")}>
+            <GuildIcon />
+            Guilds
+          </button>
+          <button className="navitem" aria-current={tab === "trends"} onClick={() => setTab("trends")}>
+            <TrendsIcon />
+            Trends
+          </button>
+          <button className="navitem" aria-current={tab === "history"} onClick={() => setTab("history")}>
+            <HistoryIcon />
+            History
+          </button>
+          <div className="nav-divider" />
+          <button className="navitem" aria-current={tab === "import"} onClick={() => setTab("import")}>
+            <ImportIcon />
+            Data Import
+          </button>
         </nav>
         {sightings.length > 0 && (
           <div className="rail-foot">
@@ -82,31 +142,38 @@ function App() {
       <main className="main">
         <header className="pageheader">
           <div>
-            <h1>{tab === "table" ? "Sightings" : "Zone map"}</h1>
-            <p className="muted">
-              {tab === "table" ? "Guild-shared PvP intel, most recent first" : "Zone-relative positions at detection time"}
-            </p>
+            <h1>{info.title}</h1>
+            <p className="muted">{info.subtitle}</p>
           </div>
-          {sightings.length > 0 && <span className="range-pill">{stats.range}</span>}
+          {showStats && <span className="range-pill">{stats.range}</span>}
         </header>
 
-        <ImportPanel onImport={handleImport} />
+        {showStats && (
+          <section className="stat-row">
+            <Stat label="Sightings" value={stats.total} />
+            <Stat label="Unique players" value={stats.players} />
+            <Stat label="Guilds seen" value={stats.guilds} />
+            <Stat label="Date range" value={stats.range} />
+          </section>
+        )}
 
-        {sightings.length === 0 ? (
+        {tab === "import" && <ImportPanel onImport={handleImport} />}
+
+        {tab !== "import" && sightings.length === 0 ? (
           <div className="empty-state big">
-            No sightings imported yet. Use <code>/hw export</code> in-game and paste the string above, or
-            upload a JSON file from the offline parser.
+            No sightings imported yet.{" "}
+            <button className="link-btn" onClick={() => setTab("import")}>
+              Go to Data Import
+            </button>{" "}
+            to paste a <code>/hw export</code> string or upload a JSON file from the offline parser.
           </div>
         ) : (
           <>
-            <section className="stat-row">
-              <Stat label="Sightings" value={stats.total} />
-              <Stat label="Unique players" value={stats.players} />
-              <Stat label="Guilds seen" value={stats.guilds} />
-              <Stat label="Date range" value={stats.range} />
-            </section>
-
-            {tab === "table" ? <SightingsTable sightings={sightings} /> : <ZoneMap sightings={sightings} />}
+            {tab === "table" && <SightingsTable sightings={sightings} />}
+            {tab === "map" && <ZoneMap sightings={sightings} />}
+            {tab === "guilds" && <GuildsView sightings={sightings} />}
+            {tab === "trends" && <TrendsView sightings={sightings} />}
+            {tab === "history" && <HistoryView events={importHistory} />}
           </>
         )}
       </main>
@@ -139,6 +206,43 @@ function MapIcon() {
       <path d="M5.5 2.5 1.5 4v9.5l4-1.5 5 1.5 4-1.5V4l-4 1.5-5-1.5Z" />
       <line x1="5.5" y1="2.5" x2="5.5" y2="12" />
       <line x1="10.5" y1="4" x2="10.5" y2="13.5" />
+    </svg>
+  );
+}
+
+function GuildIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <circle cx="8" cy="5.5" r="2.5" />
+      <path d="M2.5 14c0-3 2.5-4.5 5.5-4.5s5.5 1.5 5.5 4.5" />
+    </svg>
+  );
+}
+
+function TrendsIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <path d="M2 12.5 6 8l3 2.5 4.5-5" />
+      <path d="M10.5 5.5H13.5V8.5" />
+    </svg>
+  );
+}
+
+function HistoryIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <circle cx="8" cy="8" r="6" />
+      <path d="M8 4.5v4l2.5 1.5" />
+    </svg>
+  );
+}
+
+function ImportIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <path d="M8 2.5v6.5" />
+      <path d="M5.2 6.2 8 9l2.8-2.8" />
+      <path d="M2.5 11v2a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-2" />
     </svg>
   );
 }
