@@ -42,6 +42,9 @@ local function buildRecordFromUnit(unit, method)
 		mapX = pos.mapX,
 		mapY = pos.mapY,
 		layer = pos.layer,
+		worldX = pos.worldX,
+		worldY = pos.worldY,
+		continentID = pos.continentID,
 		method = method,
 	}
 end
@@ -113,6 +116,9 @@ local function buildRecordFromGUID(guid, name)
 		mapX = pos.mapX,
 		mapY = pos.mapY,
 		layer = pos.layer,
+		worldX = pos.worldX,
+		worldY = pos.worldY,
+		continentID = pos.continentID,
 		method = HW.Method.COMBATLOG,
 	}
 end
@@ -169,6 +175,9 @@ local function scanMinimapTooltip()
 				mapX = pos.mapX,
 				mapY = pos.mapY,
 				layer = pos.layer,
+				worldX = pos.worldX,
+				worldY = pos.worldY,
+				continentID = pos.continentID,
 				method = HW.Method.MINIMAP,
 			})
 		end

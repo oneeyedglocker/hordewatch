@@ -25,6 +25,9 @@ local function mergeSighting(existing, incoming)
 		existing.mapX = incoming.mapX or existing.mapX
 		existing.mapY = incoming.mapY or existing.mapY
 		existing.mapID = incoming.mapID or existing.mapID
+		existing.worldX = incoming.worldX or existing.worldX
+		existing.worldY = incoming.worldY or existing.worldY
+		existing.continentID = incoming.continentID or existing.continentID
 		existing.subZone = incoming.subZone or existing.subZone
 		existing.layer = incoming.layer or existing.layer
 		existing.method = incoming.method or existing.method
@@ -49,8 +52,8 @@ local function mergeSighting(existing, incoming)
 end
 
 -- record fields: player, class, race, level, levelIsGuess, guild, zone,
--- subZone, mapID, mapX, mapY, layer, method, reporter, relayed,
--- windowStart, reportCount, reporters
+-- subZone, mapID, mapX, mapY, worldX, worldY, continentID, layer, method,
+-- reporter, relayed, windowStart, reportCount, reporters
 function HW:AddSighting(record)
 	if not record or not record.player then return end
 	record.player = normalizeName(record.player)

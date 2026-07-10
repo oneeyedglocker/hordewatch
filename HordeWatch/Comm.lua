@@ -42,6 +42,10 @@ local function validatePayload(p)
 	end
 	if p.mapX ~= nil and (type(p.mapX) ~= "number" or p.mapX < 0 or p.mapX > 1) then return false end
 	if p.mapY ~= nil and (type(p.mapY) ~= "number" or p.mapY < 0 or p.mapY > 1) then return false end
+	-- world coords are continent-scale yards, not 0-1 - no fixed range to check beyond being numbers
+	if p.worldX ~= nil and type(p.worldX) ~= "number" then return false end
+	if p.worldY ~= nil and type(p.worldY) ~= "number" then return false end
+	if p.continentID ~= nil and type(p.continentID) ~= "number" then return false end
 	if p.layer ~= nil and type(p.layer) ~= "number" then return false end
 	if type(p.ts) ~= "number" then return false end
 	if p.zone ~= nil and (type(p.zone) ~= "string" or #p.zone > 64) then return false end
@@ -73,6 +77,9 @@ function HW:OnLocalSighting(_, record)
 		mapID = record.mapID,
 		mapX = record.mapX,
 		mapY = record.mapY,
+		worldX = record.worldX,
+		worldY = record.worldY,
+		continentID = record.continentID,
 		layer = record.layer,
 		method = record.method,
 		ts = record.ts,
@@ -102,6 +109,9 @@ function HW:OnCommReceived(prefix, message, _, sender)
 		mapID = payload.mapID,
 		mapX = payload.mapX,
 		mapY = payload.mapY,
+		worldX = payload.worldX,
+		worldY = payload.worldY,
+		continentID = payload.continentID,
 		layer = payload.layer,
 		method = self.Method.COMM,
 		ts = payload.ts,

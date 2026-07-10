@@ -1,4 +1,5 @@
 local HW = HordeWatch
+local HBD = LibStub("HereBeDragons-2.0")
 
 HW.Method = {
 	TARGET     = "target",     -- targeted directly: interact/targeting range
@@ -98,12 +99,30 @@ function HW:CaptureReporterPosition()
 	local subZone = GetSubZoneText()
 	local layer = self:GetCurrentLayer()
 
+	-- Continent/world coordinates (continuous across every zone on one
+	-- continent, in yards) via HereBeDragons, in ADDITION to the zone-local
+	-- 0-1 mapX/mapY below. mapX/mapY alone can't back a multi-zone map -
+	-- each zone is its own independent 0-1 image with no shared reference
+	-- frame between them. worldX/worldY share one frame for every zone
+	-- under the same continentID; a different continent (Kalimdor vs
+	-- Eastern Kingdoms vs Outland) is still a different coordinate space,
+	-- same as Blizzard's own world map - that seam isn't something this
+	-- can paper over, only a continent switcher on the map UI can.
+	local worldX, worldY, continentID = HBD:GetPlayerWorldPosition()
+	if worldX and worldY then
+		worldX = math.floor(worldX * 10) / 10
+		worldY = math.floor(worldY * 10) / 10
+	end
+
 	if not mapID then
 		local instanceName = GetInstanceInfo()
 		return {
 			mapID = nil,
 			mapX = nil,
 			mapY = nil,
+			worldX = worldX,
+			worldY = worldY,
+			continentID = continentID,
 			zone = instanceName or zone,
 			subZone = subZone,
 			layer = layer,
@@ -116,6 +135,9 @@ function HW:CaptureReporterPosition()
 			mapID = mapID,
 			mapX = nil,
 			mapY = nil,
+			worldX = worldX,
+			worldY = worldY,
+			continentID = continentID,
 			zone = zone,
 			subZone = subZone,
 			layer = layer,
@@ -136,6 +158,9 @@ function HW:CaptureReporterPosition()
 		mapID = mapID,
 		mapX = x,
 		mapY = y,
+		worldX = worldX,
+		worldY = worldY,
+		continentID = continentID,
 		zone = zone,
 		subZone = subZone,
 		layer = layer,
