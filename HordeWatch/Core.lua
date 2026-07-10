@@ -14,6 +14,18 @@ local Defaults = {
 		ShowWindow = true,
 		minimap = { hide = false },
 
+		-- status window look/layout, all user-adjustable without touching code
+		window = {
+			bgAlpha = 0.85,
+			locked = false,
+			width = 360,
+			height = 260,
+			point = "CENTER",
+			relPoint = "CENTER",
+			x = 0,
+			y = 0,
+		},
+
 		EnabledInSanctuaries = false,
 		EnabledInBattlegrounds = true,
 		EnabledInArenas = false,
@@ -36,6 +48,7 @@ local Defaults = {
 		CollapseWindowSeconds = 8,
 	},
 }
+HW.Defaults = Defaults -- exposed so UI.lua can reset window layout back to these values
 
 function HW:OnInitialize()
 	self.db = LibStub("AceDB-3.0"):New("HordeWatchDB", Defaults, true)
