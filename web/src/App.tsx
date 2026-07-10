@@ -29,11 +29,13 @@ function App() {
   const stats = useMemo(() => {
     const players = new Set<string>();
     const guilds = new Set<string>();
+    const characters = new Set<string>();
     let minTs = Infinity;
     let maxTs = -Infinity;
     for (const s of sightings) {
       players.add(s.player);
       if (s.guild) guilds.add(s.guild);
+      if (s.sourceCharacter) characters.add(s.sourceCharacter);
       if (s.ts < minTs) minTs = s.ts;
       if (s.ts > maxTs) maxTs = s.ts;
     }
@@ -41,6 +43,7 @@ function App() {
       total: sightings.length,
       players: players.size,
       guilds: guilds.size,
+      characters: Array.from(characters).sort(),
       range:
         sightings.length > 0
           ? `${new Date(minTs * 1000).toLocaleDateString()} - ${new Date(maxTs * 1000).toLocaleDateString()}`
@@ -50,54 +53,93 @@ function App() {
 
   return (
     <div className="app-shell">
-      <header className="app-header">
-        <h1>HordeWatch</h1>
-        <p className="muted">PvP intel dashboard, imported from the HordeWatch WoW addon</p>
-      </header>
-
-      <ImportPanel onImport={handleImport} />
-
-      {sightings.length === 0 ? (
-        <div className="empty-state big">
-          No sightings imported yet. Use <code>/hw export</code> in-game and paste the string above, or
-          upload a JSON file from the offline parser.
+      <aside className="rail">
+        <div className="brand">
+          <span className="mark" aria-hidden />
+          <b>HordeWatch</b>
         </div>
-      ) : (
-        <>
-          <section className="stat-bar">
-            <Stat label="Sightings" value={stats.total} />
-            <Stat label="Unique players" value={stats.players} />
-            <Stat label="Guilds seen" value={stats.guilds} />
-            <Stat label="Date range" value={stats.range} />
-            <button className="btn btn-secondary clear-btn" onClick={handleClear}>
+        <nav className="navlist">
+          <button className="navitem" aria-current={tab === "table"} onClick={() => setTab("table")}>
+            <TableIcon />
+            Sightings
+          </button>
+          <button className="navitem" aria-current={tab === "map"} onClick={() => setTab("map")}>
+            <MapIcon />
+            Zone map
+          </button>
+        </nav>
+        {sightings.length > 0 && (
+          <div className="rail-foot">
+            <div className="rail-foot-label">Imported from</div>
+            <div>{stats.characters.length > 0 ? stats.characters.join(", ") : "unknown character"}</div>
+            <button className="rail-clear" onClick={handleClear}>
               Clear data
             </button>
-          </section>
+          </div>
+        )}
+      </aside>
 
-          <nav className="tabs">
-            <button className={`tab ${tab === "table" ? "active" : ""}`} onClick={() => setTab("table")}>
-              Table
-            </button>
-            <button className={`tab ${tab === "map" ? "active" : ""}`} onClick={() => setTab("map")}>
-              Zone map
-            </button>
-          </nav>
+      <main className="main">
+        <header className="pageheader">
+          <div>
+            <h1>{tab === "table" ? "Sightings" : "Zone map"}</h1>
+            <p className="muted">
+              {tab === "table" ? "Guild-shared PvP intel, most recent first" : "Zone-relative positions at detection time"}
+            </p>
+          </div>
+          {sightings.length > 0 && <span className="range-pill">{stats.range}</span>}
+        </header>
 
-          <main className="app-main">
+        <ImportPanel onImport={handleImport} />
+
+        {sightings.length === 0 ? (
+          <div className="empty-state big">
+            No sightings imported yet. Use <code>/hw export</code> in-game and paste the string above, or
+            upload a JSON file from the offline parser.
+          </div>
+        ) : (
+          <>
+            <section className="stat-row">
+              <Stat label="Sightings" value={stats.total} />
+              <Stat label="Unique players" value={stats.players} />
+              <Stat label="Guilds seen" value={stats.guilds} />
+              <Stat label="Date range" value={stats.range} />
+            </section>
+
             {tab === "table" ? <SightingsTable sightings={sightings} /> : <ZoneMap sightings={sightings} />}
-          </main>
-        </>
-      )}
+          </>
+        )}
+      </main>
     </div>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="stat-tile">
+    <div className="stat">
       <div className="stat-value">{value}</div>
       <div className="stat-label">{label}</div>
     </div>
+  );
+}
+
+function TableIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <rect x="1.5" y="2.5" width="13" height="11" rx="1.5" />
+      <line x1="1.5" y1="6.5" x2="14.5" y2="6.5" />
+      <line x1="6" y1="6.5" x2="6" y2="13.5" />
+    </svg>
+  );
+}
+
+function MapIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <path d="M5.5 2.5 1.5 4v9.5l4-1.5 5 1.5 4-1.5V4l-4 1.5-5-1.5Z" />
+      <line x1="5.5" y1="2.5" x2="5.5" y2="12" />
+      <line x1="10.5" y1="4" x2="10.5" y2="13.5" />
+    </svg>
   );
 }
 
