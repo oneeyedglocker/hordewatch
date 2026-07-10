@@ -60,10 +60,23 @@ transparency, so it'd get flattened to an opaque white block instead.
 ## Finding a zone's mapID
 
 Open the Zone Map view in the app and pick the zone from the dropdown - if
-there's no image for it yet, it tells you the exact mapID to use. (It's
-Blizzard's `UiMapID`, e.g. Hellfire Peninsula is 100 in TBC Classic - but
-don't hardcode that, confirm it from what your own sightings recorded, since
-map IDs occasionally shift between client versions.)
+there's no image for it yet, it tells you the exact mapID to use. **Don't
+assume "well-known" TBC Classic mapIDs are right** - this repo initially
+shipped images under the commonly-cited old values (Hellfire Peninsula =
+100, Netherstorm = 109, etc.), but real client data showed the actual
+`C_Map.GetBestMapForUnit()` values this client returns are completely
+different (Hellfire Peninsula = 1944, Netherstorm = 1953 - confirmed from
+real sightings, not documentation). Always confirm from an actual
+sighting's recorded `mapID`, never hardcode a number you haven't checked
+against real data from this specific client.
+
+**Current status of the committed zone images:** `1944.jpg` (Hellfire
+Peninsula) and `1953.jpg` (Netherstorm) are confirmed correct against real
+data. `102.jpg`, `104.jpg`, `105.jpg`, `106.jpg`, `108.jpg` (originally
+filed under the old Zangarmarsh/Blade's Edge Mountains/Nagrand/Shadowmoon
+Valley/Terokkar Forest numbers) are unverified and likely filed under the
+wrong mapID for the same reason - rename them once you have real sightings
+from those zones to confirm the right number.
 
 ## Notes
 
@@ -71,7 +84,7 @@ map IDs occasionally shift between client versions.)
 - No fixed resolution requirement; Leaflet fits it to the view and lets you
   zoom in as far as the source image supports.
 - Nothing here is committed automatically - these are real image files, add
-  them the normal way (`git add web/public/maps/100.jpg`).
+  them the normal way (`git add web/public/maps/1944.jpg`).
 
 ## Continent map images
 

@@ -529,6 +529,16 @@
   border-top: 1px solid var(--border);
 }
 
+.map-caveat-note {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  background: var(--flag-bg);
+  color: var(--flag);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
 .map-missing-note h3 {
   font-size: 13px;
   margin-bottom: 6px;
