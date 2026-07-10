@@ -198,11 +198,33 @@ even by profile:
 - `ShareToGuild` — whether the comm mesh is on at all; if off, `relayed` rows simply won't exist for that character.
 - `FilteredZones`, `Enabled*` zone-gating toggles — whether detection runs at all in a given zone/instance type. A gap in the sighting timeline could mean "nothing happened" or "the addon was configured off there" — these settings aren't recorded per-sighting, so there's no way to distinguish the two from the data alone.
 
+## Transport + web app (built)
+
+Both transport options described above are now implemented:
+
+- **In-game export string** — `HordeWatch/Export.lua` adds `/hw export` (sightings
+  since the last export) and `/hw export all` (full log), shown in a copyable
+  dialog. Pipeline: `AceSerializer:Serialize` → `LibDeflate:CompressZlib`
+  (vendored in `HordeWatch/Libs/LibDeflate/`) → `LibDeflate:EncodeForPrint`.
+  Exported rows are the full sighting record shape documented above, not the
+  stripped-down comm payload.
+- **Offline parser** — `tools/parse-savedvariables` (Node) walks a `WTF/Account`
+  tree (or a single file) and converts `HordeWatchCharDB.Sightings` to JSON via
+  `luaparse`, tagging each row with `sourceCharacter`/`sourceRealm` since `id`
+  is only unique per-character.
+- **Web app** — `web/` (React + Vite + TS) decodes the export string entirely
+  client-side (a byte-exact JS port of LibDeflate's print encoding + AceSerializer's
+  deserializer, verified against real Lua-produced output — see
+  `web/scripts/manual-fixture-test.ts`) or ingests the parser's JSON, merges
+  multiple imports/characters, and persists to `localStorage`. Table view
+  (filter/sort) is primary; a zone scatter view plots `mapX`/`mapY` against a
+  plain placeholder square (see gap #1 below — no real map art yet).
+
 ## What's still missing (the actual gap)
 
-1. **No transport mechanism** — see "Where the data lives" above. This is the real blocker; nothing else here matters until data can get off the client.
-2. **No basemap imagery** — `worldX`/`worldY`/`continentID` give coordinates, not the underlying continent map images to render them against. That's Blizzard game art, not something this addon extracts or ships (copyright/ToS territory distinct from the gameplay-API data collection everything else here relies on). Source separately (community projects like Wowhead's interactive maps or wow.tools' asset exports are the normal route).
-3. **`HereBeDragons-2.0` coordinate output is unverified against a live client** — built and syntax-checked by reading the library's documented API, but there's no WoW client in the dev environment this was built in to confirm the numbers come out sane in practice. Worth a sanity check in-game before building extensively on top of `worldX`/`worldY`.
+1. **No basemap imagery** — `worldX`/`worldY`/`continentID` give coordinates, not the underlying continent map images to render them against. That's Blizzard game art, not something this addon extracts or ships (copyright/ToS territory distinct from the gameplay-API data collection everything else here relies on). Source separately (community projects like Wowhead's interactive maps or wow.tools' asset exports are the normal route). The web app's zone view currently plots `mapX`/`mapY` in a plain square for this reason.
+2. **`HereBeDragons-2.0` coordinate output is unverified against a live client** — built and syntax-checked by reading the library's documented API, but there's no WoW client in the dev environment this was built in to confirm the numbers come out sane in practice. Worth a sanity check in-game before building extensively on top of `worldX`/`worldY`.
+3. **The addon's export/JS-decode pipeline is unverified against a live client too** — round-tripped against the *real* vendored `LibDeflate.lua`/`AceSerializer-3.0.lua` under a standalone Lua interpreter (not WoW), and the JS port matches that byte-for-byte, but `/hw export` itself hasn't been run in an actual WoW client. Worth confirming the popup/edit-box UI behaves and the string pastes cleanly before relying on it.
 
 ## File map (addon source, for anything not covered above)
 
@@ -211,5 +233,6 @@ even by profile:
 - `HordeWatch/Detection.lua` — the five detection triggers, how each populates a record.
 - `HordeWatch/Data.lua` — record shape, collapse/merge logic, retention/pruning.
 - `HordeWatch/Comm.lua` — guild broadcast/receive, wire payload, validation.
+- `HordeWatch/Export.lua` — builds the copy-pasteable export string (see "Transport + web app" above).
 - `HordeWatch/Options.lua` — the settings panel (source of truth for every user-tunable value).
 - `HordeWatch/UI.lua`, `MinimapIcon.lua` — in-game display only, not relevant to the data model.
