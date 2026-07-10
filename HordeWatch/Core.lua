@@ -12,6 +12,7 @@ local Defaults = {
 		Enabled = true,
 		ShareToGuild = true,
 		ShowWindow = true,
+		minimap = { hide = false },
 
 		EnabledInSanctuaries = false,
 		EnabledInBattlegrounds = true,
@@ -65,6 +66,7 @@ function HW:OnInitialize()
 	self:RegisterChatCommand("hordewatch", "SlashCommand")
 
 	if self.SetupOptions then self:SetupOptions() end
+	if self.SetupMinimapIcon then self:SetupMinimapIcon() end
 end
 
 function HW:OnEnable()

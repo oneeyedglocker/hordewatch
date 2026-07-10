@@ -54,6 +54,18 @@ local options = {
 					get = get,
 					set = set,
 				},
+				ShowMinimapIcon = {
+					type = "toggle",
+					name = "Show minimap icon",
+					desc = "Left-click toggles the status window, right-click opens these settings.",
+					order = 4,
+					get = function() return not HW.db.profile.minimap.hide end,
+					set = function(_, value)
+						HW.db.profile.minimap.hide = not value
+						local icon = LibStub("LibDBIcon-1.0")
+						if value then icon:Show("HordeWatch") else icon:Hide("HordeWatch") end
+					end,
+				},
 			},
 		},
 

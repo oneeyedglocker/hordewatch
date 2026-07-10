@@ -16,3 +16,4 @@ Detection.lua
 Comm.lua
 UI.lua
 Options.lua
+MinimapIcon.lua
