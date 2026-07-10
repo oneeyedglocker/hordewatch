@@ -1,0 +1,19 @@
+## Interface: 20505
+## Title: Horde Watch
+## Notes: Tracks and records enemy player sightings (location, class, level, guild) for PvP intel and trend analysis.
+## Author: HordeWatch
+## Version: 0.1.0
+## SavedVariables: HordeWatchDB
+## SavedVariablesPerCharacter: HordeWatchCharDB
+## OptionalDeps: Ace3
+
+Embeds.xml
+
+Core.lua
+Position.lua
+Data.lua
+Detection.lua
+Comm.lua
+UI.lua
+Options.lua
+MinimapIcon.lua
