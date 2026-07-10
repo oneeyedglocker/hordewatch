@@ -49,3 +49,15 @@ export interface ExportPayload {
   exportedAt: number;
   sightings: Sighting[];
 }
+
+// A record of one import action (paste or upload), kept locally so the
+// History view can show what was brought in and when - separate from the
+// Sighting log itself, which has no notion of "when did I import this."
+export interface ImportEvent {
+  id: string;
+  at: number;
+  source: "string" | "json";
+  label: string;
+  count: number;
+  newCount: number;
+}
