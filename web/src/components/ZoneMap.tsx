@@ -42,6 +42,20 @@ export function ZoneMap({ sightings }: Props) {
   const nameQuery = nameFilter.trim().toLowerCase();
   const [guildFilter, setGuildFilter] = useState("");
 
+  // "Expanded" fills the viewport (like a dashboard panel's expand button)
+  // instead of the normal inline size - the map itself doesn't get any
+  // bigger by default since the inline size is still useful for quickly
+  // checking the sightings table alongside it.
+  const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    if (!expanded) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [expanded]);
+
   const guildsPresent = useMemo(() => {
     const set = new Set<string>();
     for (const s of sightings) if (s.guild) set.add(s.guild);
@@ -174,15 +188,23 @@ export function ZoneMap({ sightings }: Props) {
     />
   );
 
+  // Placed last in the controls row so it reads as an action, not a filter.
+  const expandToggle = (
+    <button className="expand-toggle-btn" onClick={() => setExpanded((v) => !v)}>
+      {expanded ? "Collapse map" : "Expand map"}
+    </button>
+  );
+
   if (view === "continent") {
     return (
-      <div className="zone-map-view">
+      <div className={expanded ? "zone-map-view zone-map-view--expanded" : "zone-map-view"}>
         <div className="table-controls">
           {viewToggle}
           {nameFilterInput}
           {guildFilterInput}
           {timeSlider}
           {continentImage.status !== "found" && <span className="muted">No continent image yet.</span>}
+          {expandToggle}
         </div>
 
         <div className="zone-map-body">
@@ -226,7 +248,7 @@ export function ZoneMap({ sightings }: Props) {
   }
 
   return (
-    <div className="zone-map-view">
+    <div className={expanded ? "zone-map-view zone-map-view--expanded" : "zone-map-view"}>
       <div className="table-controls">
         {viewToggle}
         <select value={activeZone ?? ""} onChange={(e) => setZone(e.target.value)}>
@@ -244,6 +266,7 @@ export function ZoneMap({ sightings }: Props) {
         ) : (
           <span className="muted">Positions are zone-relative (0-1), reporter's location at detection time - not a real map image.</span>
         )}
+        {expandToggle}
       </div>
 
       <div className="zone-map-body">

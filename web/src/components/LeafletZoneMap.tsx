@@ -51,7 +51,19 @@ export function LeafletZoneMap({ imageUrl, imageWidth, imageHeight, points, zone
     map.fitBounds(bounds);
     mapRef.current = map;
 
+    // Leaflet sizes its canvas once at init and never re-checks - if the
+    // container is later resized by CSS (e.g. the "expand map" overlay in
+    // ZoneMap.tsx), the map would otherwise stay at its original pixel size
+    // and zoom, just with empty space around it. invalidateSize() alone only
+    // fixes the former, so re-run fitBounds too to rescale to the new size.
+    const resizeObserver = new ResizeObserver(() => {
+      map.invalidateSize();
+      map.fitBounds(bounds);
+    });
+    resizeObserver.observe(containerRef.current);
+
     return () => {
+      resizeObserver.disconnect();
       map.remove();
       mapRef.current = null;
     };
