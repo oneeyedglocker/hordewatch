@@ -1,14 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Sighting } from "../lib/types";
-import {
-  DAY_LABELS,
-  buildDayHourMatrix,
-  buildHourHistogram,
-  hourLabel,
-  predictZone,
-  topZones,
-  type ZonePrediction,
-} from "../lib/fingerprint";
+import { DAY_LABELS, buildDayHourMatrix, buildHourHistogram, hourLabel, topZones } from "../lib/fingerprint";
+import { buildInsights } from "../lib/insights";
 import { SubjectPicker } from "./SubjectPicker";
 
 interface Props {
@@ -18,11 +11,6 @@ interface Props {
   subjectKey: string;
   onSubjectKeyChange: (key: string) => void;
 }
-
-// Below this many total sightings for the subject, even a "confident" tier
-// (day+hour) is thin enough that the prediction should read as a rough
-// guess, not an assertion.
-const LOW_DATA_THRESHOLD = 8;
 
 const HOUR_CHART_W = 460;
 const HOUR_CHART_H = 160;
@@ -52,28 +40,14 @@ function heatOpacity(count: number, max: number): number {
   return MIN_OPACITY + t * (1 - MIN_OPACITY);
 }
 
-function basisText(p: ZonePrediction, targetDow: number, targetHour: number): string {
-  const plural = (n: number) => (n === 1 ? "sighting" : "sightings");
-  if (p.basis === "day+hour") {
-    // Not "{Day}s" - pluralizing 3-letter abbreviations reads badly ("Thus",
-    // "Suns"), so phrase it around a single instance of the day instead.
-    return `Based on ${p.sampleSize} ${plural(p.sampleSize)} seen on a ${DAY_LABELS[targetDow]} around ${hourLabel(targetHour)}.`;
-  }
-  if (p.basis === "hour-only") {
-    return `Not enough ${DAY_LABELS[targetDow]}-specific history yet - based on ${p.sampleSize} ${plural(
-      p.sampleSize,
-    )} around ${hourLabel(targetHour)} on any day.`;
-  }
-  return `Not enough time-of-day history yet - showing their overall most-sighted zone across ${p.sampleSize} ${plural(
-    p.sampleSize,
-  )}.`;
+// Renders "**text**" as <strong> without pulling in a markdown parser - the
+// insight builder only ever wraps a single zone name per sentence.
+function renderInsightText(text: string) {
+  const parts = text.split("**");
+  return parts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>));
 }
 
 export function ActivityFingerprint({ sightings, subjectKey, onSubjectKeyChange }: Props) {
-  const [predictMode, setPredictMode] = useState<"now" | "custom">("now");
-  const nowForDefaults = new Date();
-  const [customDow, setCustomDow] = useState(nowForDefaults.getDay());
-  const [customHour, setCustomHour] = useState(nowForDefaults.getHours());
   const [hoverHour, setHoverHour] = useState<number | null>(null);
   const [hoverCell, setHoverCell] = useState<{ day: number; hour: number } | null>(null);
 
@@ -100,13 +74,9 @@ export function ActivityFingerprint({ sightings, subjectKey, onSubjectKeyChange 
     return [lo, hi];
   }, [subjectSightings]);
 
-  const now = new Date();
-  const targetDow = predictMode === "now" ? now.getDay() : customDow;
-  const targetHour = predictMode === "now" ? now.getHours() : customHour;
-
-  const prediction = useMemo(
-    () => (subject ? predictZone(subjectSightings, targetDow, targetHour) : null),
-    [subject, subjectSightings, targetDow, targetHour],
+  const insights = useMemo(
+    () => (subject ? buildInsights(subjectSightings, subject.type) : []),
+    [subject, subjectSightings],
   );
 
   const zones = useMemo(() => topZones(subjectSightings, 6), [subjectSightings]);
@@ -143,57 +113,27 @@ export function ActivityFingerprint({ sightings, subjectKey, onSubjectKeyChange 
         <p className="muted">Pick a player or guild to see their activity patterns and a rough guess at where they'll be.</p>
       ) : (
         <>
-          <div className="predict-card">
-            <div className="view-toggle predict-mode-toggle">
-              <button className="view-toggle-btn" aria-current={predictMode === "now"} onClick={() => setPredictMode("now")}>
-                Right now
-              </button>
-              <button className="view-toggle-btn" aria-current={predictMode === "custom"} onClick={() => setPredictMode("custom")}>
-                Pick a time
-              </button>
-            </div>
-
-            {predictMode === "custom" && (
-              <div className="predict-time-pickers">
-                <select value={customDow} onChange={(e) => setCustomDow(Number(e.target.value))}>
-                  {DAY_LABELS.map((d, i) => (
-                    <option key={d} value={i}>
-                      {d}
-                    </option>
-                  ))}
-                </select>
-                <select value={customHour} onChange={(e) => setCustomHour(Number(e.target.value))}>
-                  {Array.from({ length: 24 }, (_, h) => h).map((h) => (
-                    <option key={h} value={h}>
-                      {hourLabel(h)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {prediction ? (
-              <div className="predict-result">
-                <div className="predict-zone">
-                  <span className="predict-eyebrow">Most likely in</span>
-                  <span className="predict-zone-name">{prediction.zone}</span>
-                </div>
-                <p className="muted predict-basis">{basisText(prediction, targetDow, targetHour)}</p>
-                {prediction.runnerUp && (
-                  <p className="muted predict-runnerup">
-                    Runner-up: {prediction.runnerUp[0]} ({prediction.runnerUp[1]})
-                  </p>
-                )}
-                {subjectSightings.length < LOW_DATA_THRESHOLD && (
-                  <p className="predict-caveat">
-                    Only {subjectSightings.length} sighting{subjectSightings.length === 1 ? "" : "s"} total for {subject.value} -
-                    treat this as a rough guess, not a guarantee.
-                  </p>
-                )}
-              </div>
+          <div className="insights-card">
+            <h3 className="insights-title">Trending snapshot &amp; predictions</h3>
+            {insights.length === 0 ? (
+              <p className="muted">
+                Not enough sightings yet to generate a snapshot for {subject.value} - patterns and predictions need at
+                least a handful of hits to say anything meaningful.
+              </p>
             ) : (
-              <p className="muted">No positional data for {subject.value} yet.</p>
+              <ul className="insights-list">
+                {insights.map((insight, i) => (
+                  <li key={i} className={`insights-item insights-item--${insight.kind}`}>
+                    {renderInsightText(insight.text)}
+                  </li>
+                ))}
+              </ul>
             )}
+            <p className="muted insights-footnote">
+              These are frequency patterns read from logged sightings, not a trained model - treat them as leads, not
+              guarantees. Kill/death counts aren&apos;t tracked yet either, since the addon only logs sightings
+              (position + time), not combat outcomes.
+            </p>
           </div>
 
           <div className="trend-cols fingerprint-charts">
