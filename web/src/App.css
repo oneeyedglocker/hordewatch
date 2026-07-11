@@ -832,10 +832,28 @@
   margin-bottom: 18px;
 }
 
+.insights-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
 .insights-title {
   font-size: 13px;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin-bottom: 0;
+}
+
+.insights-verbose-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
 }
 
 .insights-list {
@@ -857,6 +875,19 @@
 
 .insights-item--caveat {
   color: var(--text-secondary);
+}
+
+.insights-debug {
+  font-size: 11px;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color: var(--text-muted);
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  margin-top: 4px;
+  white-space: pre-wrap;
+  line-height: 1.4;
 }
 
 .insights-footnote {
