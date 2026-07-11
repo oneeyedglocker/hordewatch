@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Sighting } from "../lib/types";
 import { DAY_LABELS, buildDayHourMatrix, buildHourHistogram, hourLabel, topZones } from "../lib/fingerprint";
-import { buildInsights } from "../lib/insights";
+import { buildInsights, type InsightDebug } from "../lib/insights";
 import { SubjectPicker } from "./SubjectPicker";
 
 interface Props {
@@ -47,9 +47,23 @@ function renderInsightText(text: string) {
   return parts.map((part, i) => (i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>));
 }
 
+// One compact line summarizing exactly why an insight fired (or how
+// confident it is) - the raw numbers behind the plain-English sentence,
+// for auditing a claim rather than just trusting it.
+function formatDebug(debug: InsightDebug): string {
+  const parts: string[] = [`n=${debug.sampleSize}`];
+  if (debug.weightedSampleSize !== undefined) parts.push(`weighted n=${debug.weightedSampleSize}`);
+  if (debug.observedSharePct !== undefined) parts.push(`observed share ${debug.observedSharePct}%`);
+  if (debug.confidenceLowerBoundPct !== undefined) parts.push(`Wilson lower bound ${debug.confidenceLowerBoundPct}%`);
+  if (debug.confidence) parts.push(`confidence: ${debug.confidence}`);
+  if (debug.note) parts.push(debug.note);
+  return parts.join(" · ");
+}
+
 export function ActivityFingerprint({ sightings, subjectKey, onSubjectKeyChange }: Props) {
   const [hoverHour, setHoverHour] = useState<number | null>(null);
   const [hoverCell, setHoverCell] = useState<{ day: number; hour: number } | null>(null);
+  const [verbose, setVerbose] = useState(false);
 
   const subject = useMemo(() => {
     if (!subjectKey) return null;
@@ -114,7 +128,13 @@ export function ActivityFingerprint({ sightings, subjectKey, onSubjectKeyChange 
       ) : (
         <>
           <div className="insights-card">
-            <h3 className="insights-title">Trending snapshot &amp; predictions</h3>
+            <div className="insights-header">
+              <h3 className="insights-title">Trending snapshot &amp; predictions</h3>
+              <label className="insights-verbose-toggle">
+                <input type="checkbox" checked={verbose} onChange={(e) => setVerbose(e.target.checked)} />
+                Show details
+              </label>
+            </div>
             {insights.length === 0 ? (
               <p className="muted">
                 Not enough sightings yet to generate a snapshot for {subject.value} - patterns and predictions need at
@@ -125,6 +145,7 @@ export function ActivityFingerprint({ sightings, subjectKey, onSubjectKeyChange 
                 {insights.map((insight, i) => (
                   <li key={i} className={`insights-item insights-item--${insight.kind}`}>
                     {renderInsightText(insight.text)}
+                    {verbose && <div className="insights-debug">{formatDebug(insight.debug)}</div>}
                   </li>
                 ))}
               </ul>

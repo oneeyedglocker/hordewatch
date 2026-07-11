@@ -1,4 +1,5 @@
 import type { Sighting } from "./types";
+import { type Confidence, confidenceFromLowerBound, recencyWeight, wilsonLowerBound } from "./confidence";
 
 export const DAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -49,11 +50,19 @@ function hourDistance(a: number, b: number): number {
 
 export interface ZonePrediction {
   zone: string;
-  count: number;
+  /** Recency-weighted vote share the winning zone got within its tier's
+   * rows (0-1) - NOT a raw count; see recencyWeight in confidence.ts. */
+  weightedShare: number;
+  /** Raw (unweighted) number of rows backing the winning tier - the number
+   * to show a human, since "12.4 weighted sightings" reads oddly. */
   sampleSize: number;
   /** Which fallback tier produced this guess - see predictZone. */
   basis: "day+hour" | "hour-only" | "overall";
   runnerUp?: [string, number];
+  confidence: Confidence;
+  /** Wilson lower-bound of the winning zone's weighted share, as a 0-100
+   * percent - the number confidence is actually derived from. */
+  confidenceLowerBoundPct: number;
 }
 
 // A +/-1hr window around the target hour, so "8pm" also counts 7-9pm
@@ -64,11 +73,19 @@ const HOUR_WINDOW = 1;
 const MIN_SAMPLE = 3;
 
 /** Frequency-based "prediction" - NOT a trained model, just "where has this
- * player/guild historically been seen closest to this day+hour." Falls back
+ * player/guild historically been seen closest to this day+hour," weighted so
+ * recent sightings count more than old ones (see recencyWeight). Falls back
  * from day+hour -> any-day hour-of-day -> the subject's all-time top zone as
  * the matching window gets too sparse to trust, and reports which tier won
- * so the UI can be honest about how much it's guessing. */
-export function predictZone(sightings: Sighting[], targetDow: number, targetHour: number): ZonePrediction | null {
+ * plus a Wilson-score confidence on the winning zone's share so the UI can
+ * be honest about how much it's guessing. `now` is exposed for testing -
+ * production callers should leave it as the real wall-clock default. */
+export function predictZone(
+  sightings: Sighting[],
+  targetDow: number,
+  targetHour: number,
+  now: number = Date.now() / 1000,
+): ZonePrediction | null {
   const withZone = sightings.filter((s) => s.zone);
   if (withZone.length === 0) return null;
 
@@ -90,10 +107,24 @@ export function predictZone(sightings: Sighting[], targetDow: number, targetHour
     basis = "overall";
   }
 
-  const counts = new Map<string, number>();
-  for (const s of rows) counts.set(s.zone, (counts.get(s.zone) ?? 0) + 1);
-  const sorted = Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+  const weighted = new Map<string, number>();
+  let totalWeight = 0;
+  for (const s of rows) {
+    const w = recencyWeight(s.ts, now);
+    weighted.set(s.zone, (weighted.get(s.zone) ?? 0) + w);
+    totalWeight += w;
+  }
+  const sorted = Array.from(weighted.entries()).sort((a, b) => b[1] - a[1]);
   if (sorted.length === 0) return null;
-  const [zone, count] = sorted[0];
-  return { zone, count, sampleSize: rows.length, basis, runnerUp: sorted[1] };
+  const [zone, weight] = sorted[0];
+  const lowerBound = wilsonLowerBound(weight, totalWeight);
+  return {
+    zone,
+    weightedShare: totalWeight > 0 ? weight / totalWeight : 0,
+    sampleSize: rows.length,
+    basis,
+    runnerUp: sorted[1] ? [sorted[1][0], Math.round(sorted[1][1] * 10) / 10] : undefined,
+    confidence: confidenceFromLowerBound(lowerBound),
+    confidenceLowerBoundPct: Math.round(lowerBound * 100),
+  };
 }
