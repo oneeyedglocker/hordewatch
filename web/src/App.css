@@ -588,7 +588,8 @@
 }
 
 .zone-map-view--expanded .zone-map-legend {
-  flex: 0 0 220px;
+  flex: 0 0 260px;
+  overflow-y: auto;
 }
 
 .leaflet-zone-map .leaflet-tooltip {
@@ -625,12 +626,89 @@
 }
 
 .zone-map-legend {
-  min-width: 160px;
+  min-width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .zone-map-legend h3 {
   font-size: 13px;
   margin-bottom: 8px;
+}
+
+/* ---------- presence list (who's actually here, per zone/time) ---------- */
+.presence-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.presence-tabs {
+  align-self: stretch;
+}
+
+.presence-tabs .view-toggle-btn {
+  flex: 1;
+}
+
+.presence-search {
+  width: 100%;
+}
+
+.presence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.presence-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.presence-row:hover {
+  background: var(--surface-2);
+}
+
+.presence-row[aria-current="true"] {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.presence-count {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+}
+
+.presence-row[aria-current="true"] .presence-count {
+  color: var(--accent);
+}
+
+.presence-empty {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.presence-filter-note {
+  font-size: 11.5px;
 }
 
 .legend-row {

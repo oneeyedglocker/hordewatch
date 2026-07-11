@@ -40,6 +40,12 @@ export function LeafletZoneMap({ imageUrl, imageWidth, imageHeight, points, zone
       crs: L.CRS.Simple,
       minZoom: -2,
       maxZoom: 3,
+      // Leaflet's default zoomSnap (1) forces fitBounds() onto the nearest
+      // whole zoom level, which is very often well short of what the
+      // container can actually fit - the image then renders far smaller
+      // than its container with dead space around it. 0 lets fitBounds use
+      // a continuous zoom that actually fills the space.
+      zoomSnap: 0,
       attributionControl: false,
       // Extra SVG renderer padding so markers away from the initial
       // viewport center don't land outside the renderer's bounds and

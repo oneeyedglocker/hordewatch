@@ -91,6 +91,12 @@ export function LeafletContinentMap({ imageUrl, imageWidth, imageHeight, points,
       // container (and clipping the marker positions nearest its edges).
       minZoom: -7,
       maxZoom: 3,
+      // Leaflet's default zoomSnap (1) forces fitBounds() onto the nearest
+      // whole zoom level, which is very often well short of what the
+      // container can actually fit - the image then renders far smaller
+      // than its container with dead space around it. 0 lets fitBounds use
+      // a continuous zoom that actually fills the space.
+      zoomSnap: 0,
       attributionControl: false,
       // Default SVG renderer bounds are only padded 10% past the current
       // viewport - at this image's scale (16384x12800), markers away from
