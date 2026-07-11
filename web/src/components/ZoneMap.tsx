@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Sighting } from "../lib/types";
 import { classColor } from "../lib/classColors";
 import { relativeTime } from "../lib/format";
@@ -6,6 +6,7 @@ import { useZoneImage } from "../lib/useZoneImage";
 import { useContinentImage } from "../lib/useContinentImage";
 import { LeafletZoneMap } from "./LeafletZoneMap";
 import { LeafletContinentMap } from "./LeafletContinentMap";
+import { TimeRangeSlider } from "./TimeRangeSlider";
 
 interface Props {
   sightings: Sighting[];
@@ -39,14 +40,44 @@ export function ZoneMap({ sightings }: Props) {
   const [view, setView] = useState<"zone" | "continent">("zone");
   const [nameFilter, setNameFilter] = useState("");
   const nameQuery = nameFilter.trim().toLowerCase();
+  const [guildFilter, setGuildFilter] = useState("");
+
+  const guildsPresent = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of sightings) if (s.guild) set.add(s.guild);
+    return Array.from(set).sort();
+  }, [sightings]);
+
+  // Full available range across every sighting, regardless of current
+  // filters - this is what bounds the slider. `timeRange` is the user's
+  // current selection within that; it only gets auto-initialized to the
+  // full range once, the first time data shows up, so later re-imports that
+  // extend the range don't silently reset a window the user already picked.
+  const dataTsRange = useMemo<[number, number] | null>(() => {
+    let lo = Infinity;
+    let hi = -Infinity;
+    for (const s of sightings) {
+      if (s.ts < lo) lo = s.ts;
+      if (s.ts > hi) hi = s.ts;
+    }
+    return lo <= hi ? [lo, hi] : null;
+  }, [sightings]);
+
+  const [timeRange, setTimeRange] = useState<[number, number] | null>(null);
+  useEffect(() => {
+    if (timeRange === null && dataTsRange) setTimeRange(dataTsRange);
+  }, [dataTsRange, timeRange]);
+  const effectiveTimeRange = timeRange ?? dataTsRange;
 
   const continentPoints = useMemo(() => {
     let rows = sightings.filter(
       (s) => s.continentID !== undefined && OUTLAND_CONTINENT_IDS.has(s.continentID) && s.worldX !== undefined && s.worldY !== undefined,
     );
     if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
+    if (guildFilter) rows = rows.filter((s) => s.guild === guildFilter);
+    if (effectiveTimeRange) rows = rows.filter((s) => s.ts >= effectiveTimeRange[0] && s.ts <= effectiveTimeRange[1]);
     return rows;
-  }, [sightings, nameQuery]);
+  }, [sightings, nameQuery, guildFilter, effectiveTimeRange]);
   const continentImage = useContinentImage(OUTLAND_CONTINENT_ID);
 
   const zoneStats = useMemo(() => {
@@ -61,17 +92,26 @@ export function ZoneMap({ sightings }: Props) {
   const [zone, setZone] = useState<string | null>(null);
   const activeZone = zone ?? zoneStats[0]?.[0] ?? null;
 
-  const points = useMemo(() => {
+  // Unfiltered by name/guild/time - just "does this zone have an image" and
+  // "what's its mapID" shouldn't depend on whatever the player happens to be
+  // filtering for right now.
+  const zoneSightings = useMemo(() => {
     if (!activeZone) return [];
-    let rows = sightings.filter((s) => s.zone === activeZone && s.mapX !== undefined && s.mapY !== undefined);
-    if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
-    return rows;
-  }, [sightings, activeZone, nameQuery]);
+    return sightings.filter((s) => s.zone === activeZone && s.mapX !== undefined && s.mapY !== undefined);
+  }, [sightings, activeZone]);
 
   // mapID is the addon's stable per-zone key (see DATA_MODEL.md) - zone
   // *name* is just what we group the picker by, so pull mapID from
   // whichever sighting in the group happens to have it.
-  const mapID = useMemo(() => points.find((p) => p.mapID !== undefined)?.mapID, [points]);
+  const mapID = useMemo(() => zoneSightings.find((p) => p.mapID !== undefined)?.mapID, [zoneSightings]);
+
+  const points = useMemo(() => {
+    let rows = zoneSightings;
+    if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
+    if (guildFilter) rows = rows.filter((s) => s.guild === guildFilter);
+    if (effectiveTimeRange) rows = rows.filter((s) => s.ts >= effectiveTimeRange[0] && s.ts <= effectiveTimeRange[1]);
+    return rows;
+  }, [zoneSightings, nameQuery, guildFilter, effectiveTimeRange]);
 
   const classesPresent = useMemo(() => {
     const set = new Set<string>();
@@ -88,7 +128,7 @@ export function ZoneMap({ sightings }: Props) {
     return Array.from(set).sort();
   }, [continentPoints]);
 
-  if (zoneStats.length === 0 && continentPoints.length === 0) {
+  if (zoneStats.length === 0 && continentPoints.length === 0 && !nameQuery && !guildFilter) {
     return <div className="empty-state">No sightings with positional data (mapX/mapY or worldX/worldY) to plot yet.</div>;
   }
 
@@ -113,12 +153,35 @@ export function ZoneMap({ sightings }: Props) {
     />
   );
 
+  const guildFilterInput = guildsPresent.length > 0 && (
+    <select value={guildFilter} onChange={(e) => setGuildFilter(e.target.value)}>
+      <option value="">All guilds</option>
+      {guildsPresent.map((g) => (
+        <option key={g} value={g}>
+          {g}
+        </option>
+      ))}
+    </select>
+  );
+
+  const timeSlider = dataTsRange && effectiveTimeRange && (
+    <TimeRangeSlider
+      min={dataTsRange[0]}
+      max={dataTsRange[1]}
+      start={effectiveTimeRange[0]}
+      end={effectiveTimeRange[1]}
+      onChange={(s, e) => setTimeRange([s, e])}
+    />
+  );
+
   if (view === "continent") {
     return (
       <div className="zone-map-view">
         <div className="table-controls">
           {viewToggle}
           {nameFilterInput}
+          {guildFilterInput}
+          {timeSlider}
           {continentImage.status !== "found" && <span className="muted">No continent image yet.</span>}
         </div>
 
@@ -174,6 +237,8 @@ export function ZoneMap({ sightings }: Props) {
           ))}
         </select>
         {nameFilterInput}
+        {guildFilterInput}
+        {timeSlider}
         {zoneImage.status === "found" ? (
           <span className="muted">Real zone map - positions are the reporter's location at detection time.</span>
         ) : (

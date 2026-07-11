@@ -254,6 +254,16 @@ coordinate space at all (see gap #2 below). Only Outland is wired up so
 far; Eastern Kingdoms/Kalimdor would need their own continent image plus a
 similarly landmark-calibrated transform following the same pattern.
 
+Both map views also support a player-name filter, a guild filter, and a
+draggable dual-handle time-range slider (`web/src/components/TimeRangeSlider.tsx`),
+all combinable. Whenever the current filter narrows the plotted points down
+to 10 or fewer distinct players, each of their sightings gets connected into
+its own chronological trail line (`web/src/lib/trails.ts`) - dragging the
+time slider scrubs that trail in and out. This is what makes "one player's
+movement" or "this whole guild's movement, together" visible as an actual
+path instead of a scatter of unconnected dots - the guild-fingerprint and
+predicted-location ideas both build on this same mechanism.
+
 ## What's still missing (the actual gap)
 
 1. **Real client data disproved this doc's earlier confident assumption about TBC Classic's `mapID` numbers - fixed for 6 of 7 Outland zones.** This repo initially shipped zone images under old textbook values (Hellfire Peninsula = 100, Netherstorm = 109, etc.). Real `/hw pos` readings showed this client's actual `C_Map.GetBestMapForUnit()` values are completely different: Hellfire Peninsula = 1944, Netherstorm = 1953, Shadowmoon Valley = 1948, Terokkar Forest = 1952, Nagrand = 1951, Zangarmarsh = 1946. All six zone images are renamed accordingly. Only **Blade's Edge Mountains (`104.jpg`)** is still filed under an unconfirmed guessed mapID, pending a real sighting from that zone. **Lesson: don't trust "well-documented" WoW ID numbers without checking them against this specific client's actual output** — see `web/public/maps/README.md`.
@@ -261,7 +271,7 @@ similarly landmark-calibrated transform following the same pattern.
 3. **`HereBeDragons-2.0` coordinate output is otherwise unverified against a live client** — built and syntax-checked by reading the library's documented API; item 2 above is the first concrete real-client discrepancy found (in wow.export's corner metadata, not in HereBeDragons itself, which appears to be working correctly).
 4. **The addon's export/JS-decode pipeline is unverified against a live client too** — round-tripped against the *real* vendored `LibDeflate.lua`/`AceSerializer-3.0.lua` under a standalone Lua interpreter (not WoW), and the JS port matches that byte-for-byte, but `/hw export` itself hasn't been run in an actual WoW client. Worth confirming the popup/edit-box UI behaves and the string pastes cleanly before relying on it. (This one's likely fine in practice — real exported data has now round-tripped through this pipeline, per items 1-2 above — but hasn't been explicitly called out as confirmed until now.)
 5. **Only Outland has a continent map** — Eastern Kingdoms/Kalimdor would need their own continent image + a similarly landmark-calibrated affine transform (see "Zone map imagery" above) before the continent toggle covers them.
-6. **No time-based playback** — every sighting already carries `ts`; a time-slider style scrub through the log (à la ArcGIS's TimeSlider or kepler.gl's trajectory playback) to watch movement patterns emerge over a session was considered and deliberately deferred as lower priority than getting the basemap itself working.
+6. **Time-based playback is now built** (see "Zone map imagery" above) — a draggable time-range slider plus per-player trail lines on both map views, combinable with the player-name and guild filters. What's *not* built yet: actual pattern prediction ("where is this player/guild likely to be at 8pm based on history") - right now you can manually narrow the time slider to a similar hour across multiple days and eyeball the pattern, but there's no automated "most likely zone at time T" summary. That'd need bucketing historical sightings by hour-of-day/day-of-week per player or guild and surfacing the top zones for a given bucket - a natural next step on top of the same data, not yet built.
 
 ## File map (addon source, for anything not covered above)
 

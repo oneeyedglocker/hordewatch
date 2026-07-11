@@ -4,6 +4,7 @@ import "leaflet/dist/leaflet.css";
 import type { Sighting } from "../lib/types";
 import { classColor } from "../lib/classColors";
 import { absoluteTime, relativeTime } from "../lib/format";
+import { buildTrails } from "../lib/trails";
 
 interface Props {
   imageUrl: string;
@@ -115,27 +116,47 @@ export function LeafletContinentMap({ imageUrl, imageWidth, imageHeight, points,
 
     const ringColor = getComputedStyle(document.documentElement).getPropertyValue("--surface-1").trim() || "#fff";
 
-    const markers = points
-      .filter((p) => p.worldX !== undefined && p.worldY !== undefined)
-      .map((p) => {
-        const marker = L.circleMarker(toLatLng(p.worldX!, p.worldY!, p.continentID ?? 530), {
-          radius: 5,
-          weight: 2,
-          color: ringColor,
-          fillColor: classColor(p.class),
-          fillOpacity: 1,
-        });
-        marker.bindTooltip(
-          `<b>${p.player}</b>${p.class ? ` (${p.class}${p.level ? " " + p.level : ""})` : ""}<br/>${p.zone ?? ""}<br/>${relativeTime(
-            p.ts,
-          )} &middot; <span title="${absoluteTime(p.ts)}">${p.method}</span>`,
-        );
-        marker.addTo(map);
-        return marker;
+    const withCoords = points.filter((p) => p.worldX !== undefined && p.worldY !== undefined);
+
+    const markers = withCoords.map((p) => {
+      const marker = L.circleMarker(toLatLng(p.worldX!, p.worldY!, p.continentID ?? 530), {
+        radius: 5,
+        weight: 2,
+        color: ringColor,
+        fillColor: classColor(p.class),
+        fillOpacity: 1,
       });
+      marker.bindTooltip(
+        `<b>${p.player}</b>${p.class ? ` (${p.class}${p.level ? " " + p.level : ""})` : ""}<br/>${p.zone ?? ""}<br/>${relativeTime(
+          p.ts,
+        )} &middot; <span title="${absoluteTime(p.ts)}">${p.method}</span>`,
+      );
+      marker.addTo(map);
+      return marker;
+    });
+
+    // A trail per player (chronological path across their own sightings) -
+    // only drawn when few enough distinct players are in view for it to add
+    // clarity instead of spaghetti (see buildTrails). The most recent point
+    // in each trail gets a bigger ring so direction ("this is where they
+    // were headed") is readable from the dot sizes alone.
+    const trailLines: L.Polyline[] = [];
+    for (const trail of buildTrails(withCoords)) {
+      const latlngs = trail.map((p) => toLatLng(p.worldX!, p.worldY!, p.continentID ?? 530));
+      trailLines.push(
+        L.polyline(latlngs, { color: ringColor, weight: 2, opacity: 0.55, dashArray: "4,6" }).addTo(map),
+      );
+      const lastMarker = markers.find((m) => {
+        const ll = m.getLatLng();
+        const target = latlngs[latlngs.length - 1];
+        return ll.lat === target[0] && ll.lng === target[1];
+      });
+      lastMarker?.setRadius(8);
+    }
 
     return () => {
       for (const m of markers) m.remove();
+      for (const t of trailLines) t.remove();
     };
   }, [points, imageWidth, imageHeight]);
 
