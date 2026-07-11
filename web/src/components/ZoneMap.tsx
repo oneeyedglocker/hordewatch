@@ -8,8 +8,6 @@ import { LeafletZoneMap } from "./LeafletZoneMap";
 import { LeafletContinentMap } from "./LeafletContinentMap";
 import { TimeRangeSlider } from "./TimeRangeSlider";
 import { PresenceList } from "./PresenceList";
-import { PlaybackControls } from "./PlaybackControls";
-import { trailWindowFor, usePlayback } from "../lib/usePlayback";
 
 interface Props {
   sightings: Sighting[];
@@ -80,12 +78,6 @@ export function ZoneMap({ sightings }: Props) {
   }, [dataTsRange, timeRange]);
   const effectiveTimeRange = timeRange ?? dataTsRange;
 
-  // Play/pause/seek across the selected time range - see usePlayback.ts.
-  // `active` only turns on from an explicit play/seek, never just because
-  // effectiveTimeRange moved, so narrowing the range slider on its own
-  // never silently drops you into playback mode.
-  const playback = usePlayback(effectiveTimeRange?.[0] ?? 0, effectiveTimeRange?.[1] ?? 0);
-
   // Continent-eligible sightings within the current time window, but NOT
   // yet narrowed by name/guild - this is the pool the presence list picks
   // from, so it only ever offers players/guilds that actually have a
@@ -98,21 +90,12 @@ export function ZoneMap({ sightings }: Props) {
     return rows;
   }, [sightings, effectiveTimeRange]);
 
-  // While playback is active, narrow further to a trailing window around
-  // the playhead - this is what makes it look like movement instead of a
-  // pile of every sighting in the whole range at once.
-  const continentPlaybackSightings = useMemo(() => {
-    if (!playback.active || !effectiveTimeRange) return continentTimeSightings;
-    const window = trailWindowFor(effectiveTimeRange[0], effectiveTimeRange[1]);
-    return continentTimeSightings.filter((s) => s.ts >= playback.playhead - window && s.ts <= playback.playhead);
-  }, [continentTimeSightings, playback.active, playback.playhead, effectiveTimeRange]);
-
   const continentPoints = useMemo(() => {
-    let rows = continentPlaybackSightings;
+    let rows = continentTimeSightings;
     if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
     if (guildFilter) rows = rows.filter((s) => s.guild === guildFilter);
     return rows;
-  }, [continentPlaybackSightings, nameQuery, guildFilter]);
+  }, [continentTimeSightings, nameQuery, guildFilter]);
   const continentImage = useContinentImage(OUTLAND_CONTINENT_ID);
 
   const zoneStats = useMemo(() => {
@@ -157,21 +140,12 @@ export function ZoneMap({ sightings }: Props) {
     return zoneSightings.filter((s) => s.ts >= effectiveTimeRange[0] && s.ts <= effectiveTimeRange[1]);
   }, [zoneSightings, effectiveTimeRange]);
 
-  // While playback is active, narrow further to a trailing window around
-  // the playhead - this is what makes it look like movement instead of a
-  // pile of every sighting in the whole range at once.
-  const zonePlaybackSightings = useMemo(() => {
-    if (!playback.active || !effectiveTimeRange) return zoneTimeSightings;
-    const window = trailWindowFor(effectiveTimeRange[0], effectiveTimeRange[1]);
-    return zoneTimeSightings.filter((s) => s.ts >= playback.playhead - window && s.ts <= playback.playhead);
-  }, [zoneTimeSightings, playback.active, playback.playhead, effectiveTimeRange]);
-
   const points = useMemo(() => {
-    let rows = zonePlaybackSightings;
+    let rows = zoneTimeSightings;
     if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
     if (guildFilter) rows = rows.filter((s) => s.guild === guildFilter);
     return rows;
-  }, [zonePlaybackSightings, nameQuery, guildFilter]);
+  }, [zoneTimeSightings, nameQuery, guildFilter]);
 
   const classesPresent = useMemo(() => {
     const set = new Set<string>();
@@ -228,22 +202,6 @@ export function ZoneMap({ sightings }: Props) {
     </p>
   );
 
-  const playbackControls = dataTsRange && effectiveTimeRange && (
-    <PlaybackControls
-      start={effectiveTimeRange[0]}
-      end={effectiveTimeRange[1]}
-      playhead={playback.playhead}
-      playing={playback.playing}
-      active={playback.active}
-      speedIdx={playback.speedIdx}
-      onPlay={playback.play}
-      onPause={playback.pause}
-      onSeek={playback.seek}
-      onSpeedChange={playback.setSpeedIdx}
-      onShowFullRange={playback.showFullRange}
-    />
-  );
-
   if (view === "continent") {
     return (
       <div className={expanded ? "zone-map-view zone-map-view--expanded" : "zone-map-view"}>
@@ -253,7 +211,6 @@ export function ZoneMap({ sightings }: Props) {
           {continentImage.status !== "found" && <span className="muted">No continent image yet.</span>}
           {expandToggle}
         </div>
-        {playbackControls}
 
         <div className="zone-map-body">
           {continentImage.status === "found" ? (
@@ -275,7 +232,7 @@ export function ZoneMap({ sightings }: Props) {
 
           <div className="zone-map-legend">
             <PresenceList
-              sightings={continentPlaybackSightings}
+              sightings={continentTimeSightings}
               nameFilter={nameFilter}
               onNameFilterChange={setNameFilter}
               guildFilter={guildFilter}
@@ -322,7 +279,6 @@ export function ZoneMap({ sightings }: Props) {
         )}
         {expandToggle}
       </div>
-      {playbackControls}
 
       <div className="zone-map-body">
         {zoneImage.status === "found" ? (
@@ -387,7 +343,7 @@ export function ZoneMap({ sightings }: Props) {
 
         <div className="zone-map-legend">
           <PresenceList
-            sightings={zonePlaybackSightings}
+            sightings={zoneTimeSightings}
             nameFilter={nameFilter}
             onNameFilterChange={setNameFilter}
             guildFilter={guildFilter}
