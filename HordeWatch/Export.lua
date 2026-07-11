@@ -45,7 +45,12 @@ end
 -- @param all if true, export the entire log; otherwise only sightings added
 --   since the last export (tracked via charDB.LastExportedId), so repeated
 --   exports across a play session stay small.
--- @return encoded string (nil if nothing to export), number of rows exported
+-- @return encoded string (nil if nothing to export), number of rows exported,
+--   the watermark value the caller should commit via HW:CommitExportWatermark
+--   once the export has actually been shown to the player - NOT done here,
+--   so a failure between building the string and displaying it (e.g. the
+--   dialog itself erroring out) can't silently mark rows as "exported" that
+--   the player never actually got to see or copy.
 function HW:BuildExportString(all)
 	local db = self.charDB
 	local watermark = db.LastExportedId or 0
@@ -70,15 +75,20 @@ function HW:BuildExportString(all)
 	local compressed = LibDeflate:CompressZlib(serialized)
 	local encoded = LibDeflate:EncodeForPrint(compressed)
 
-	-- Advance the watermark regardless of `all` so the *next* export - full
-	-- or incremental - doesn't resend rows we just handed over.
 	local maxId = watermark
 	for _, rec in ipairs(rows) do
 		if rec.id and rec.id > maxId then maxId = rec.id end
 	end
-	db.LastExportedId = maxId
 
-	return encoded, #rows
+	return encoded, #rows, maxId
+end
+
+-- Only actually advances the watermark - see BuildExportString's doc comment
+-- for why this is a separate step instead of happening inline there. Safe to
+-- call more than once/never: if it's skipped (dialog never actually closed),
+-- the worst case is those rows get resent in a future export, not lost.
+function HW:CommitExportWatermark(maxId)
+	self.charDB.LastExportedId = maxId
 end
 
 -- Blizzard's StaticPopup dialogs only pre-create an editBox widget on the
@@ -91,7 +101,7 @@ end
 local exportFrame
 
 function HW:ShowExportDialog(all)
-	local encoded, count = self:BuildExportString(all)
+	local encoded, count, maxId = self:BuildExportString(all)
 	if not encoded then
 		print("|cff33ff99HordeWatch|r nothing new to export" .. (all and "" or " (try '/hw export all' for the full log)"))
 		return
@@ -99,6 +109,10 @@ function HW:ShowExportDialog(all)
 
 	local AceGUI = LibStub("AceGUI-3.0")
 	if exportFrame then
+		-- Deliberately NOT committing the previous dialog's watermark here -
+		-- it's being replaced without the player having closed it, so we
+		-- don't know they actually got to copy it. Those rows will just be
+		-- included again in this (or a future) export instead.
 		AceGUI:Release(exportFrame)
 		exportFrame = nil
 	end
@@ -110,6 +124,10 @@ function HW:ShowExportDialog(all)
 	frame:SetWidth(520)
 	frame:SetHeight(320)
 	frame:SetCallback("OnClose", function(widget)
+		-- Only commit the watermark once the player has actually had the
+		-- dialog in front of them and closed it - see BuildExportString's
+		-- doc comment for why this isn't done earlier.
+		HW:CommitExportWatermark(maxId)
 		AceGUI:Release(widget)
 		exportFrame = nil
 	end)
