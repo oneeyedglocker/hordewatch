@@ -405,6 +405,113 @@
   color: var(--text-muted);
 }
 
+/* ---------- playback (play/pause + scrubber over the selected range) ---------- */
+.playback-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.playback-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.playback-controls select {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 8px;
+  font-size: 12.5px;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+.playback-track {
+  position: relative;
+  flex: 1 1 auto;
+  height: 20px;
+  min-width: 160px;
+}
+
+.playback-scrubber {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  background: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.playback-scrubber::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--accent) var(--pct), var(--border) var(--pct));
+}
+
+.playback-scrubber::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+}
+
+.playback-scrubber::-moz-range-progress {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--accent);
+}
+
+.playback-scrubber::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface-1);
+  margin-top: -5px;
+  cursor: grab;
+}
+
+.playback-scrubber::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface-1);
+  cursor: grab;
+}
+
+.playback-time {
+  font-size: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 130px;
+}
+
+.playback-exit {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
 .table-scroll {
   overflow-x: auto;
   border: 1px solid var(--border);
@@ -653,7 +760,12 @@
 }
 
 .presence-search {
+  /* .text-input's flex: 1 1 220px is sized for a horizontal row - inside
+     this column flex container that basis applies to height instead of
+     width, which is what made this box render enormous. */
+  flex: none;
   width: 100%;
+  min-width: 0;
 }
 
 .presence-list {
