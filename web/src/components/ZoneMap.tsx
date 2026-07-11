@@ -37,14 +37,16 @@ interface Tooltip {
 
 export function ZoneMap({ sightings }: Props) {
   const [view, setView] = useState<"zone" | "continent">("zone");
+  const [nameFilter, setNameFilter] = useState("");
+  const nameQuery = nameFilter.trim().toLowerCase();
 
-  const continentPoints = useMemo(
-    () =>
-      sightings.filter(
-        (s) => s.continentID !== undefined && OUTLAND_CONTINENT_IDS.has(s.continentID) && s.worldX !== undefined && s.worldY !== undefined,
-      ),
-    [sightings],
-  );
+  const continentPoints = useMemo(() => {
+    let rows = sightings.filter(
+      (s) => s.continentID !== undefined && OUTLAND_CONTINENT_IDS.has(s.continentID) && s.worldX !== undefined && s.worldY !== undefined,
+    );
+    if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
+    return rows;
+  }, [sightings, nameQuery]);
   const continentImage = useContinentImage(OUTLAND_CONTINENT_ID);
 
   const zoneStats = useMemo(() => {
@@ -61,8 +63,10 @@ export function ZoneMap({ sightings }: Props) {
 
   const points = useMemo(() => {
     if (!activeZone) return [];
-    return sightings.filter((s) => s.zone === activeZone && s.mapX !== undefined && s.mapY !== undefined);
-  }, [sightings, activeZone]);
+    let rows = sightings.filter((s) => s.zone === activeZone && s.mapX !== undefined && s.mapY !== undefined);
+    if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
+    return rows;
+  }, [sightings, activeZone, nameQuery]);
 
   // mapID is the addon's stable per-zone key (see DATA_MODEL.md) - zone
   // *name* is just what we group the picker by, so pull mapID from
@@ -99,11 +103,22 @@ export function ZoneMap({ sightings }: Props) {
     </div>
   );
 
+  const nameFilterInput = (
+    <input
+      type="text"
+      className="text-input"
+      placeholder="Filter by player name..."
+      value={nameFilter}
+      onChange={(e) => setNameFilter(e.target.value)}
+    />
+  );
+
   if (view === "continent") {
     return (
       <div className="zone-map-view">
         <div className="table-controls">
           {viewToggle}
+          {nameFilterInput}
           {continentImage.status === "found" ? (
             <span className="muted">
               Continuous map across every Outland zone - positions come from worldX/worldY (HereBeDragons), not the
@@ -165,6 +180,7 @@ export function ZoneMap({ sightings }: Props) {
             </option>
           ))}
         </select>
+        {nameFilterInput}
         {zoneImage.status === "found" ? (
           <span className="muted">Real zone map - positions are the reporter's location at detection time.</span>
         ) : (
