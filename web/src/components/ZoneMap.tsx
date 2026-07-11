@@ -7,6 +7,7 @@ import { useContinentImage } from "../lib/useContinentImage";
 import { LeafletZoneMap } from "./LeafletZoneMap";
 import { LeafletContinentMap } from "./LeafletContinentMap";
 import { TimeRangeSlider } from "./TimeRangeSlider";
+import { PresenceList } from "./PresenceList";
 
 interface Props {
   sightings: Sighting[];
@@ -56,12 +57,6 @@ export function ZoneMap({ sightings }: Props) {
     return () => window.removeEventListener("keydown", onKey);
   }, [expanded]);
 
-  const guildsPresent = useMemo(() => {
-    const set = new Set<string>();
-    for (const s of sightings) if (s.guild) set.add(s.guild);
-    return Array.from(set).sort();
-  }, [sightings]);
-
   // Full available range across every sighting, regardless of current
   // filters - this is what bounds the slider. `timeRange` is the user's
   // current selection within that; it only gets auto-initialized to the
@@ -83,15 +78,24 @@ export function ZoneMap({ sightings }: Props) {
   }, [dataTsRange, timeRange]);
   const effectiveTimeRange = timeRange ?? dataTsRange;
 
-  const continentPoints = useMemo(() => {
+  // Continent-eligible sightings within the current time window, but NOT
+  // yet narrowed by name/guild - this is the pool the presence list picks
+  // from, so it only ever offers players/guilds that actually have a
+  // continent-plottable sighting in this time range.
+  const continentTimeSightings = useMemo(() => {
     let rows = sightings.filter(
       (s) => s.continentID !== undefined && OUTLAND_CONTINENT_IDS.has(s.continentID) && s.worldX !== undefined && s.worldY !== undefined,
     );
-    if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
-    if (guildFilter) rows = rows.filter((s) => s.guild === guildFilter);
     if (effectiveTimeRange) rows = rows.filter((s) => s.ts >= effectiveTimeRange[0] && s.ts <= effectiveTimeRange[1]);
     return rows;
-  }, [sightings, nameQuery, guildFilter, effectiveTimeRange]);
+  }, [sightings, effectiveTimeRange]);
+
+  const continentPoints = useMemo(() => {
+    let rows = continentTimeSightings;
+    if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
+    if (guildFilter) rows = rows.filter((s) => s.guild === guildFilter);
+    return rows;
+  }, [continentTimeSightings, nameQuery, guildFilter]);
   const continentImage = useContinentImage(OUTLAND_CONTINENT_ID);
 
   const zoneStats = useMemo(() => {
@@ -106,7 +110,16 @@ export function ZoneMap({ sightings }: Props) {
   const [zone, setZone] = useState<string | null>(null);
   const activeZone = zone ?? zoneStats[0]?.[0] ?? null;
 
-  // Unfiltered by name/guild/time - just "does this zone have an image" and
+  // A guild/player picked while looking at one zone (or the continent view)
+  // usually stops making sense after switching to another - clearing here
+  // is what actually prevents the "still filtered by something with zero
+  // data here" problem, rather than just hiding it behind a message.
+  useEffect(() => {
+    setNameFilter("");
+    setGuildFilter("");
+  }, [activeZone, view]);
+
+  // Unfiltered by name/guild - just "does this zone have an image" and
   // "what's its mapID" shouldn't depend on whatever the player happens to be
   // filtering for right now.
   const zoneSightings = useMemo(() => {
@@ -119,13 +132,20 @@ export function ZoneMap({ sightings }: Props) {
   // whichever sighting in the group happens to have it.
   const mapID = useMemo(() => zoneSightings.find((p) => p.mapID !== undefined)?.mapID, [zoneSightings]);
 
+  // Zone sightings within the current time window, but NOT yet narrowed by
+  // name/guild - the pool the presence list picks from, so it only ever
+  // offers players/guilds actually seen in this zone during this window.
+  const zoneTimeSightings = useMemo(() => {
+    if (!effectiveTimeRange) return zoneSightings;
+    return zoneSightings.filter((s) => s.ts >= effectiveTimeRange[0] && s.ts <= effectiveTimeRange[1]);
+  }, [zoneSightings, effectiveTimeRange]);
+
   const points = useMemo(() => {
-    let rows = zoneSightings;
+    let rows = zoneTimeSightings;
     if (nameQuery) rows = rows.filter((s) => s.player.toLowerCase().includes(nameQuery));
     if (guildFilter) rows = rows.filter((s) => s.guild === guildFilter);
-    if (effectiveTimeRange) rows = rows.filter((s) => s.ts >= effectiveTimeRange[0] && s.ts <= effectiveTimeRange[1]);
     return rows;
-  }, [zoneSightings, nameQuery, guildFilter, effectiveTimeRange]);
+  }, [zoneTimeSightings, nameQuery, guildFilter]);
 
   const classesPresent = useMemo(() => {
     const set = new Set<string>();
@@ -142,7 +162,7 @@ export function ZoneMap({ sightings }: Props) {
     return Array.from(set).sort();
   }, [continentPoints]);
 
-  if (zoneStats.length === 0 && continentPoints.length === 0 && !nameQuery && !guildFilter) {
+  if (zoneStats.length === 0 && continentTimeSightings.length === 0 && !nameQuery && !guildFilter) {
     return <div className="empty-state">No sightings with positional data (mapX/mapY or worldX/worldY) to plot yet.</div>;
   }
 
@@ -155,27 +175,6 @@ export function ZoneMap({ sightings }: Props) {
         Outland (all zones)
       </button>
     </div>
-  );
-
-  const nameFilterInput = (
-    <input
-      type="text"
-      className="text-input"
-      placeholder="Filter by player name..."
-      value={nameFilter}
-      onChange={(e) => setNameFilter(e.target.value)}
-    />
-  );
-
-  const guildFilterInput = guildsPresent.length > 0 && (
-    <select value={guildFilter} onChange={(e) => setGuildFilter(e.target.value)}>
-      <option value="">All guilds</option>
-      {guildsPresent.map((g) => (
-        <option key={g} value={g}>
-          {g}
-        </option>
-      ))}
-    </select>
   );
 
   const timeSlider = dataTsRange && effectiveTimeRange && (
@@ -195,13 +194,19 @@ export function ZoneMap({ sightings }: Props) {
     </button>
   );
 
+  const activeFilterNote = (nameFilter || guildFilter) && (
+    <p className="muted presence-filter-note">
+      Filtering to {nameFilter && <>player &ldquo;{nameFilter}&rdquo;</>}
+      {nameFilter && guildFilter && " in "}
+      {guildFilter && <>guild &ldquo;{guildFilter}&rdquo;</>} - click it again in the list to clear.
+    </p>
+  );
+
   if (view === "continent") {
     return (
       <div className={expanded ? "zone-map-view zone-map-view--expanded" : "zone-map-view"}>
         <div className="table-controls">
           {viewToggle}
-          {nameFilterInput}
-          {guildFilterInput}
           {timeSlider}
           {continentImage.status !== "found" && <span className="muted">No continent image yet.</span>}
           {expandToggle}
@@ -226,6 +231,14 @@ export function ZoneMap({ sightings }: Props) {
           )}
 
           <div className="zone-map-legend">
+            <PresenceList
+              sightings={continentTimeSightings}
+              nameFilter={nameFilter}
+              onNameFilterChange={setNameFilter}
+              guildFilter={guildFilter}
+              onGuildFilterChange={setGuildFilter}
+            />
+            {activeFilterNote}
             {continentClassesPresent.length > 0 && (
               <>
                 <h3>Classes in view</h3>
@@ -258,8 +271,6 @@ export function ZoneMap({ sightings }: Props) {
             </option>
           ))}
         </select>
-        {nameFilterInput}
-        {guildFilterInput}
         {timeSlider}
         {zoneImage.status === "found" ? (
           <span className="muted">Real zone map - positions are the reporter's location at detection time.</span>
@@ -331,6 +342,14 @@ export function ZoneMap({ sightings }: Props) {
         )}
 
         <div className="zone-map-legend">
+          <PresenceList
+            sightings={zoneTimeSightings}
+            nameFilter={nameFilter}
+            onNameFilterChange={setNameFilter}
+            guildFilter={guildFilter}
+            onGuildFilterChange={setGuildFilter}
+          />
+          {activeFilterNote}
           {classesPresent.length > 0 && (
             <>
               <h3>Classes in view</h3>
