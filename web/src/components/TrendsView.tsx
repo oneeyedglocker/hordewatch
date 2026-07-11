@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Sighting } from "../lib/types";
 import { classColor } from "../lib/classColors";
+import { ActivityFingerprint } from "./ActivityFingerprint";
 
 interface Props {
   sightings: Sighting[];
@@ -193,6 +194,8 @@ export function TrendsView({ sightings }: Props) {
           )}
         </div>
       </div>
+
+      <ActivityFingerprint sightings={sightings} />
     </div>
   );
 }
