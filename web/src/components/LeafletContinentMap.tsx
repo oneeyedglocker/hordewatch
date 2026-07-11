@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import type { Sighting } from "../lib/types";
-import type { ContinentCorners } from "../lib/useContinentImage";
 import { classColor } from "../lib/classColors";
 import { absoluteTime, relativeTime } from "../lib/format";
 
@@ -10,56 +9,67 @@ interface Props {
   imageUrl: string;
   imageWidth: number;
   imageHeight: number;
-  corners: ContinentCorners;
   points: Sighting[];
   mapName: string;
 }
 
-// wow.export's corners describe Outland's RAW per-ADT world coordinates
-// (continentID 530's native frame, straight from Blizzard's map data).
-// HereBeDragons doesn't hand back that raw frame for most real positions,
-// though: per its own transform table for TBC Classic
+// HereBeDragons doesn't hand back Outland's raw per-ADT world coordinates
+// for most real positions: per its own transform table for TBC Classic
 // (HordeWatch/Libs/HereBeDragons/HereBeDragons-2.0.lua, the `WoWBC` block),
 // most of Outland's raw coordinate space gets bucketed into continentID 0
 // or 1 with an offset ADDED to worldX/worldY before the addon ever sees it
-// - only a small "leftover" pocket keeps continentID 530 unmodified. To
-// plot correctly against wow.export's raw-frame image, that offset has to
-// be subtracted back out first. Table format matches HBD's own
-// (offsetY, offsetX) order for each continentID it can produce for
-// Outland.
+// - only a small "leftover" pocket keeps continentID 530 unmodified. The
+// affine fit below (OUTLAND_AFFINE) was calibrated directly against
+// continentID-530 readings, so 0/1 readings need that offset subtracted
+// back out first. Table format matches HBD's own (offsetY, offsetX) order
+// for each continentID it can produce for Outland.
 const OUTLAND_OFFSETS: Record<number, { offsetX: number; offsetY: number }> = {
   530: { offsetX: 0, offsetY: 0 },
   0: { offsetX: 2662.8, offsetY: -2400 },
   1: { offsetX: 17600, offsetY: 10339.7 },
 };
 
+// worldX/worldY -> continent-image-pixel affine transform, empirically
+// fit (least squares) against 6 real /hw pos readings at named,
+// unambiguous landmarks across 5 different zones - NOT derived from
+// wow.export's own stated image corners, which turned out not to line up
+// with HereBeDragons' coordinates at all (see DATA_MODEL.md for that dead
+// end). Max residual across all 6 points was ~115px on a 16384x12800 image
+// (~0.7% of width), consistent with manual pixel-picking error rather than
+// a systematic mismatch:
+//   Dark Portal (Hellfire Peninsula):    worldX=1021.2, worldY=-68.5   -> pixel (8806, 7398)
+//   Honor Hold (Hellfire Peninsula):     worldX=2657.3, worldY=-700.8  -> pixel (7180, 7816)
+//   Hand of Gul'dan (Shadowmoon Valley): worldX=1380,   worldY=-3557.5 -> pixel (8229, 10490)
+//   Auchindoun (Terokkar Forest):        worldX=4939.2, worldY=-3371   -> pixel (4980, 10364)
+//   Oshu'gun (Nagrand):                  worldX=8303.7, worldY=-2575.2 -> pixel (1764, 9640)
+//   Serpent Lake (Zangarmarsh):          worldX=6943.7, worldY=554.7   -> pixel (3068, 6624)
+// Re-derive by least-squares fitting [worldX, worldY, 1] -> pixel_x and
+// -> pixel_y separately if more calibration points are ever collected.
+const OUTLAND_AFFINE = {
+  ax: -0.952319,
+  ay: 0.028558,
+  bx: 9724.3204,
+  cx: -0.006154,
+  cy: -0.930896,
+  by: 7240.1066,
+};
+
 // Converts a sighting's worldX/worldY (continuous yards, from HereBeDragons -
-// see HordeWatch/Position.lua) to a pixel on the continent image, using the
-// exact world-space corners wow.export reported for that image (see
-// web/public/maps/README.md - "Continent map images"). Note the axis
-// swap: WoW's world X is north/south and Y is east/west, which is
-// transposed relative to image row/col - the image's horizontal axis
-// tracks worldY, and its vertical axis tracks worldX. Then negate the
-// resulting pixel-Y for CRS.Simple, same trick as LeafletZoneMap.
-function toLatLng(
-  worldX: number,
-  worldY: number,
-  continentID: number,
-  corners: ContinentCorners,
-  width: number,
-  height: number,
-): L.LatLngTuple {
+// see HordeWatch/Position.lua) to a pixel on the continent image via
+// OUTLAND_AFFINE, then negates the resulting pixel-Y for CRS.Simple (same
+// trick as LeafletZoneMap - Leaflet's y increases upward, image pixels
+// increase downward).
+function toLatLng(worldX: number, worldY: number, continentID: number): L.LatLngTuple {
   const offset = OUTLAND_OFFSETS[continentID] ?? { offsetX: 0, offsetY: 0 };
   const rawX = worldX - offset.offsetX;
   const rawY = worldY - offset.offsetY;
 
-  const { top_left, bottom_right } = corners;
-  const px = ((top_left.world_y - rawY) / (top_left.world_y - bottom_right.world_y)) * width;
-  const py = ((top_left.world_x - rawX) / (top_left.world_x - bottom_right.world_x)) * height;
+  const px = OUTLAND_AFFINE.ax * rawX + OUTLAND_AFFINE.ay * rawY + OUTLAND_AFFINE.bx;
+  const py = OUTLAND_AFFINE.cx * rawX + OUTLAND_AFFINE.cy * rawY + OUTLAND_AFFINE.by;
   return [-py, px];
 }
 
-export function LeafletContinentMap({ imageUrl, imageWidth, imageHeight, corners, points, mapName }: Props) {
+export function LeafletContinentMap({ imageUrl, imageWidth, imageHeight, points, mapName }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
 
@@ -108,7 +118,7 @@ export function LeafletContinentMap({ imageUrl, imageWidth, imageHeight, corners
     const markers = points
       .filter((p) => p.worldX !== undefined && p.worldY !== undefined)
       .map((p) => {
-        const marker = L.circleMarker(toLatLng(p.worldX!, p.worldY!, p.continentID ?? 530, corners, imageWidth, imageHeight), {
+        const marker = L.circleMarker(toLatLng(p.worldX!, p.worldY!, p.continentID ?? 530), {
           radius: 5,
           weight: 2,
           color: ringColor,
@@ -127,7 +137,7 @@ export function LeafletContinentMap({ imageUrl, imageWidth, imageHeight, corners
     return () => {
       for (const m of markers) m.remove();
     };
-  }, [points, corners, imageWidth, imageHeight]);
+  }, [points, imageWidth, imageHeight]);
 
   return (
     <div
