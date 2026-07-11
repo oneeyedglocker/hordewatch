@@ -114,13 +114,6 @@ export function ZoneMap({ sightings }: Props) {
           )}
         </div>
 
-        {continentImage.status === "found" && (
-          <div className="map-caveat-note">
-            Positions here are unverified against real play data and known to be inaccurate right now - see
-            DATA_MODEL.md's gap list. The per-zone view (mapX/mapY) is the reliable one until this is calibrated.
-          </div>
-        )}
-
         <div className="zone-map-body">
           {continentImage.status === "found" ? (
             <div className="zone-map-canvas-wrap">
@@ -128,7 +121,6 @@ export function ZoneMap({ sightings }: Props) {
                 imageUrl={continentImage.url}
                 imageWidth={continentImage.meta.imageWidth}
                 imageHeight={continentImage.meta.imageHeight}
-                corners={continentImage.meta.corners}
                 points={continentPoints}
                 mapName={continentImage.meta.mapName}
               />

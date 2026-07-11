@@ -1,21 +1,10 @@
 import { useEffect, useState } from "react";
 
-/** World-yard corners of the continent image, as reported by wow.export's
- * own tile-composite metadata (see web/public/maps/README.md - "Continent
- * map images"). Lets us convert a sighting's worldX/worldY (continuous
- * yards, from HereBeDragons - see HordeWatch/Position.lua) straight to a
- * pixel on the image, with no calibration guesswork. */
-export interface ContinentCorners {
-  top_left: { world_x: number; world_y: number };
-  bottom_right: { world_x: number; world_y: number };
-}
-
 export interface ContinentMeta {
   mapID: number;
   mapName: string;
   imageWidth: number;
   imageHeight: number;
-  corners: ContinentCorners;
 }
 
 export type ContinentImageState =

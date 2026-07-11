@@ -70,13 +70,12 @@ real sightings, not documentation). Always confirm from an actual
 sighting's recorded `mapID`, never hardcode a number you haven't checked
 against real data from this specific client.
 
-**Current status of the committed zone images:** `1944.jpg` (Hellfire
-Peninsula) and `1953.jpg` (Netherstorm) are confirmed correct against real
-data. `102.jpg`, `104.jpg`, `105.jpg`, `106.jpg`, `108.jpg` (originally
-filed under the old Zangarmarsh/Blade's Edge Mountains/Nagrand/Shadowmoon
-Valley/Terokkar Forest numbers) are unverified and likely filed under the
-wrong mapID for the same reason - rename them once you have real sightings
-from those zones to confirm the right number.
+**Current status of the committed zone images:** confirmed correct against
+real sightings - `1944.jpg` (Hellfire Peninsula), `1946.jpg` (Zangarmarsh),
+`1948.jpg` (Shadowmoon Valley), `1951.jpg` (Nagrand), `1952.jpg` (Terokkar
+Forest), `1953.jpg` (Netherstorm). Still unverified: `104.jpg` (filed under
+a guessed Blade's Edge Mountains mapID) - rename once you have a real
+sighting from that zone to confirm the right number.
 
 ## Notes
 
@@ -93,12 +92,11 @@ that has `worldX`/`worldY`/`continentID` (continuous coordinates from
 HereBeDragons - see `HordeWatch/Position.lua`) on one continuous continent
 image, instead of one image per zone. This needs a different kind of asset
 than the per-zone parchment art above: real stitched terrain, plus a small
-JSON sidecar giving the exact world-coordinate corners of the image, e.g.
-`530.jpg` + `530.json` for Outland (`530` is Outland's continent-level
-`UiMapID`, confirmed directly from wow.export's own export metadata, not
-guessed).
+JSON sidecar giving just the image's pixel dimensions - `530.jpg` +
+`530.json` for Outland (`530` is Outland's continent-level `UiMapID`,
+confirmed directly from wow.export's own export metadata).
 
-To produce one:
+To produce the image:
 
 1. In wow.export, open the **Maps** tab (not Textures - that's for the
    per-zone parchment art above) and select the continent, e.g.
@@ -108,32 +106,58 @@ To produce one:
    8k/tile is enormous. "Low" or "Medium" is plenty for a web map you can
    already zoom into.
 3. Leave Export WMO/M2/Foliage/Liquids/G-Objects unchecked - just the flat
-   ground texture is needed.
+   ground texture is needed. Note this means distinct 3D structures (the
+   Dark Portal's platform, buildings, etc.) may not render - only what's
+   baked into the flat ground texture will show up.
 4. Export it. wow.export writes one already-composited image (e.g.
-   `expansion01_<hash>.png`) plus a `.json` sidecar with the tile grid and
-   the exact world-coordinate corners it used.
+   `expansion01_<hash>.png`) plus a `.json` sidecar - **ignore its stated
+   world-coordinate corners** (see below for why), just note the image's
+   pixel dimensions.
 5. Convert the PNG to `.jpg` if it's large (a full Outland export easily
    lands in the tens of MB as PNG; JPEG at quality ~85-90 shrinks that by
    5-6x with no visible loss for terrain - unlike the per-zone art, there's
    no transparency to preserve here).
 6. Save it as `web/public/maps/<continent mapID>.jpg`, and write a matching
-   `<continent mapID>.json` with this shape (trim wow.export's sidecar down
-   to just these fields):
+   `<continent mapID>.json` with just:
    ```json
    {
      "mapID": 530,
      "mapName": "Outland",
      "imageWidth": 16384,
-     "imageHeight": 12800,
-     "corners": {
-       "top_left": { "world_x": 7466.67, "world_y": 10133.33 },
-       "bottom_right": { "world_x": -5866.67, "world_y": -6933.33 }
-     }
+     "imageHeight": 12800
    }
    ```
    `imageWidth`/`imageHeight` must match the actual (possibly resized) image
    file, not necessarily wow.export's original dimensions.
 
-Note the axis swap: WoW's world X is north/south and Y is east/west, which
-is transposed relative to image row/col - see the comment on `toLatLng` in
-`web/src/components/LeafletContinentMap.tsx` for the actual conversion.
+### Calibrating the worldX/worldY -> pixel transform
+
+**Don't use wow.export's stated image corners for this** - they look
+authoritative (exact numbers straight from wow.export's own metadata) but
+turned out not to correspond to HereBeDragons' `worldX`/`worldY` coordinate
+space at all. Real sightings placed against a corners-derived transform
+landed in empty space off the rendered terrain every time. HereBeDragons
+reads from `UIMapAssignment.db2`, a different data source than wow.export's
+raw ADT/WDT tile grid - the two don't share one coordinate convention.
+
+What actually works: collect real `/hw pos` readings (see `Core.lua`) at
+named, visually unambiguous landmarks - a building, ruin, or other
+structure with a distinct silhouette, not open terrain - spread across
+several different zones. For each reading, find that landmark's precise
+pixel position on the continent image by eye, then least-squares fit a
+6-parameter affine transform: `[worldX, worldY, 1] -> pixel_x` and
+`-> pixel_y`, solved independently. The current Outland transform
+(`OUTLAND_AFFINE` in `web/src/components/LeafletContinentMap.tsx`) was fit
+against 6 such readings across 5 zones (Dark Portal and Honor Hold in
+Hellfire Peninsula, Hand of Gul'dan in Shadowmoon Valley, Auchindoun in
+Terokkar Forest, Oshu'gun in Nagrand, Serpent Lake in Zangarmarsh) with a
+max residual of ~115px on a 16384px-wide image (~0.7%) - consistent with
+manual pixel-picking imprecision, not a systematic error. 3+ points are
+needed to solve for rotation as well as scale/offset; more points and a
+wider spread improve accuracy further.
+
+Note there's also a per-continentID offset to reverse before this
+transform applies (`OUTLAND_OFFSETS` in the same file) - HereBeDragons
+buckets most of Outland's raw coordinate space into `continentID` 0 or 1
+with an offset added to `worldX`/`worldY`, and the affine fit above was
+calibrated against `continentID` 530 (unmodified) readings specifically.
