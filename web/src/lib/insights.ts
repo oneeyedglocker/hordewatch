@@ -1,5 +1,6 @@
 import type { Sighting } from "./types";
 import { DAY_LABELS, buildHourHistogram, dayOfWeek, hourLabel, predictZone, topZones } from "./fingerprint";
+import { nearestLandmark } from "./zoneLandmarks";
 
 export interface Insight {
   kind: "prediction" | "pattern" | "caveat";
@@ -17,12 +18,9 @@ const MIN_SAMPLE = 5;
 
 // Well-established TBC Classic facts about what each zone is *for* (raid/
 // dungeon entrances, world PvP objectives, daily hubs) - not derived from
-// this app's own data, just static context that turns "80% of sightings in
-// Netherstorm" into something actually useful. Deliberately doesn't name
-// specific in-zone coordinates/landmarks (Throne of Kil'jaeden, Halaa's
-// exact position, etc) since we have no calibrated POI-coordinate data for
-// those - only the zone-level image/world-anchor calibration from
-// DATA_MODEL.md. Extend this table if more zone images get added.
+// this app's own data, just static context. Paired with a named-landmark
+// call-out below (see zoneLandmarks.ts) when the subject's positions cluster
+// tightly enough to name a specific spot rather than just the zone.
 const ZONE_HINTS: Record<string, string> = {
   "Hellfire Peninsula":
     "home to the Dark Portal and the Hellfire Ramparts/Blood Furnace/Shattered Halls instances - could be questing, farming, or camping the portal",
@@ -76,6 +74,10 @@ function buildTimeOfDayInsight(sightings: Sighting[]): Insight | null {
   };
 }
 
+// Below this share, positions within the zone are too spread out to name one
+// spot with any honesty - the sentence falls back to the zone level instead.
+const LANDMARK_SHARE_THRESHOLD = 0.4;
+
 function buildZoneAffinityInsight(sightings: Sighting[]): Insight | null {
   const zones = topZones(sightings, 1);
   if (zones.length === 0) return null;
@@ -83,6 +85,26 @@ function buildZoneAffinityInsight(sightings: Sighting[]): Insight | null {
   const pct = Math.round((count / sightings.length) * 100);
   if (pct < 40) return null;
   const hint = ZONE_HINTS[zone];
+
+  // Which named, real-coordinate landmark (see zoneLandmarks.ts) do their
+  // positions within this zone cluster nearest to most often?
+  const zoneSightings = sightings.filter((s) => s.zone === zone && s.mapX !== undefined && s.mapY !== undefined);
+  const landmarkCounts = new Map<string, number>();
+  for (const s of zoneSightings) {
+    const landmark = nearestLandmark(zone, s.mapX!, s.mapY!);
+    if (landmark) landmarkCounts.set(landmark.name, (landmarkCounts.get(landmark.name) ?? 0) + 1);
+  }
+  const topLandmark = Array.from(landmarkCounts.entries()).sort((a, b) => b[1] - a[1])[0];
+  const landmarkShare = topLandmark && zoneSightings.length > 0 ? topLandmark[1] / zoneSightings.length : 0;
+
+  if (topLandmark && landmarkShare >= LANDMARK_SHARE_THRESHOLD) {
+    return {
+      kind: "pattern",
+      text: `Spends ${pct}% of logged time in ${zone}, mostly near **${topLandmark[0]}** (${Math.round(
+        landmarkShare * 100,
+      )}% of their sightings there)${hint ? ` - ${hint}` : ""}.`,
+    };
+  }
   return {
     kind: "pattern",
     text: `Spends ${pct}% of logged time in ${zone}${hint ? ` - ${hint}` : ""}.`,
