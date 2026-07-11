@@ -81,24 +81,14 @@ function HW:BuildExportString(all)
 	return encoded, #rows
 end
 
-StaticPopupDialogs["HORDEWATCH_EXPORT"] = {
-	text = "HordeWatch export (%d sighting(s)) - Ctrl+A, Ctrl+C to copy:",
-	button1 = CLOSE,
-	hasEditBox = true,
-	editBoxWidth = 350,
-	maxLetters = 0,
-	OnShow = function(self)
-		self.editBox:SetText(self.data)
-		self.editBox:HighlightText()
-		self.editBox:SetFocus()
-	end,
-	EditBoxOnEscapePressed = function(self) self:GetParent():Hide() end,
-	EditBoxOnEnterPressed = function(self) self:GetParent():Hide() end,
-	timeout = 0,
-	whileDead = true,
-	hideOnEscape = true,
-	preferredIndex = 3,
-}
+-- Blizzard's StaticPopup dialogs only pre-create an editBox widget on the
+-- first few numbered popup frames (historically 4) - if any other addon or
+-- system dialog is already occupying those slots when this one shows, it
+-- gets bumped to a plain popup frame with no editBox at all, and
+-- `self.editBox:SetText(...)` crashes with "attempt to index field
+-- 'editBox' (a nil value)". A self-owned AceGUI frame sidesteps that
+-- limited shared pool entirely - it always has its own edit box.
+local exportFrame
 
 function HW:ShowExportDialog(all)
 	local encoded, count = self:BuildExportString(all)
@@ -106,8 +96,35 @@ function HW:ShowExportDialog(all)
 		print("|cff33ff99HordeWatch|r nothing new to export" .. (all and "" or " (try '/hw export all' for the full log)"))
 		return
 	end
-	local dialog = StaticPopup_Show("HORDEWATCH_EXPORT", count)
-	if dialog then
-		dialog.data = encoded
+
+	local AceGUI = LibStub("AceGUI-3.0")
+	if exportFrame then
+		AceGUI:Release(exportFrame)
+		exportFrame = nil
 	end
+
+	local frame = AceGUI:Create("Frame")
+	frame:SetTitle("HordeWatch Export")
+	frame:SetStatusText(("%d sighting(s) - Ctrl+A, Ctrl+C to copy, then close"):format(count))
+	frame:SetLayout("Fill")
+	frame:SetWidth(520)
+	frame:SetHeight(320)
+	frame:SetCallback("OnClose", function(widget)
+		AceGUI:Release(widget)
+		exportFrame = nil
+	end)
+	exportFrame = frame
+
+	local editBox = AceGUI:Create("MultiLineEditBox")
+	editBox:SetLabel("")
+	editBox:SetText(encoded)
+	editBox:DisableButton(true)
+	frame:AddChild(editBox)
+
+	-- Focus/highlight need to happen after the frame has actually laid
+	-- itself out, or SetFocus silently no-ops.
+	C_Timer.After(0, function()
+		editBox:SetFocus()
+		editBox:HighlightText()
+	end)
 end
