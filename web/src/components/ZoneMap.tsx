@@ -119,14 +119,7 @@ export function ZoneMap({ sightings }: Props) {
         <div className="table-controls">
           {viewToggle}
           {nameFilterInput}
-          {continentImage.status === "found" ? (
-            <span className="muted">
-              Continuous map across every Outland zone - positions come from worldX/worldY (HereBeDragons), not the
-              per-zone coordinates.
-            </span>
-          ) : (
-            <span className="muted">No continent image yet.</span>
-          )}
+          {continentImage.status !== "found" && <span className="muted">No continent image yet.</span>}
         </div>
 
         <div className="zone-map-body">
