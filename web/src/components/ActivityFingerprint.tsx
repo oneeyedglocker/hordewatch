@@ -9,9 +9,14 @@ import {
   topZones,
   type ZonePrediction,
 } from "../lib/fingerprint";
+import { SubjectPicker } from "./SubjectPicker";
 
 interface Props {
   sightings: Sighting[];
+  /** Controlled from TrendsView so the overview page's "most active"
+   * shortcuts can jump straight into a subject's fingerprint. */
+  subjectKey: string;
+  onSubjectKeyChange: (key: string) => void;
 }
 
 // Below this many total sightings for the subject, even a "confident" tier
@@ -64,20 +69,13 @@ function basisText(p: ZonePrediction, targetDow: number, targetHour: number): st
   )}.`;
 }
 
-export function ActivityFingerprint({ sightings }: Props) {
-  const [subjectKey, setSubjectKey] = useState("");
+export function ActivityFingerprint({ sightings, subjectKey, onSubjectKeyChange }: Props) {
   const [predictMode, setPredictMode] = useState<"now" | "custom">("now");
   const nowForDefaults = new Date();
   const [customDow, setCustomDow] = useState(nowForDefaults.getDay());
   const [customHour, setCustomHour] = useState(nowForDefaults.getHours());
   const [hoverHour, setHoverHour] = useState<number | null>(null);
   const [hoverCell, setHoverCell] = useState<{ day: number; hour: number } | null>(null);
-
-  const playersPresent = useMemo(() => Array.from(new Set(sightings.map((s) => s.player))).sort(), [sightings]);
-  const guildsPresent = useMemo(
-    () => Array.from(new Set(sightings.map((s) => s.guild).filter((g): g is string => !!g))).sort(),
-    [sightings],
-  );
 
   const subject = useMemo(() => {
     if (!subjectKey) return null;
@@ -132,25 +130,7 @@ export function ActivityFingerprint({ sightings }: Props) {
     <div className="panel trend-panel fingerprint-panel">
       <h2>Activity fingerprint</h2>
       <div className="fingerprint-controls">
-        <select value={subjectKey} onChange={(e) => setSubjectKey(e.target.value)}>
-          <option value="">Pick a player or guild...</option>
-          {guildsPresent.length > 0 && (
-            <optgroup label="Guilds">
-              {guildsPresent.map((g) => (
-                <option key={`guild:${g}`} value={`guild:${g}`}>
-                  {g}
-                </option>
-              ))}
-            </optgroup>
-          )}
-          <optgroup label="Players">
-            {playersPresent.map((p) => (
-              <option key={`player:${p}`} value={`player:${p}`}>
-                {p}
-              </option>
-            ))}
-          </optgroup>
-        </select>
+        <SubjectPicker sightings={sightings} value={subjectKey} onChange={onSubjectKeyChange} />
         {subjectRange && (
           <span className="muted">
             {subjectSightings.length} sighting{subjectSightings.length === 1 ? "" : "s"} &middot;{" "}

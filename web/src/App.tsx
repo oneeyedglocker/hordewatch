@@ -3,6 +3,7 @@ import { ImportPanel } from "./components/ImportPanel";
 import { SightingsTable } from "./components/SightingsTable";
 import { ZoneMap } from "./components/ZoneMap";
 import { GuildsView } from "./components/GuildsView";
+import { OverviewView } from "./components/OverviewView";
 import { TrendsView } from "./components/TrendsView";
 import { HistoryView } from "./components/HistoryView";
 import {
@@ -16,13 +17,14 @@ import {
 import type { ImportEvent, Sighting } from "./lib/types";
 import "./App.css";
 
-type Tab = "table" | "map" | "guilds" | "trends" | "history" | "import";
+type Tab = "overview" | "table" | "map" | "guilds" | "trends" | "history" | "import";
 
 const PAGE_INFO: Record<Tab, { title: string; subtitle: string }> = {
+  overview: { title: "Overview", subtitle: "Activity at a glance across every import" },
   table: { title: "Sightings", subtitle: "Guild-shared PvP intel, most recent first" },
   map: { title: "Zone map", subtitle: "Zone-relative positions at detection time" },
   guilds: { title: "Guilds", subtitle: "Enemy guilds seen, aggregated across all sightings" },
-  trends: { title: "Trends", subtitle: "Activity over time, top zones, top classes" },
+  trends: { title: "Trends", subtitle: "Top zones and classes by time window, plus per-player/guild fingerprints" },
   history: { title: "History", subtitle: "Import log for this browser" },
   import: { title: "Data Import", subtitle: "Bring sightings in from the addon or the offline parser" },
 };
@@ -30,7 +32,8 @@ const PAGE_INFO: Record<Tab, { title: string; subtitle: string }> = {
 function App() {
   const [sightings, setSightings] = useState<Sighting[]>(() => loadSightings());
   const [importHistory, setImportHistory] = useState<ImportEvent[]>(() => loadImportHistory());
-  const [tab, setTab] = useState<Tab>(() => (loadSightings().length === 0 ? "import" : "table"));
+  const [tab, setTab] = useState<Tab>(() => (loadSightings().length === 0 ? "import" : "overview"));
+  const [subjectKey, setSubjectKey] = useState("");
 
   useEffect(() => {
     saveSightings(sightings);
@@ -66,32 +69,15 @@ function App() {
     setTab("import");
   }
 
-  const stats = useMemo(() => {
-    const players = new Set<string>();
-    const guilds = new Set<string>();
-    const characters = new Set<string>();
-    let minTs = Infinity;
-    let maxTs = -Infinity;
-    for (const s of sightings) {
-      players.add(s.player);
-      if (s.guild) guilds.add(s.guild);
-      if (s.sourceCharacter) characters.add(s.sourceCharacter);
-      if (s.ts < minTs) minTs = s.ts;
-      if (s.ts > maxTs) maxTs = s.ts;
-    }
-    return {
-      total: sightings.length,
-      players: players.size,
-      guilds: guilds.size,
-      characters: Array.from(characters).sort(),
-      range:
-        sightings.length > 0
-          ? `${new Date(minTs * 1000).toLocaleDateString()} - ${new Date(maxTs * 1000).toLocaleDateString()}`
-          : "-",
-    };
+  // Only "imported from" needs to live at the app shell level now - the
+  // rest of what used to be here (sightings/players/guilds/date range) is
+  // the Overview page's job, not something repeated in every tab's header.
+  const characters = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of sightings) if (s.sourceCharacter) set.add(s.sourceCharacter);
+    return Array.from(set).sort();
   }, [sightings]);
 
-  const showStats = sightings.length > 0 && (tab === "table" || tab === "map" || tab === "guilds" || tab === "trends");
   const info = PAGE_INFO[tab];
 
   return (
@@ -102,6 +88,10 @@ function App() {
           <b>HordeWatch</b>
         </div>
         <nav className="navlist">
+          <button className="navitem" aria-current={tab === "overview"} onClick={() => setTab("overview")}>
+            <OverviewIcon />
+            Overview
+          </button>
           <button className="navitem" aria-current={tab === "table"} onClick={() => setTab("table")}>
             <TableIcon />
             Sightings
@@ -131,7 +121,7 @@ function App() {
         {sightings.length > 0 && (
           <div className="rail-foot">
             <div className="rail-foot-label">Imported from</div>
-            <div>{stats.characters.length > 0 ? stats.characters.join(", ") : "unknown character"}</div>
+            <div>{characters.length > 0 ? characters.join(", ") : "unknown character"}</div>
             <button className="rail-clear" onClick={handleClear}>
               Clear data
             </button>
@@ -145,17 +135,7 @@ function App() {
             <h1>{info.title}</h1>
             <p className="muted">{info.subtitle}</p>
           </div>
-          {showStats && <span className="range-pill">{stats.range}</span>}
         </header>
-
-        {showStats && (
-          <section className="stat-row">
-            <Stat label="Sightings" value={stats.total} />
-            <Stat label="Unique players" value={stats.players} />
-            <Stat label="Guilds seen" value={stats.guilds} />
-            <Stat label="Date range" value={stats.range} />
-          </section>
-        )}
 
         {tab === "import" && <ImportPanel onImport={handleImport} />}
 
@@ -169,10 +149,21 @@ function App() {
           </div>
         ) : (
           <>
+            {tab === "overview" && (
+              <OverviewView
+                sightings={sightings}
+                onSelectSubject={(key) => {
+                  setSubjectKey(key);
+                  setTab("trends");
+                }}
+              />
+            )}
             {tab === "table" && <SightingsTable sightings={sightings} />}
             {tab === "map" && <ZoneMap sightings={sightings} />}
             {tab === "guilds" && <GuildsView sightings={sightings} />}
-            {tab === "trends" && <TrendsView sightings={sightings} />}
+            {tab === "trends" && (
+              <TrendsView sightings={sightings} subjectKey={subjectKey} onSubjectKeyChange={setSubjectKey} />
+            )}
             {tab === "history" && <HistoryView events={importHistory} />}
           </>
         )}
@@ -181,12 +172,14 @@ function App() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string | number }) {
+function OverviewIcon() {
   return (
-    <div className="stat">
-      <div className="stat-value">{value}</div>
-      <div className="stat-label">{label}</div>
-    </div>
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+      <rect x="1.5" y="1.5" width="6" height="6" rx="1" />
+      <rect x="8.5" y="1.5" width="6" height="4" rx="1" />
+      <rect x="8.5" y="7.5" width="6" height="7" rx="1" />
+      <rect x="1.5" y="9.5" width="6" height="5" rx="1" />
+    </svg>
   );
 }
 

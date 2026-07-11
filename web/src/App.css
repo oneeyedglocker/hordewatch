@@ -139,16 +139,6 @@
   color: var(--text-secondary);
 }
 
-.range-pill {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 12.5px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
 /* ---------- panels & import ---------- */
 .panel {
   background: var(--surface-1);
@@ -675,11 +665,31 @@
   color: var(--accent);
 }
 
-/* ---------- trends ---------- */
+/* ---------- overview & trends ---------- */
+.overview-view,
 .trends-view {
   display: flex;
   flex-direction: column;
   gap: 18px;
+}
+
+.bar-row-link {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.bar-row-link:hover {
+  background: var(--surface-2);
+}
+
+.bar-row-link:hover .bar-label {
+  color: var(--accent);
 }
 
 .trend-panel h2 {
@@ -904,4 +914,99 @@
   border-radius: 4px;
   background: linear-gradient(to right, transparent, var(--accent));
   border: 1px solid var(--border);
+}
+
+/* ---------- subject picker (player/guild combobox) ---------- */
+.subject-picker {
+  position: relative;
+  flex: 1 1 260px;
+  min-width: 220px;
+}
+
+.subject-picker .text-input {
+  width: 100%;
+}
+
+.subject-picker-dropdown {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  padding: 6px;
+}
+
+.subject-picker-group-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  padding: 8px 8px 4px;
+}
+
+.subject-picker-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 8px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.subject-picker-option[aria-selected="true"] {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+.subject-picker-option span:last-child {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.subject-picker-option[aria-selected="true"] span:last-child {
+  color: var(--accent);
+}
+
+.subject-picker-empty,
+.subject-picker-more {
+  padding: 8px;
+  font-size: 12.5px;
+}
+
+.subject-picker-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--accent-bg);
+  color: var(--accent);
+  border-radius: 7px;
+  padding: 7px 8px 7px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.subject-picker-chip-clear {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px;
 }
