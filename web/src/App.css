@@ -25,14 +25,6 @@
   padding: 0 6px 18px;
 }
 
-.rail .brand .mark {
-  width: 20px;
-  height: 20px;
-  border-radius: 5px;
-  background: var(--accent);
-  flex-shrink: 0;
-}
-
 .rail .brand b {
   font-size: 14.5px;
   letter-spacing: 0.01em;

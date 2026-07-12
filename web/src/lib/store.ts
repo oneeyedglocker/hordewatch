@@ -47,7 +47,7 @@ export function saveSightings(sightings: Sighting[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(sightings));
   } catch (err) {
-    console.error("HordeWatch: failed to persist sightings to localStorage", err);
+    console.error("HordeRadar: failed to persist sightings to localStorage", err);
   }
 }
 
@@ -71,6 +71,6 @@ export function saveImportHistory(events: ImportEvent[]): void {
   try {
     localStorage.setItem(HISTORY_KEY, JSON.stringify(events));
   } catch (err) {
-    console.error("HordeWatch: failed to persist import history to localStorage", err);
+    console.error("HordeRadar: failed to persist import history to localStorage", err);
   }
 }

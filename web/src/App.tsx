@@ -6,6 +6,7 @@ import { GuildsView } from "./components/GuildsView";
 import { OverviewView } from "./components/OverviewView";
 import { TrendsView } from "./components/TrendsView";
 import { HistoryView } from "./components/HistoryView";
+import { RadarLogo } from "./components/RadarLogo";
 import {
   loadSightings,
   mergeSightings,
@@ -84,8 +85,8 @@ function App() {
     <div className="app-shell">
       <aside className="rail">
         <div className="brand">
-          <span className="mark" aria-hidden />
-          <b>HordeWatch</b>
+          <RadarLogo />
+          <b>HordeRadar</b>
         </div>
         <nav className="navlist">
           <button className="navitem" aria-current={tab === "overview"} onClick={() => setTab("overview")}>

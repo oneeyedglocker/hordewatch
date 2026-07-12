@@ -1,4 +1,4 @@
-# HordeWatch web app
+# HordeRadar web app
 
 Dashboard for the HordeWatch WoW addon's PvP sighting data. See `../DATA_MODEL.md`
 for the full data model.
