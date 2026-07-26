@@ -2029,6 +2029,7 @@ function Spy:SetupOptions()
 	self.optionsFrames.Spy = ACD3:AddToBlizOptions("Spy", L["Spy Option"], nil, "General")
 	self.optionsFrames.About = ACD3:AddToBlizOptions("Spy", L["About"], L["Spy Option"], "About")
 	self.optionsFrames.DisplayOptions = ACD3:AddToBlizOptions("Spy", L["DisplayOptions"], L["Spy Option"], "DisplayOptions")
+	self.optionsFrames.TargetPicker = ACD3:AddToBlizOptions("Spy", L["TargetPicker"], L["Spy Option"], "TargetPicker")
 	self.optionsFrames.AlertOptions = ACD3:AddToBlizOptions("Spy", L["AlertOptions"], L["Spy Option"], "AlertOptions")
 	self.optionsFrames.MapOptions = ACD3:AddToBlizOptions("Spy", L["MapOptions"], L["Spy Option"], "MapOptions")
 	self.optionsFrames.DataOptions = ACD3:AddToBlizOptions("Spy", L["DataOptions"], L["Spy Option"], "DataOptions")
@@ -2074,11 +2075,19 @@ function Spy:ResetPositions()
 end
 
 function Spy:ShowConfig()
-	-- Opens the profile tab first so the menu expands
---	InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Profiles)
-	Settings.OpenToCategory('Profiles')
---	InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Spy)
-	Settings.OpenToCategory('Spy')
+	-- Open the top-level Spy category. NOTE: on the modern Settings API,
+	-- AceConfigDialog gives sub-categories (e.g. "Profiles") a generated
+	-- numeric ID, so passing the string "Profiles" to Settings.OpenToCategory
+	-- errors ("outside of expected range"). Only the top-level category keeps
+	-- a string ID, so open that via the frame name AceConfigDialog stored.
+	local spyCategory = self.optionsFrames and self.optionsFrames.Spy and self.optionsFrames.Spy.name or "Spy"
+	if Settings and Settings.OpenToCategory then
+		Settings.OpenToCategory(spyCategory)
+	elseif InterfaceOptionsFrame_OpenToCategory then
+		-- Older clients need the call twice to actually land on the panel.
+		InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Spy)
+		InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Spy)
+	end
 end
 
 function Spy:OnEnable(first)

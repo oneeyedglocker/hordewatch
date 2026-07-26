@@ -83,8 +83,19 @@ function Spy:CreateFrame(Name, Title, Height, Width, ShowFunc, HideFunc)
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12,
 			insets = {left = 2, right = 2, top = 2, bottom = 2},
 		})
-	theFrame.TitleBar:SetBackdropColor(0,0,0,1) 
+	theFrame.TitleBar:SetBackdropColor(0,0,0,1)
 	theFrame.TitleBar:SetBackdropBorderColor(1,1,1,1)
+
+	-- Solid dark title strip. The TitleBar backdrop above sits at BACKGROUND
+	-- strata and is largely hidden behind the window, so the title row reads
+	-- as a faint band. This texture is drawn at ARTWORK (above the BACKGROUND
+	-- party texture, below the OVERLAY title text and the button child frames)
+	-- so the title bar actually looks like a title bar.
+	theFrame.TitleFill = theFrame:CreateTexture(nil, "ARTWORK")
+	theFrame.TitleFill:SetTexture("Interface\\Buttons\\WHITE8X8")
+	theFrame.TitleFill:SetVertexColor(0.05, 0.045, 0.04, 0.96)
+	theFrame.TitleFill:SetPoint("TOPLEFT", theFrame.TitleBar, "TOPLEFT", 0, 0)
+	theFrame.TitleFill:SetPoint("BOTTOMRIGHT", theFrame.TitleBar, "BOTTOMRIGHT", 0, 0)
 
 	theFrame.Title = theFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	if not Spy.db.profile.InvertSpy then 	

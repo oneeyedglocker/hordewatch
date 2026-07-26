@@ -1200,14 +1200,22 @@ function Spy:ApplyWindowStyle()
 	local frame = Spy.MainWindow
 	if not frame then return end
 
+	local o = Spy.db.profile.BackgroundOpacity
+	if o == nil then o = 1 end
 	if frame.Background then
 		if Spy.db.profile.ShowBackground then
-			local o = Spy.db.profile.BackgroundOpacity
-			if o == nil then o = 1 end
 			frame.Background:SetAlpha(o)
 			frame.Background:Show()
 		else
 			frame.Background:Hide()
+		end
+	end
+	if frame.TitleFill then
+		if Spy.db.profile.ShowBackground then
+			frame.TitleFill:SetAlpha(o)
+			frame.TitleFill:Show()
+		else
+			frame.TitleFill:Hide()
 		end
 	end
 
