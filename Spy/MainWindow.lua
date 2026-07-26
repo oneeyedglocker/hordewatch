@@ -925,6 +925,16 @@ function Spy:ApplyRowText(Row)
 	local isHealer = Spy:IsHealer(playerData)
 	local isKoS = SpyPerCharDB.KOSData[name] ~= nil
 
+	-- Decide the left-edge accent up front (green for healers, red for KoS) so
+	-- the name and any left marker can be inset to clear the 3px stripe.
+	local edgeColor
+	if isHealer and Spy.db.profile.MarkHealers and Spy.db.profile.HealerGreenEdge then
+		edgeColor = Spy.Colors:GetColor("Spy", "Healer Edge")
+	elseif isKoS and Spy.db.profile.PrioritiseKoS then
+		edgeColor = Spy.Colors:GetColor("Spy", "KoS Edge")
+	end
+	local leftInset = edgeColor and 7 or 2
+
 	Row.LeftText:SetText(name)
 	Row.RightText:SetText(desc)
 
@@ -963,7 +973,7 @@ function Spy:ApplyRowText(Row)
 			if mc then Row.HealerMarker:SetTextColor(mc.r, mc.g, mc.b, 1) end
 			Row.HealerMarker:ClearAllPoints()
 			if markerSide == "left" then
-				Row.HealerMarker:SetPoint("LEFT", Row.StatusBar, "LEFT", 2, 0)
+				Row.HealerMarker:SetPoint("LEFT", Row.StatusBar, "LEFT", leftInset, 0)
 				Row.HealerMarker:SetJustifyH("LEFT")
 			else
 				Row.HealerMarker:SetPoint("RIGHT", Row.StatusBar, "RIGHT", -2, 0)
@@ -984,27 +994,21 @@ function Spy:ApplyRowText(Row)
 		Row.RightText:SetPoint("RIGHT", Row.StatusBar, "RIGHT", -2, 0)
 	end
 
-	-- Re-anchor the name and size it to whatever width is left.
-	Row.LeftText:ClearAllPoints()
-	if showMarker and markerSide == "left" then
-		Row.LeftText:SetPoint("LEFT", Row.StatusBar, "LEFT", 2 + markerReserve, 0)
-	else
-		Row.LeftText:SetPoint("LEFT", Row.StatusBar, "LEFT", 2, 0)
-	end
-	local leftReserve = (showMarker and markerSide == "left") and markerReserve or 0
+	-- Re-anchor the name (inset past the edge stripe, and past a left marker)
+	-- and size it to whatever width is left.
 	local rightReserve = (showMarker and markerSide == "right") and markerReserve or 0
-	Row.LeftText:SetWidth(Row:GetWidth() - Row.RightText:GetStringWidth() - leftReserve - rightReserve - 6)
+	local leftOffset = leftInset
+	if showMarker and markerSide == "left" then
+		leftOffset = leftInset + markerReserve
+	end
+	Row.LeftText:ClearAllPoints()
+	Row.LeftText:SetPoint("LEFT", Row.StatusBar, "LEFT", leftOffset, 0)
+	Row.LeftText:SetWidth(Row:GetWidth() - Row.RightText:GetStringWidth() - rightReserve - leftOffset - 4)
 
-	-- Left-edge accent: green for healers, red for KoS.
+	-- Apply the left-edge accent decided above.
 	if Row.RowEdge then
-		local ec
-		if isHealer and Spy.db.profile.MarkHealers and Spy.db.profile.HealerGreenEdge then
-			ec = Spy.Colors:GetColor("Spy", "Healer Edge")
-		elseif isKoS and Spy.db.profile.PrioritiseKoS then
-			ec = Spy.Colors:GetColor("Spy", "KoS Edge")
-		end
-		if ec then
-			Row.RowEdge:SetVertexColor(ec.r, ec.g, ec.b, ec.a or 1)
+		if edgeColor then
+			Row.RowEdge:SetVertexColor(edgeColor.r, edgeColor.g, edgeColor.b, edgeColor.a or 1)
 			Row.RowEdge:Show()
 		else
 			Row.RowEdge:Hide()
