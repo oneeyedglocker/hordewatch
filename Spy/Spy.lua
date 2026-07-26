@@ -782,6 +782,52 @@ Spy.options = {
 						Spy:ApplyWindowStyle()
 					end,
 				},
+				TitleBarStyle = {
+					name = L["TitleBarStyle"],
+					desc = L["TitleBarStyleDescription"],
+					type = "select",
+					order = 54.3,
+					values = {
+						["classic"] = L["TitleBarClassic"],
+						["solid"] = L["TitleBarSolid"],
+					},
+					get = function() return Spy.db.profile.TitleBarStyle end,
+					set = function(_, value)
+						Spy.db.profile.TitleBarStyle = value
+						Spy:ApplyWindowStyle()
+					end,
+				},
+				TitleBarColor = {
+					name = L["TitleBarColor"],
+					desc = L["TitleBarColorDescription"],
+					type = "color",
+					order = 54.6,
+					hasAlpha = false,
+					disabled = function() return Spy.db.profile.TitleBarStyle ~= "solid" end,
+					get = function()
+						local c = Spy.db.profile.Colors["Spy"]["Title Bar"]
+						return c.r, c.g, c.b
+					end,
+					set = function(_, r, g, b)
+						local c = Spy.db.profile.Colors["Spy"]["Title Bar"]
+						c.r, c.g, c.b = r, g, b
+						Spy:ApplyWindowStyle()
+					end,
+				},
+				TitleBarOpacity = {
+					name = L["TitleBarOpacity"],
+					desc = L["TitleBarOpacityDescription"],
+					type = "range",
+					order = 54.9,
+					min = 0, max = 1, step = 0.05,
+					isPercent = true,
+					disabled = function() return Spy.db.profile.TitleBarStyle ~= "solid" end,
+					get = function() return Spy.db.profile.TitleBarOpacity end,
+					set = function(_, value)
+						Spy.db.profile.TitleBarOpacity = value
+						Spy:ApplyWindowStyle()
+					end,
+				},
 				ShowBorder = {
 					name = L["ShowBorder"],
 					desc = L["ShowBorderDescription"],
@@ -1682,6 +1728,7 @@ local Default_Profile = {
 				["Healer Edge"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
 				["KoS Edge"] = { r = 1, g = 0, b = 0, a = 1 },
 				["Window Border"] = { r = 1, g = 1, b = 1, a = 1 },
+				["Title Bar"] = { r = 13/255, g = 11/255, b = 10/255, a = 1 },
 			},
 		},
 		MainWindow={
@@ -1744,6 +1791,8 @@ local Default_Profile = {
 		BackgroundOpacity=1,
 		ShowBorder=false,
 		WindowScale=1,
+		TitleBarStyle="solid",		-- classic (stock, subtle) | solid (opaque strip)
+		TitleBarOpacity=1,
 		ClampToScreen=true,
 		Font="Friz Quadrata TT",
 		Scaling=1,
@@ -1990,6 +2039,8 @@ function Spy:CheckDatabase()
 	if p.BackgroundOpacity == nil then p.BackgroundOpacity = Default_Profile.profile.BackgroundOpacity end
 	if p.ShowBorder == nil then p.ShowBorder = Default_Profile.profile.ShowBorder end
 	if p.WindowScale == nil then p.WindowScale = Default_Profile.profile.WindowScale end
+	if p.TitleBarStyle == nil then p.TitleBarStyle = Default_Profile.profile.TitleBarStyle end
+	if p.TitleBarOpacity == nil then p.TitleBarOpacity = Default_Profile.profile.TitleBarOpacity end
 	if p.Colors["Spy"] == nil then p.Colors["Spy"] = {} end
 	for k, v in pairs(Default_Profile.profile.Colors["Spy"]) do
 		if p.Colors["Spy"][k] == nil then

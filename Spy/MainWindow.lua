@@ -1214,9 +1214,16 @@ function Spy:ApplyWindowStyle()
 			frame.Background:Hide()
 		end
 	end
+	-- Title bar: "classic" hides the solid strip and lets the stock subtle
+	-- backdrop show through; "solid" draws the coloured strip at its own
+	-- opacity, independent of the window background toggle.
 	if frame.TitleFill then
-		if Spy.db.profile.ShowBackground then
-			frame.TitleFill:SetAlpha(o)
+		if Spy.db.profile.TitleBarStyle == "solid" then
+			local tc = Spy.Colors:GetColor("Spy", "Title Bar")
+			if tc then frame.TitleFill:SetVertexColor(tc.r, tc.g, tc.b, 1) end
+			local to = Spy.db.profile.TitleBarOpacity
+			if to == nil then to = 1 end
+			frame.TitleFill:SetAlpha(to)
 			frame.TitleFill:Show()
 		else
 			frame.TitleFill:Hide()
