@@ -819,6 +819,9 @@ function Spy:CreateMainWindow()
 		Spy:SetupMainWindowButtons()
 		Spy:ResizeMainWindow()
 		Spy:ScheduleRepeatingTimer("ManageExpirations", 10, true)
+		-- Ticks the enemy cooldown countdowns. Only redraws while at least one
+		-- tracked cooldown is actually running, so it idles at zero cost.
+		Spy:ScheduleRepeatingTimer("TickCooldowns", 1)
 		Spy:InitOrder()
 
 		Spy:ApplyWindowLocks()
@@ -934,6 +937,18 @@ function Spy:ApplyRowText(Row)
 		edgeColor = Spy.Colors:GetColor("Spy", "KoS Edge")
 	end
 	local leftInset = edgeColor and 7 or 2
+
+	-- Enemy defensive cooldown countdown, appended to the right-hand text so it
+	-- sits just right of the level/class without touching the nameplate.
+	local cdLeft, cdShort = Spy:GetCooldownRemaining(playerData)
+	if cdLeft and Spy.db.profile.TrackCooldowns then
+		local mins = math.floor(cdLeft / 60)
+		local secs = math.floor(cdLeft % 60)
+		local clock = (mins > 0) and format("%d:%02d", mins, secs) or format("%ds", secs)
+		local cc = Spy.Colors:GetColor("Spy", "Cooldown")
+		local hex = cc and format("%02x%02x%02x", cc.r * 255, cc.g * 255, cc.b * 255) or "ffd200"
+		desc = desc .. format("  |cff%s%s %s|r", hex, cdShort or "CD", clock)
+	end
 
 	Row.LeftText:SetText(name)
 	Row.RightText:SetText(desc)

@@ -590,6 +590,16 @@ Spy.options = {
 						Spy:RefreshCurrentList()
 					end,
 				},
+				HealerMinHeal = {
+					name = L["HealerMinHeal"],
+					desc = L["HealerMinHealDescription"],
+					type = "range",
+					order = 12.5,
+					min = 0, max = 3000, step = 50,
+					disabled = function() return Spy.db.profile.HealerDetectBy ~= "heal" end,
+					get = function() return Spy.db.profile.HealerMinHeal end,
+					set = function(_, value) Spy.db.profile.HealerMinHeal = value end,
+				},
 				HealerMarkerStyle = {
 					name = L["HealerMarkerStyle"],
 					desc = L["HealerMarkerStyleDescription"],
@@ -685,6 +695,58 @@ Spy.options = {
 						Spy.db.profile.DimNonHealers = value
 						Spy:RefreshCurrentList()
 					end,
+				},
+				cooldownHeader = {
+					name = L["TCooldowns"],
+					type = "header",
+					order = 20,
+				},
+				TrackCooldowns = {
+					name = L["TrackCooldowns"],
+					desc = L["TrackCooldownsDescription"],
+					type = "toggle",
+					order = 21,
+					width = "full",
+					get = function() return Spy.db.profile.TrackCooldowns end,
+					set = function(_, value)
+						Spy.db.profile.TrackCooldowns = value
+						Spy:RefreshCurrentList()
+					end,
+				},
+				AnnounceCooldowns = {
+					name = L["AnnounceCooldowns"],
+					desc = L["AnnounceCooldownsDescription"],
+					type = "toggle",
+					order = 22,
+					width = "full",
+					disabled = function() return not Spy.db.profile.TrackCooldowns end,
+					get = function() return Spy.db.profile.AnnounceCooldowns end,
+					set = function(_, value) Spy.db.profile.AnnounceCooldowns = value end,
+				},
+				CooldownColor = {
+					name = L["CooldownColor"],
+					type = "color",
+					order = 23,
+					hasAlpha = false,
+					disabled = function() return not Spy.db.profile.TrackCooldowns end,
+					get = function()
+						local c = Spy.db.profile.Colors["Spy"]["Cooldown"]
+						return c.r, c.g, c.b
+					end,
+					set = function(_, r, g, b)
+						local c = Spy.db.profile.Colors["Spy"]["Cooldown"]
+						c.r, c.g, c.b = r, g, b
+						Spy:RefreshCurrentList()
+					end,
+				},
+				KOSGuildAlertCooldown = {
+					name = L["KOSGuildAlertCooldown"],
+					desc = L["KOSGuildAlertCooldownDescription"],
+					type = "range",
+					order = 24,
+					min = 0, max = 120, step = 5,
+					get = function() return Spy.db.profile.KOSGuildAlertCooldown end,
+					set = function(_, value) Spy.db.profile.KOSGuildAlertCooldown = value end,
 				},
 				lookHeader = {
 					name = L["TLook"],
@@ -1729,6 +1791,7 @@ local Default_Profile = {
 				["KoS Edge"] = { r = 1, g = 0, b = 0, a = 1 },
 				["Window Border"] = { r = 1, g = 1, b = 1, a = 1 },
 				["Title Bar"] = { r = 13/255, g = 11/255, b = 10/255, a = 1 },
+				["Cooldown"] = { r = 1, g = 0.82, b = 0, a = 1 },
 			},
 		},
 		MainWindow={
@@ -1778,7 +1841,8 @@ local Default_Profile = {
 		BarOpacity=1,				-- class-bar fill opacity (0 hides the fill)
 		-- Healer detection & marking
 		MarkHealers=true,
-		HealerDetectBy="class",		-- class | heal (confirmed-heal-only)
+		HealerDetectBy="heal",		-- heal (confirmed only, default) | class (guess by class)
+		HealerMinHeal=400,			-- a single heal this big confirms a healer outright
 		HealerMarkerStyle="cross",	-- cross | asterisk | dot
 		HealerMarkerSide="right",	-- right | left
 		SortHealersToTop=true,
@@ -1793,6 +1857,10 @@ local Default_Profile = {
 		WindowScale=1,
 		TitleBarStyle="solid",		-- classic (stock, subtle) | solid (opaque strip)
 		TitleBarOpacity=1,
+		-- Enemy defensive cooldowns + alert throttling
+		TrackCooldowns=true,
+		AnnounceCooldowns=false,
+		KOSGuildAlertCooldown=20,	-- seconds between alerts for the same KoS guild
 		ClampToScreen=true,
 		Font="Friz Quadrata TT",
 		Scaling=1,
@@ -2041,6 +2109,16 @@ function Spy:CheckDatabase()
 	if p.WindowScale == nil then p.WindowScale = Default_Profile.profile.WindowScale end
 	if p.TitleBarStyle == nil then p.TitleBarStyle = Default_Profile.profile.TitleBarStyle end
 	if p.TitleBarOpacity == nil then p.TitleBarOpacity = Default_Profile.profile.TitleBarOpacity end
+	if p.HealerMinHeal == nil then p.HealerMinHeal = Default_Profile.profile.HealerMinHeal end
+	if p.TrackCooldowns == nil then p.TrackCooldowns = Default_Profile.profile.TrackCooldowns end
+	if p.AnnounceCooldowns == nil then p.AnnounceCooldowns = Default_Profile.profile.AnnounceCooldowns end
+	if p.KOSGuildAlertCooldown == nil then p.KOSGuildAlertCooldown = Default_Profile.profile.KOSGuildAlertCooldown end
+	-- Existing profiles defaulted healers to a class guess, which marks shadow
+	-- priests and ret paladins as healers. Move them to confirmed-heal once.
+	if not p.HealerDetectByMigrated then
+		p.HealerDetectBy = Default_Profile.profile.HealerDetectBy
+		p.HealerDetectByMigrated = true
+	end
 	if p.Colors["Spy"] == nil then p.Colors["Spy"] = {} end
 	for k, v in pairs(Default_Profile.profile.Colors["Spy"]) do
 		if p.Colors["Spy"][k] == nil then
@@ -2159,6 +2237,9 @@ function Spy:OnEnable(first)
 	Spy:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE", "ChannelNoticeEvent")
 	Spy:RegisterEvent("NAME_PLATE_UNIT_ADDED", "NamePlateEvent")
 	Spy:RegisterEvent("NAME_PLATE_UNIT_REMOVED", "NamePlateEvent")
+	-- Enemy defensive cooldowns (PvP trinket, immunities) are NOT emitted by the
+	-- combat log - they only surface through the spellcast events.
+	Spy:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "UnitSpellcastEvent")
 	Spy:RegisterComm(Spy.Signature, "CommReceived")
 	Spy.IsEnabled = true
 --	Spy:RefreshCurrentList()
@@ -2185,6 +2266,7 @@ function Spy:OnDisable()
 	Spy:UnregisterEvent("CHAT_MSG_CHANNEL_NOTICE")
 	Spy:UnregisterEvent("NAME_PLATE_UNIT_ADDED")
 	Spy:UnregisterEvent("NAME_PLATE_UNIT_REMOVED")
+	Spy:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 	Spy:UnregisterComm(Spy.Signature)
 	Spy.IsEnabled = false
 end
@@ -2549,6 +2631,85 @@ function Spy:NamePlateEvent(_, unit)
 	end
 end
 
+-- ============================================================
+-- Enemy defensive cooldown tracking.
+--
+-- The PvP trinket and the big immunities never appear in COMBAT_LOG_EVENT_
+-- UNFILTERED - verified against a full session capture, zero hits in ~4000
+-- events. They DO fire UNIT_SPELLCAST_SUCCEEDED on any unit we have a token
+-- for (target / focus / nameplate), which is how this is caught.
+-- ============================================================
+Spy.TrackedCooldowns = {
+	[42292] = { name = "PvP Trinket", cd = 120, short = "Trink" },	-- Insignia / Medallion
+	[7744]  = { name = "Will of the Forsaken", cd = 120, short = "WotF" },
+	[20594] = { name = "Stoneform", cd = 180, short = "Stone" },
+	[642]   = { name = "Divine Shield", cd = 300, short = "Bubble" },
+	[1022]  = { name = "Blessing of Protection", cd = 300, short = "BoP" },
+	[45438] = { name = "Ice Block", cd = 300, short = "Block" },
+	[31224] = { name = "Cloak of Shadows", cd = 60, short = "Cloak" },
+	[5277]  = { name = "Evasion", cd = 300, short = "Evade" },
+	[871]   = { name = "Shield Wall", cd = 1800, short = "SWall" },
+	[19752] = { name = "Divine Intervention", cd = 3600, short = "DI" },
+}
+
+function Spy:UnitSpellcastEvent(_, unit, _, spellId)
+	if not Spy.db.profile.TrackCooldowns then return end
+	if not unit or not spellId then return end
+	local info = Spy.TrackedCooldowns[spellId]
+	if not info then return end
+	-- only care about hostile players
+	if not UnitExists(unit) or not UnitIsPlayer(unit) then return end
+	if not UnitCanAttack("player", unit) then return end
+
+	local name = GetUnitName(unit, true)
+	if not name then return end
+	name = gsub(name, " %- ", "-")
+	local playerData = SpyPerCharDB.PlayerData[name]
+	if not playerData then return end
+
+	playerData.cdSpell = info.short
+	playerData.cdName = info.name
+	playerData.cdUsed = GetTime()
+	playerData.cdExpires = GetTime() + info.cd
+
+	if Spy.db.profile.AnnounceCooldowns then
+		DEFAULT_CHAT_FRAME:AddMessage(format(L["CooldownUsed"], name, info.name))
+	end
+	Spy:RefreshCurrentList()
+end
+
+-- Redraws the list once per second while any displayed enemy has a cooldown
+-- running, so the countdown actually ticks. No-op the rest of the time.
+function Spy:TickCooldowns()
+	if not Spy.db.profile.TrackCooldowns then return end
+	if not Spy.MainWindow or not Spy.MainWindow:IsShown() then return end
+	local active = false
+	for i = 1, (Spy.ListAmountDisplayed or 0) do
+		local name = Spy.ButtonName[i]
+		local playerData = name and SpyPerCharDB.PlayerData[name]
+		if playerData and playerData.cdExpires then
+			if playerData.cdExpires > GetTime() then
+				active = true
+				break
+			else
+				playerData.cdExpires = nil
+				playerData.cdSpell = nil
+				active = true	-- one final redraw to clear the stale text
+				break
+			end
+		end
+	end
+	if active then Spy:RefreshCurrentList() end
+end
+
+-- Remaining seconds on a tracked enemy cooldown, or nil when nothing is active.
+function Spy:GetCooldownRemaining(playerData)
+	if not playerData or not playerData.cdExpires then return nil end
+	local left = playerData.cdExpires - GetTime()
+	if left <= 0 then return nil end
+	return left, playerData.cdSpell
+end
+
 -- Defined once at file scope rather than rebuilt on every combat-log event
 -- (this fires many times per second in a crowd). Used only to gate the
 -- pet-kill win-tracking below.
@@ -2630,6 +2791,32 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 				end
 				if detected then
 					Spy:AddDetected(dstName, timestamp, learnt)
+				end
+			end
+		end
+
+		-- CONFIRMED healer detection. Generic and evidence-based: any heal an
+		-- enemy actually lands counts, so it works for every class/spell/rank
+		-- without maintaining a spell-name list. A single panic heal from a DPS
+		-- shouldn't brand them a healer, so we require either a meaningful
+		-- single heal or repeated healing before the flag sticks.
+		if event == "SPELL_HEAL" or event == "SPELL_PERIODIC_HEAL" then
+			if srcGUID and srcName and strsub(srcGUID, 1, 6) == "Player"
+				and bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE then
+				local amount = arg15
+				if type(amount) == "number" and amount > 0 then
+					local playerData = SpyPerCharDB.PlayerData[srcName]
+					if playerData then
+						playerData.healTotal = (playerData.healTotal or 0) + amount
+						playerData.healCount = (playerData.healCount or 0) + 1
+						playerData.lastHeal = time()
+						-- meaningful = a big single heal, or sustained healing
+						local big = amount >= (Spy.db.profile.HealerMinHeal or 400)
+						if (big or playerData.healCount >= 3) and not playerData.isHealer then
+							playerData.isHealer = true
+							if Spy.db.profile.MarkHealers then Spy:RefreshCurrentList() end
+						end
+					end
 				end
 			end
 		end

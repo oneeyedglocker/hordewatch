@@ -61,6 +61,22 @@ function Spy:IsHealerClass(class)
 	return class ~= nil and Spy.HealerClasses[class] == true
 end
 
+-- KoS-guild alerts fire per detected player, so running into a 5-man from a
+-- KoS guild used to spam five near-identical warnings. Rate-limit to one alert
+-- per guild per KOSGuildAlertCooldown seconds (0 = no throttle).
+local kosGuildAlerted = {}
+function Spy:AllowKOSGuildAlert(guild)
+	if not guild then return false end
+	local cd = Spy.db.profile.KOSGuildAlertCooldown
+	if cd == nil then cd = 20 end
+	if cd <= 0 then return true end
+	local nowT = GetTime()
+	local last = kosGuildAlerted[guild]
+	if last and (nowT - last) < cd then return false end
+	kosGuildAlerted[guild] = nowT
+	return true
+end
+
 -- Decides whether a given player record should be treated as a likely healer,
 -- honouring the HealerDetectBy mode:
 --   "class" - any heal-capable class counts.
@@ -571,17 +587,21 @@ function Spy:AlertPlayer(player, source)
 		end
 		if Spy.db.profile.ShareKOSBetweenCharacters then Spy:RegenerateKOSCentralList(player) end
 	elseif Spy.db.profile.WarnOnKOSGuild then
-		if playerData and playerData.guild and Spy.KOSGuild[playerData.guild] then
+		if playerData and playerData.guild and Spy.KOSGuild[playerData.guild] and Spy:AllowKOSGuildAlert(playerData.guild) then
+			-- Show WHO was detected, not just the guild tag: several members of one
+			-- KoS guild are usually around at once, and "<Guild>" alone told you
+			-- nothing about which of them you were actually looking at.
+			local who = player.." <"..playerData.guild..">"
 --			if Spy.db.profile.DisplayWarningsInErrorsFrame then
 			if Spy.db.profile.DisplayWarnings == "ErrorFrame" then
 				local text = Spy.db.profile.Colors.Warning["Warning Text"]
-				local msg = L["KOSGuildWarning"].."<"..playerData.guild..">"
-				UIErrorsFrame:AddMessage(msg, text.r, text.g, text.b, 1.0, UIERRORS_HOLD_TIME)				
+				local msg = L["KOSGuildWarning"]..who
+				UIErrorsFrame:AddMessage(msg, text.r, text.g, text.b, 1.0, UIERRORS_HOLD_TIME)
 			else
 				if source ~= nil and source ~= Spy.CharacterName then
-					Spy:ShowAlert("kosguildaway", "<"..playerData.guild..">", source, Spy:GetPlayerLocation(playerData))
+					Spy:ShowAlert("kosguildaway", who, source, Spy:GetPlayerLocation(playerData))
 				else
-					Spy:ShowAlert("kosguild", "<"..playerData.guild..">")
+					Spy:ShowAlert("kosguild", who)
 				end
 			end
 			if Spy.db.profile.EnableSound then
