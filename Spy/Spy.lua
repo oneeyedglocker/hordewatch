@@ -696,6 +696,36 @@ Spy.options = {
 						Spy:RefreshCurrentList()
 					end,
 				},
+				debugHeader = {
+					name = L["TDebug"],
+					type = "header",
+					order = 90,
+				},
+				DebugMode = {
+					name = L["DebugMode"],
+					desc = L["DebugModeDescription"],
+					type = "toggle",
+					order = 91,
+					width = "full",
+					get = function() return Spy.db.profile.DebugMode end,
+					set = function(_, v)
+						Spy.db.profile.DebugMode = v
+						if v then Spy:CaptureDebugEnvironment() end
+					end,
+				},
+				DebugDump = {
+					name = L["DebugDumpButton"],
+					desc = L["DebugDumpButtonDescription"],
+					type = "execute",
+					order = 92,
+					func = function() Spy:ShowDebugDump() end,
+				},
+				DebugReset = {
+					name = L["DebugResetButton"],
+					type = "execute",
+					order = 93,
+					func = function() Spy:ResetDebug() Spy:Print(L["DebugWasReset"]) end,
+				},
 				arrowHeader = {
 					name = L["TArrow"],
 					type = "header",
@@ -1793,6 +1823,40 @@ Spy.optionsSlash = {
 			order = 1,
 			cmdHidden = true,
 		},
+		debug = {
+			name = "debug",
+			desc = L["DebugSlashDescription"],
+			type = "input",
+			order = 1.5,
+			dialogHidden = true,
+			usage = "<on|off|note <text>|dump|reset|status>",
+			get = function() return "" end,
+			set = function(_, val)
+				val = strtrim(val or "")
+				local cmd, rest = val:match("^(%S*)%s*(.-)$")
+				cmd = (cmd or ""):lower()
+				if cmd == "on" or (cmd == "" and not Spy.db.profile.DebugMode) then
+					Spy.db.profile.DebugMode = true
+					Spy:CaptureDebugEnvironment()
+					Spy:Print(L["DebugOn"])
+				elseif cmd == "off" or cmd == "" then
+					Spy.db.profile.DebugMode = false
+					Spy:Print(L["DebugOff"])
+				elseif cmd == "note" then
+					Spy:DebugNote(rest)
+					Spy:Print(L["DebugNoted"])
+				elseif cmd == "dump" then
+					Spy:ShowDebugDump()
+				elseif cmd == "reset" then
+					Spy:ResetDebug()
+					Spy:Print(L["DebugWasReset"])
+				elseif cmd == "status" then
+					Spy:DebugStatus()
+				else
+					Spy:Print(L["DebugUsage"])
+				end
+			end,
+		},
 		show = {
 			name = L["Show"],
 			desc = L["ShowDescription"],
@@ -2049,6 +2113,7 @@ local Default_Profile = {
 		ArrowHideOffZone=true,
 		ArrowFloatLocked=false,
 		ArrowFloatPosition={},
+		DebugMode=false,
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
 		KillPriorityOrder=false,	-- order by target value instead of recency
 		ShowAggregateHeader=true,	-- "12 3H" beside the title
@@ -2321,6 +2386,7 @@ function Spy:CheckDatabase()
 		if p[k] == nil then p[k] = Default_Profile.profile[k] end
 	end
 	if type(p.ArrowFloatPosition) ~= "table" then p.ArrowFloatPosition = {} end
+	if p.DebugMode == nil then p.DebugMode = Default_Profile.profile.DebugMode end
 	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end
 	if p.KillPriorityOrder == nil then p.KillPriorityOrder = Default_Profile.profile.KillPriorityOrder end
 	if p.ShowAggregateHeader == nil then p.ShowAggregateHeader = Default_Profile.profile.ShowAggregateHeader end
@@ -2467,6 +2533,8 @@ function Spy:OnEnable(first)
 	-- combat log - they only surface through the spellcast events.
 	Spy:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "UnitSpellcastEvent")
 	Spy:RegisterComm(Spy.Signature, "CommReceived")
+	if Spy.HookDebugErrors then Spy:HookDebugErrors() end
+	if Spy:IsDebugging() then Spy:CaptureDebugEnvironment() end
 	Spy.IsEnabled = true
 --	Spy:RefreshCurrentList()
 end

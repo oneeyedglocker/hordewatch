@@ -482,6 +482,10 @@ function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy,
 		if isGuess ~= nil then playerData.isGuess = isGuess end
 	end
 	if playerData then
+		-- measure how wrong a guess was, before the real level overwrites it
+		if type(level) == "number" and isGuess == false and Spy.DebugLevelCheck then
+			Spy:DebugLevelCheck(name, level)
+		end
 		playerData.time = time()
 		Spy:ApplyZoneLevelFloor(playerData)
 
