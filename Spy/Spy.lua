@@ -696,6 +696,18 @@ Spy.options = {
 						Spy:RefreshCurrentList()
 					end,
 				},
+				UseZoneLevelFloor = {
+					name = L["UseZoneLevelFloor"],
+					desc = L["UseZoneLevelFloorDescription"],
+					type = "toggle",
+					order = 17.5,
+					width = "full",
+					get = function() return Spy.db.profile.UseZoneLevelFloor end,
+					set = function(_, value)
+						Spy.db.profile.UseZoneLevelFloor = value
+						Spy:RefreshCurrentList()
+					end,
+				},
 				massHeader = {
 					name = L["TMassFights"],
 					type = "header",
@@ -1897,6 +1909,7 @@ local Default_Profile = {
 		DimNonHealers=false,
 		-- Mass-fight controls: in a city raid the list can take 600 detections a
 		-- minute through 15 rows, so these cut it down to what's worth attacking.
+		UseZoneLevelFloor=true,		-- clamp guessed levels to the zone's entry level
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
 		KillPriorityOrder=false,	-- order by target value instead of recency
 		ShowAggregateHeader=true,	-- "12 3H" beside the title
@@ -2162,6 +2175,7 @@ function Spy:CheckDatabase()
 	if p.TitleBarStyle == nil then p.TitleBarStyle = Default_Profile.profile.TitleBarStyle end
 	if p.TitleBarOpacity == nil then p.TitleBarOpacity = Default_Profile.profile.TitleBarOpacity end
 	if p.HealerMinHeal == nil then p.HealerMinHeal = Default_Profile.profile.HealerMinHeal end
+	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end
 	if p.KillPriorityOrder == nil then p.KillPriorityOrder = Default_Profile.profile.KillPriorityOrder end
 	if p.ShowAggregateHeader == nil then p.ShowAggregateHeader = Default_Profile.profile.ShowAggregateHeader end
@@ -2775,6 +2789,52 @@ function Spy:GetCooldownRemaining(playerData)
 	local left = playerData.cdExpires - GetTime()
 	if left <= 0 then return nil end
 	return left, playerData.cdSpell
+end
+
+-- ============================================================
+-- Zone level floors.
+--
+-- Spy guesses levels from which spells it has seen an enemy cast, which
+-- produces nonsense in Outland: a capture of two sessions there had EVERY
+-- hostile at level 70, while Spy was displaying "16+" and "30+". Nobody can
+-- reach these zones below the entry level, so a guessed level is clamped to
+-- the minimum for the zone it was seen in. Keyed by UiMapID rather than zone
+-- name so it works in every locale.
+-- ============================================================
+Spy.ZoneLevelFloor = {
+	[100] = 58,	-- Hellfire Peninsula
+	[102] = 60,	-- Zangarmarsh
+	[104] = 67,	-- Shadowmoon Valley
+	[105] = 65,	-- Blade's Edge Mountains
+	[107] = 64,	-- Nagrand
+	[108] = 62,	-- Terokkar Forest
+	[109] = 67,	-- Netherstorm
+	[111] = 58,	-- Shattrath City
+	[122] = 70,	-- Isle of Quel'Danas
+}
+
+-- Floor for a given map, or for where the player is standing when omitted.
+function Spy:GetZoneLevelFloor(mapID)
+	if not Spy.db.profile.UseZoneLevelFloor then return nil end
+	if not mapID and C_Map and C_Map.GetBestMapForUnit then
+		mapID = C_Map.GetBestMapForUnit("player")
+	end
+	if type(mapID) ~= "number" then return nil end
+	local floor = Spy.ZoneLevelFloor[mapID]
+	if floor and floor > Spy.MaximumPlayerLevel then floor = Spy.MaximumPlayerLevel end
+	return floor
+end
+
+-- Applies the floor to a stored record. Only ever raises a GUESSED level -
+-- a level read directly off a unit is authoritative and left alone.
+function Spy:ApplyZoneLevelFloor(playerData)
+	if not playerData or playerData.isGuess == false then return end
+	local floor = Spy:GetZoneLevelFloor(playerData.mapID)
+	if not floor then return end
+	local current = tonumber(playerData.level)
+	if not current or current < floor then
+		playerData.level = floor
+	end
 end
 
 -- Heals that reach another player but say nothing about being a healer:

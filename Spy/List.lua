@@ -129,6 +129,9 @@ function Spy:RefreshCurrentList(player, source)
 
 			local playerData = SpyPerCharDB.PlayerData[data.player]
 			if playerData then
+				-- Raise impossible guessed levels to the zone's entry level
+				-- (nobody is level 16 in Outland) before rendering.
+				Spy:ApplyZoneLevelFloor(playerData)
 				if playerData.level then
 					level = playerData.level
 					if playerData.isGuess == true and tonumber(playerData.level) < Spy.MaximumPlayerLevel then
@@ -480,6 +483,7 @@ function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy,
 	end
 	if playerData then
 		playerData.time = time()
+		Spy:ApplyZoneLevelFloor(playerData)
 		if not Spy.ActiveList[name] then
 			if (WorldMapFrame:IsVisible() and Spy.db.profile.SwitchToZone) then
 				WorldMapFrame:SetMapID(C_Map.GetBestMapForUnit("player"))
