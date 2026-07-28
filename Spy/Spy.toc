@@ -23,7 +23,7 @@
 ## X-Credits-ruRU: Localization: TeHbZShadow, TemaZ
 ## X-Credits-esMX: Localization: Cruzluz
 ## X-Credits-esES: Localization: Cruzluz
-## OptionalDeps: Ace3, LibSharedMedia-3.0, 
+## OptionalDeps: Ace3, LibSharedMedia-3.0, TomTom
 ## SavedVariables: SpyDB
 ## SavedVariablesPerCharacter: SpyPerCharDB
 

@@ -1082,11 +1082,73 @@ function Spy:RegenerateKOSListFromCentral()
 	end
 end
 
+-- ============================================================
+-- TomTom integration: point the arrow at where a player was last seen.
+-- Spy already records mapID/mapX/mapY per player, which is exactly what
+-- TomTom:AddWaypoint wants, so a sighting can become a navigable waypoint.
+-- ============================================================
+function Spy:HasTomTom()
+	return TomTom ~= nil and type(TomTom.AddWaypoint) == "function"
+end
+
+function Spy:SetTomTomWaypoint(name)
+	if not name or name == "" then return end
+	if not Spy:HasTomTom() then
+		DEFAULT_CHAT_FRAME:AddMessage(L["TomTomMissing"])
+		return
+	end
+	local playerData = SpyPerCharDB.PlayerData[name]
+	if not playerData or not playerData.mapID or not playerData.mapX or not playerData.mapY then
+		DEFAULT_CHAT_FRAME:AddMessage(format(L["TomTomNoLocation"], name))
+		return
+	end
+
+	-- Clear the previous Spy waypoint so repeated clicks don't stack arrows.
+	if Spy.TomTomWaypoint and TomTom.RemoveWaypoint then
+		pcall(TomTom.RemoveWaypoint, TomTom, Spy.TomTomWaypoint)
+		Spy.TomTomWaypoint = nil
+	end
+
+	-- Age matters: a two-minute-old sighting is a guess, not a location.
+	local age = playerData.time and (time() - playerData.time) or nil
+	local title = name
+	if age and age > 5 then
+		title = format("%s (%s)", name, SecondsToTime(age))
+	end
+
+	local ok, uid = pcall(TomTom.AddWaypoint, TomTom, playerData.mapID, playerData.mapX, playerData.mapY, {
+		title = title,
+		from = "Spy",
+		persistent = false,
+		minimap = true,
+		world = true,
+		crazy = true,	-- show the arrow immediately, that's the point
+	})
+	if ok and uid then
+		Spy.TomTomWaypoint = uid
+		local where = Spy:GetPlayerLocation(playerData) or ""
+		DEFAULT_CHAT_FRAME:AddMessage(format(L["TomTomTracking"], name, where))
+	end
+end
+
+function Spy:ClearTomTomWaypoint()
+	if Spy.TomTomWaypoint and Spy:HasTomTom() and TomTom.RemoveWaypoint then
+		pcall(TomTom.RemoveWaypoint, TomTom, Spy.TomTomWaypoint)
+		Spy.TomTomWaypoint = nil
+	end
+end
+
 function Spy:ButtonClicked(self, button)
 	local name = Spy.ButtonName[self.id]
 	if name and name ~= "" then
 		if button == "LeftButton" then
-			if IsShiftKeyDown() then
+			if IsAltKeyDown() and Spy.db.profile.TomTomOnAltClick then
+				Spy:SetTomTomWaypoint(name)
+				-- still target them as well, so alt-click is "go get this one"
+				if not InCombatLockdown() then
+					self:SetAttribute("macrotext", "/targetexact "..name)
+				end
+			elseif IsShiftKeyDown() then
 				if SpyPerCharDB.KOSData[name] then
 					Spy:ToggleKOSPlayer(false, name)
 				else

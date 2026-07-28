@@ -696,6 +696,18 @@ Spy.options = {
 						Spy:RefreshCurrentList()
 					end,
 				},
+				TomTomOnAltClick = {
+					name = L["TomTomOnAltClick"],
+					desc = L["TomTomOnAltClickDescription"],
+					type = "toggle",
+					order = 17.2,
+					width = "full",
+					get = function() return Spy.db.profile.TomTomOnAltClick end,
+					set = function(_, value)
+						Spy.db.profile.TomTomOnAltClick = value
+						if not value then Spy:ClearTomTomWaypoint() end
+					end,
+				},
 				UseZoneLevelFloor = {
 					name = L["UseZoneLevelFloor"],
 					desc = L["UseZoneLevelFloorDescription"],
@@ -1910,6 +1922,7 @@ local Default_Profile = {
 		-- Mass-fight controls: in a city raid the list can take 600 detections a
 		-- minute through 15 rows, so these cut it down to what's worth attacking.
 		UseZoneLevelFloor=true,		-- clamp guessed levels to the zone's entry level
+		TomTomOnAltClick=true,		-- alt-click a row to point TomTom at their last position
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
 		KillPriorityOrder=false,	-- order by target value instead of recency
 		ShowAggregateHeader=true,	-- "12 3H" beside the title
@@ -2176,6 +2189,7 @@ function Spy:CheckDatabase()
 	if p.TitleBarOpacity == nil then p.TitleBarOpacity = Default_Profile.profile.TitleBarOpacity end
 	if p.HealerMinHeal == nil then p.HealerMinHeal = Default_Profile.profile.HealerMinHeal end
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
+	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
 	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end
 	if p.KillPriorityOrder == nil then p.KillPriorityOrder = Default_Profile.profile.KillPriorityOrder end
 	if p.ShowAggregateHeader == nil then p.ShowAggregateHeader = Default_Profile.profile.ShowAggregateHeader end

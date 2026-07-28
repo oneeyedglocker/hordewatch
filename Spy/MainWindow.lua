@@ -301,6 +301,18 @@ function Spy_CreateBarDropdown(self, level)
 				UIDropDownMenu_AddButton(info, level)
 			end
 
+			if Spy.db.profile.TomTomOnAltClick then
+				info.isTitle = nil
+				info.notCheckable = true
+				info.hasArrow = false
+				info.disabled = not Spy:HasTomTom()
+				info.text = L["TomTomWaypoint"]
+				info.func = function() Spy:SetTomTomWaypoint(player) end
+				info.value = nil
+				info.arg1 = self.relativeTo.name
+				UIDropDownMenu_AddButton(info, level)
+			end
+
 			if not SpyPerCharDB.KOSData[player] then
 				info.isTitle = nil
 				info.notCheckable = true
