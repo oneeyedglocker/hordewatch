@@ -838,6 +838,8 @@ function Spy:CreateMainWindow()
 
 		Spy:ApplyWindowLocks()
 		Spy:ApplyWindowStyle()
+		Spy:CreateArrowFrames()
+		Spy:ApplyArrowSettings()
 	end
 
 	if not Spy.AlertWindow then
@@ -1146,6 +1148,18 @@ function Spy:UpdateWindowTitle()
 	local data = Spy.ListTypes[mode]
 	if not data then return end
 	local title = data[1]
+	-- while tracking, the title bar becomes the arrow readout
+	local tracked = Spy.GetTrackedPlayer and Spy:GetTrackedPlayer()
+	if tracked and Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle == "titlebar" then
+		local _, distance = Spy:GetArrowVector()
+		local suffix = distance and format(" %d%s", distance, L["ArrowYardsShort"]) or ""
+		Spy.MainWindow.Title:SetText(tracked .. suffix)
+		if Spy.Arrow and Spy.Arrow.titleArrow then
+			Spy.Arrow.titleArrow:ClearAllPoints()
+			Spy.Arrow.titleArrow:SetPoint("RIGHT", Spy.MainWindow.Title, "LEFT", -3, 0)
+		end
+		return
+	end
 	if Spy.db.profile.HealerOnlyFilter and mode == 1 then
 		local hc = Spy.db.profile.Colors["Spy"]["Healer Marker"]
 		local hex = hc and format("%02x%02x%02x", hc.r * 255, hc.g * 255, hc.b * 255) or "4fe27a"

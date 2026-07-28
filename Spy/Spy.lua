@@ -696,6 +696,118 @@ Spy.options = {
 						Spy:RefreshCurrentList()
 					end,
 				},
+				arrowHeader = {
+					name = L["TArrow"],
+					type = "header",
+					order = 16,
+				},
+				ArrowEnabled = {
+					name = L["ArrowEnabled"],
+					desc = L["ArrowEnabledDescription"],
+					type = "toggle",
+					order = 16.1,
+					width = "full",
+					get = function() return Spy.db.profile.ArrowEnabled end,
+					set = function(_, v) Spy.db.profile.ArrowEnabled = v Spy:ApplyArrowSettings() end,
+				},
+				ArrowStyle = {
+					name = L["ArrowStyle"],
+					desc = L["ArrowStyleDescription"],
+					type = "select",
+					order = 16.2,
+					values = {
+						["titlebar"] = L["ArrowStyleTitlebar"],
+						["dock"] = L["ArrowStyleDock"],
+						["floating"] = L["ArrowStyleFloating"],
+					},
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowStyle end,
+					set = function(_, v) Spy.db.profile.ArrowStyle = v Spy:ApplyArrowSettings() end,
+				},
+				ArrowClickModifier = {
+					name = L["ArrowClickModifier"],
+					desc = L["ArrowClickModifierDescription"],
+					type = "select",
+					order = 16.3,
+					values = { ["none"] = L["ArrowClickPlain"], ["alt"] = L["ArrowClickAlt"] },
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowClickModifier end,
+					set = function(_, v) Spy.db.profile.ArrowClickModifier = v end,
+				},
+				ArrowSize = {
+					name = L["ArrowSize"],
+					type = "range",
+					order = 16.4,
+					min = 12, max = 48, step = 2,
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowSize end,
+					set = function(_, v) Spy.db.profile.ArrowSize = v Spy:ApplyArrowSettings() end,
+				},
+				ArrowColor = {
+					name = L["ArrowColor"],
+					type = "color",
+					order = 16.5,
+					hasAlpha = false,
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow"] return c.r, c.g, c.b end,
+					set = function(_, r, g, b)
+						local c = Spy.db.profile.Colors["Spy"]["Arrow"]
+						c.r, c.g, c.b = r, g, b
+						Spy:UpdateArrow()
+					end,
+				},
+				ArrowColorByAge = {
+					name = L["ArrowColorByAge"],
+					desc = L["ArrowColorByAgeDescription"],
+					type = "toggle",
+					order = 16.6,
+					width = "full",
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowColorByAge end,
+					set = function(_, v) Spy.db.profile.ArrowColorByAge = v Spy:UpdateArrow() end,
+				},
+				ArrowStaleColor = {
+					name = L["ArrowStaleColor"],
+					type = "color",
+					order = 16.7,
+					hasAlpha = false,
+					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowColorByAge) end,
+					get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"] return c.r, c.g, c.b end,
+					set = function(_, r, g, b)
+						local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"]
+						c.r, c.g, c.b = r, g, b
+						Spy:UpdateArrow()
+					end,
+				},
+				ArrowTimeout = {
+					name = L["ArrowTimeout"],
+					desc = L["ArrowTimeoutDescription"],
+					type = "range",
+					order = 16.8,
+					min = 0, max = 300, step = 10,
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowTimeout end,
+					set = function(_, v) Spy.db.profile.ArrowTimeout = v end,
+				},
+				ArrowDistanceUnit = {
+					name = L["ArrowDistanceUnit"],
+					type = "select",
+					order = 16.9,
+					values = { ["yards"] = L["ArrowYards"], ["meters"] = L["ArrowMeters"] },
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowDistanceUnit end,
+					set = function(_, v) Spy.db.profile.ArrowDistanceUnit = v Spy:UpdateArrow() end,
+				},
+				ArrowFloatLocked = {
+					name = L["ArrowFloatLocked"],
+					desc = L["ArrowFloatLockedDescription"],
+					type = "toggle",
+					order = 16.95,
+					width = "full",
+					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle == "floating") end,
+					get = function() return Spy.db.profile.ArrowFloatLocked end,
+					set = function(_, v) Spy.db.profile.ArrowFloatLocked = v end,
+				},
 				TomTomOnAltClick = {
 					name = L["TomTomOnAltClick"],
 					desc = L["TomTomOnAltClickDescription"],
@@ -1863,6 +1975,8 @@ local Default_Profile = {
 				["Window Border"] = { r = 1, g = 1, b = 1, a = 1 },
 				["Title Bar"] = { r = 13/255, g = 11/255, b = 10/255, a = 1 },
 				["Cooldown"] = { r = 1, g = 0.82, b = 0, a = 1 },
+				["Arrow"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
+				["Arrow Stale"] = { r = 217/255, g = 161/255, b = 59/255, a = 1 },
 			},
 		},
 		MainWindow={
@@ -1923,6 +2037,18 @@ local Default_Profile = {
 		-- minute through 15 rows, so these cut it down to what's worth attacking.
 		UseZoneLevelFloor=true,		-- clamp guessed levels to the zone's entry level
 		TomTomOnAltClick=true,		-- alt-click a row to point TomTom at their last position
+		-- Native direction arrow
+		ArrowEnabled=true,
+		ArrowStyle="titlebar",		-- titlebar | dock | floating | off
+		ArrowClickModifier="none",	-- none (plain click) | alt
+		ArrowSize=24,
+		ArrowColorByAge=true,
+		ArrowStaleSeconds=30,
+		ArrowTimeout=60,
+		ArrowDistanceUnit="yards",	-- yards | meters
+		ArrowHideOffZone=true,
+		ArrowFloatLocked=false,
+		ArrowFloatPosition={},
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
 		KillPriorityOrder=false,	-- order by target value instead of recency
 		ShowAggregateHeader=true,	-- "12 3H" beside the title
@@ -2190,6 +2316,11 @@ function Spy:CheckDatabase()
 	if p.HealerMinHeal == nil then p.HealerMinHeal = Default_Profile.profile.HealerMinHeal end
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
+	for _, k in ipairs({"ArrowEnabled","ArrowStyle","ArrowClickModifier","ArrowSize","ArrowColorByAge",
+		"ArrowStaleSeconds","ArrowTimeout","ArrowDistanceUnit","ArrowHideOffZone","ArrowFloatLocked"}) do
+		if p[k] == nil then p[k] = Default_Profile.profile[k] end
+	end
+	if type(p.ArrowFloatPosition) ~= "table" then p.ArrowFloatPosition = {} end
 	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end
 	if p.KillPriorityOrder == nil then p.KillPriorityOrder = Default_Profile.profile.KillPriorityOrder end
 	if p.ShowAggregateHeader == nil then p.ShowAggregateHeader = Default_Profile.profile.ShowAggregateHeader end
@@ -2843,7 +2974,10 @@ end
 -- a level read directly off a unit is authoritative and left alone.
 function Spy:ApplyZoneLevelFloor(playerData)
 	if not playerData or playerData.isGuess == false then return end
-	local floor = Spy:GetZoneLevelFloor(playerData.mapID)
+	-- mapID is only recorded on a first sighting where coordinates resolved, so
+	-- it's nil for most records. Detection always happens near us, so fall back
+	-- to the zone we're standing in.
+	local floor = Spy:GetZoneLevelFloor(playerData.mapID) or Spy:GetZoneLevelFloor()
 	if not floor then return end
 	local current = tonumber(playerData.level)
 	if not current or current < floor then

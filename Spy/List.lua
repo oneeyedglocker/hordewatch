@@ -1142,7 +1142,20 @@ function Spy:ButtonClicked(self, button)
 	local name = Spy.ButtonName[self.id]
 	if name and name ~= "" then
 		if button == "LeftButton" then
-			if IsAltKeyDown() and Spy.db.profile.TomTomOnAltClick then
+			if Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle ~= "off"
+				and Spy.db.profile.ArrowClickModifier == "none"
+				and not IsAltKeyDown() and not IsShiftKeyDown() and not IsControlKeyDown() then
+				Spy:TrackPlayer(name)
+				if not InCombatLockdown() then
+					self:SetAttribute("macrotext", "/targetexact "..name)
+				end
+			elseif Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle ~= "off"
+				and Spy.db.profile.ArrowClickModifier == "alt" and IsAltKeyDown() then
+				Spy:TrackPlayer(name)
+				if not InCombatLockdown() then
+					self:SetAttribute("macrotext", "/targetexact "..name)
+				end
+			elseif IsAltKeyDown() and Spy.db.profile.TomTomOnAltClick then
 				Spy:SetTomTomWaypoint(name)
 				-- still target them as well, so alt-click is "go get this one"
 				if not InCombatLockdown() then
