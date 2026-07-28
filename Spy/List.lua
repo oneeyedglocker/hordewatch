@@ -484,30 +484,40 @@ function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy,
 	if playerData then
 		playerData.time = time()
 		Spy:ApplyZoneLevelFloor(playerData)
-		if not Spy.ActiveList[name] then
-			if (WorldMapFrame:IsVisible() and Spy.db.profile.SwitchToZone) then
-				WorldMapFrame:SetMapID(C_Map.GetBestMapForUnit("player"))
-			end
-			if (nil == C_Map.GetBestMapForUnit("player")) or (nil == C_Map.GetPlayerMapPosition(C_Map.GetBestMapForUnit("player"), "player")) then
-				local x,y = 0,0
-				local InsName = GetInstanceInfo()
-				playerData.zone = InsName
+
+		-- Position is refreshed on EVERY detection, not just the first.
+		-- Previously this was gated on "not already in the ActiveList", so once
+		-- a player was being actively detected their coordinates froze at wherever
+		-- they were first spotted while the timestamp kept updating - which made
+		-- the direction arrow confidently point at a stale position exactly while
+		-- you were chasing them.
+		local isNewDetection = not Spy.ActiveList[name]
+		if isNewDetection and WorldMapFrame:IsVisible() and Spy.db.profile.SwitchToZone then
+			WorldMapFrame:SetMapID(C_Map.GetBestMapForUnit("player"))
+		end
+
+		local mapID = C_Map.GetBestMapForUnit("player")
+		local position = mapID and C_Map.GetPlayerMapPosition(mapID, "player")
+		if not position then
+			if isNewDetection then
+				playerData.zone = GetInstanceInfo()
 				playerData.subZone = ""
-			else
-				local mapX, mapY = C_Map.GetPlayerMapPosition(C_Map.GetBestMapForUnit("player"), "player"):GetXY()			
-				if mapX ~= 0 and mapY ~= 0 then
-					mapX = math.floor(tonumber(mapX) * 100) / 100
-					mapY = math.floor(tonumber(mapY) * 100) / 100
-					playerData.mapX = mapX
-					playerData.mapY = mapY
-					playerData.zone = GetZoneText()
-					playerData.mapID = C_Map.GetBestMapForUnit("player") --++8.0
-					playerData.subZone = GetSubZoneText()
-				else
-					detected = false
-				end
 			end
-		end	
+		else
+			local mapX, mapY = position:GetXY()
+			if mapX and mapY and mapX ~= 0 and mapY ~= 0 then
+				-- Store at full precision. This used to floor to 2 decimals,
+				-- which in a zone ~3500 yards across is a 35 yard grid, biased
+				-- one direction because it floored rather than rounded.
+				playerData.mapX = mapX
+				playerData.mapY = mapY
+				playerData.mapID = mapID
+				playerData.zone = GetZoneText()
+				playerData.subZone = GetSubZoneText()
+			elseif isNewDetection then
+				detected = false
+			end
+		end
 	end
 	return detected
 end

@@ -13,9 +13,9 @@ import math
 import numpy as np
 from PIL import Image
 
-SHEET = 1024
-COLS, ROWS = 8, 8
-FRAMES = COLS * ROWS          # 64 frames -> 5.625 degrees per frame
+SHEET = 2048
+COLS, ROWS = 16, 16
+FRAMES = COLS * ROWS          # 256 frames -> 1.4 degrees per frame
 CELL = SHEET // COLS          # 128 px
 SS = 3                        # supersample factor for antialiasing
 R = CELL * SS                 # render resolution per frame
@@ -171,7 +171,7 @@ rgb = np.divide(rgba[:, :, :3], np.maximum(a, 1e-6), where=a > 1e-6)
 rgba[:, :, :3] = np.clip(rgb, 0, 1)
 
 img = Image.fromarray((rgba * 255).astype(np.uint8), mode="RGBA")
-img.save("SpyArrow.tga")
+img.save("SpyArrow.tga", compression="tga_rle")
 print(f"wrote SpyArrow.tga  {SHEET}x{SHEET}  {FRAMES} frames  {COLS}x{ROWS} grid  cell {CELL}px")
 img.resize((512, 512), Image.LANCZOS).save("arrow_preview.png")
 print("wrote arrow_preview.png")

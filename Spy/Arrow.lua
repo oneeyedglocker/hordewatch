@@ -8,7 +8,7 @@
     "dock"      - a strip below the rows with a larger arrow and staleness
     "floating"  - a separate movable frame, park it anywhere
 
-  The arrow is a 64-frame sprite sheet of a shaded 3D model rotating on its
+  The arrow is a 256-frame sprite sheet of a shaded 3D model rotating on its
   axis; the frame is chosen with SetTexCoord from the bearing, so it tilts in
   perspective instead of spinning flat.
 
@@ -22,7 +22,7 @@ local L = AceLocale:GetLocale("Spy")
 local HBD = LibStub("HereBeDragons-2.0", true)
 
 local ARROW_TEXTURE = "Interface\\AddOns\\Spy\\Textures\\SpyArrow"
-local FRAMES, COLS, ROWS = 64, 8, 8
+local FRAMES, COLS, ROWS = 256, 16, 16
 local TWOPI = math.pi * 2
 
 Spy.Arrow = Spy.Arrow or {}
@@ -72,7 +72,12 @@ function Spy:GetArrowVector()
 	local playerData = SpyPerCharDB.PlayerData[name]
 	if not playerData then return nil end
 	local dZone, dX, dY = playerData.mapID, playerData.mapX, playerData.mapY
-	if not dZone or not dX or not dY then return nil end
+	if not dX or not dY then return nil end
+	-- Older records were saved without a mapID. Coordinates are always recorded
+	-- from where we were standing, so assume the zone we're in rather than
+	-- refusing to show an arrow at all.
+	dZone = dZone or (C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player"))
+	if not dZone then return nil end
 	if not HBD then return nil end
 
 	local oZone = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
