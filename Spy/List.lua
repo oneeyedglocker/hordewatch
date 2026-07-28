@@ -101,8 +101,24 @@ function Spy:RefreshCurrentList(player, source)
 		manageFunction()
 	end
 
+	-- Healer-only filter. In a mass fight the list is a firehose - hundreds of
+	-- detections a minute through fifteen rows - so this strips it down to the
+	-- only targets that matter. KoS players are always kept.
+	local displayList = Spy.CurrentList
+	if Spy.db.profile.HealerOnlyFilter and mode == 1 then
+		local filtered = {}
+		for _, entry in ipairs(Spy.CurrentList) do
+			local pd = SpyPerCharDB.PlayerData[entry.player]
+			if Spy:IsHealer(pd) or SpyPerCharDB.KOSData[entry.player] then
+				filtered[#filtered + 1] = entry
+			end
+		end
+		displayList = filtered
+	end
+	Spy.DisplayedCount = #displayList
+
 	local button = 1
-	for index, data in pairs(Spy.CurrentList) do
+	for index, data in pairs(displayList) do
 		if button <= Spy.ButtonLimit then
 			local description = ""
 			local level = "??"
@@ -241,6 +257,33 @@ function Spy:ManageNearbyList()
 	appendGroup(list, inactiveKoS)
 	appendGroup(list, active)
 	appendGroup(list, inactive)
+
+	-- Kill-priority ordering. Replaces "most recently seen" with "most worth
+	-- attacking": KoS, then confirmed healers, then anyone actively engaged,
+	-- with recency only breaking ties. Recency ordering is useless in a big
+	-- fight because everything is recent.
+	if Spy.db.profile.KillPriorityOrder then
+		local nowT = time()
+		for _, entry in ipairs(list) do
+			local pd = SpyPerCharDB.PlayerData[entry.player]
+			local score = 0
+			if SpyPerCharDB.KOSData[entry.player] then score = score + 1000 end
+			if Spy:IsHealer(pd) then score = score + 500 end
+			if Spy.ActiveList[entry.player] then score = score + 100 end
+			-- a burnt defensive cooldown means they're vulnerable now
+			if pd and pd.cdExpires and pd.cdExpires > GetTime() then score = score + 50 end
+			-- recency as the tiebreaker, capped so it never outranks a role
+			local age = pd and pd.time and (nowT - pd.time) or 999
+			if age < 0 then age = 0 end
+			score = score + math.max(0, 30 - age)
+			entry.priority = score
+		end
+		table.sort(list, function(a, b)
+			if a.priority == b.priority then return (a.time or 0) < (b.time or 0) end
+			return a.priority > b.priority
+		end)
+	end
+
 	Spy.CurrentList = list
 end
 
@@ -287,15 +330,27 @@ end
 
 function Spy:UpdateActiveCount()
     local activeCount = 0
+    local healerCount = 0
     for k in pairs(Spy.ActiveList) do
         activeCount = activeCount + 1
+        if Spy:IsHealer(SpyPerCharDB.PlayerData[k]) then
+            healerCount = healerCount + 1
+        end
     end
 	local theFrame = Spy.MainWindow
-    if activeCount > 0 then 
-		theFrame.CountFrame.Text:SetText("|cFF0070DE" .. activeCount .. "|r") 
-    else 
-        theFrame.CountFrame.Text:SetText("|cFF0070DE0|r")
-    end
+	if not theFrame or not theFrame.CountFrame then return end
+
+	-- Aggregate header: in a big fight the individual names scroll past far too
+	-- fast to read, but "how many, and how many of them heal" stays useful.
+	local text
+	if Spy.db.profile.ShowAggregateHeader and healerCount > 0 then
+		local hc = Spy.db.profile.Colors["Spy"]["Healer Marker"]
+		local hex = hc and format("%02x%02x%02x", hc.r * 255, hc.g * 255, hc.b * 255) or "4fe27a"
+		text = format("|cFF0070DE%d|r |cff%s%dH|r", activeCount, hex, healerCount)
+	else
+		text = format("|cFF0070DE%d|r", activeCount)
+	end
+	theFrame.CountFrame.Text:SetText(text)
 end
 
 function Spy:ManageExpirations()

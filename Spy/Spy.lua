@@ -696,6 +696,53 @@ Spy.options = {
 						Spy:RefreshCurrentList()
 					end,
 				},
+				massHeader = {
+					name = L["TMassFights"],
+					type = "header",
+					order = 18,
+				},
+				massDesc = {
+					name = L["MassFightsDescription"],
+					type = "description",
+					order = 18.1,
+				},
+				HealerOnlyFilter = {
+					name = L["HealerOnlyFilter"],
+					desc = L["HealerOnlyFilterDescription"],
+					type = "toggle",
+					order = 18.2,
+					width = "full",
+					get = function() return Spy.db.profile.HealerOnlyFilter end,
+					set = function(_, value)
+						Spy.db.profile.HealerOnlyFilter = value
+						Spy:UpdateWindowTitle()
+						Spy:RefreshCurrentList()
+					end,
+				},
+				KillPriorityOrder = {
+					name = L["KillPriorityOrder"],
+					desc = L["KillPriorityOrderDescription"],
+					type = "toggle",
+					order = 18.3,
+					width = "full",
+					get = function() return Spy.db.profile.KillPriorityOrder end,
+					set = function(_, value)
+						Spy.db.profile.KillPriorityOrder = value
+						Spy:RefreshCurrentList()
+					end,
+				},
+				ShowAggregateHeader = {
+					name = L["ShowAggregateHeader"],
+					desc = L["ShowAggregateHeaderDescription"],
+					type = "toggle",
+					order = 18.4,
+					width = "full",
+					get = function() return Spy.db.profile.ShowAggregateHeader end,
+					set = function(_, value)
+						Spy.db.profile.ShowAggregateHeader = value
+						Spy:UpdateActiveCount()
+					end,
+				},
 				cooldownHeader = {
 					name = L["TCooldowns"],
 					type = "header",
@@ -1848,6 +1895,11 @@ local Default_Profile = {
 		SortHealersToTop=true,
 		HealerGreenEdge=true,
 		DimNonHealers=false,
+		-- Mass-fight controls: in a city raid the list can take 600 detections a
+		-- minute through 15 rows, so these cut it down to what's worth attacking.
+		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
+		KillPriorityOrder=false,	-- order by target value instead of recency
+		ShowAggregateHeader=true,	-- "12 3H" beside the title
 		-- Window options
 		LockPosition=false,
 		LockSize=false,
@@ -2110,6 +2162,9 @@ function Spy:CheckDatabase()
 	if p.TitleBarStyle == nil then p.TitleBarStyle = Default_Profile.profile.TitleBarStyle end
 	if p.TitleBarOpacity == nil then p.TitleBarOpacity = Default_Profile.profile.TitleBarOpacity end
 	if p.HealerMinHeal == nil then p.HealerMinHeal = Default_Profile.profile.HealerMinHeal end
+	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end
+	if p.KillPriorityOrder == nil then p.KillPriorityOrder = Default_Profile.profile.KillPriorityOrder end
+	if p.ShowAggregateHeader == nil then p.ShowAggregateHeader = Default_Profile.profile.ShowAggregateHeader end
 	if p.TrackCooldowns == nil then p.TrackCooldowns = Default_Profile.profile.TrackCooldowns end
 	if p.AnnounceCooldowns == nil then p.AnnounceCooldowns = Default_Profile.profile.AnnounceCooldowns end
 	if p.KOSGuildAlertCooldown == nil then p.KOSGuildAlertCooldown = Default_Profile.profile.KOSGuildAlertCooldown end
@@ -2867,6 +2922,7 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 						if (big or playerData.healCount >= 3) and not playerData.isHealer then
 							playerData.isHealer = true
 							if Spy.db.profile.MarkHealers then Spy:RefreshCurrentList() end
+							Spy:UpdateActiveCount()
 						end
 					end
 				end

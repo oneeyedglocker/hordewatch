@@ -1122,10 +1122,24 @@ function Spy:SetCurrentList(mode)
 	Spy.db.profile.CurrentList = mode
 	Spy:ManageExpirations()
 
-	local data = Spy.ListTypes[mode]
-	Spy.MainWindow.Title:SetText(data[1])
-
+	Spy:UpdateWindowTitle()
 	Spy:RefreshCurrentList()
+end
+
+-- Title reflects the active list, and flags the healer-only filter so a short
+-- list is never mistaken for "no enemies around".
+function Spy:UpdateWindowTitle()
+	if not Spy.MainWindow or not Spy.MainWindow.Title then return end
+	local mode = Spy.db.profile.CurrentList or 1
+	local data = Spy.ListTypes[mode]
+	if not data then return end
+	local title = data[1]
+	if Spy.db.profile.HealerOnlyFilter and mode == 1 then
+		local hc = Spy.db.profile.Colors["Spy"]["Healer Marker"]
+		local hex = hc and format("%02x%02x%02x", hc.r * 255, hc.g * 255, hc.b * 255) or "4fe27a"
+		title = title .. format(" |cff%s(%s)|r", hex, L["HealersOnlyTag"])
+	end
+	Spy.MainWindow.Title:SetText(title)
 end
 
 function Spy:MainWindowNextMode()
