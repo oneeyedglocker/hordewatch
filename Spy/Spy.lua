@@ -2119,6 +2119,18 @@ function Spy:CheckDatabase()
 		p.HealerDetectBy = Default_Profile.profile.HealerDetectBy
 		p.HealerDetectByMigrated = true
 	end
+	-- An earlier build counted ANY heal event, including self-healing and
+	-- lifesteal, so warlocks (Death Coil / Drain Life) and warriors
+	-- (Bloodthirst / Blood Craze) were wrongly flagged. Clear the bad flags
+	-- once so they get re-learned under the corrected rules.
+	if SpyPerCharDB and SpyPerCharDB.PlayerData and not SpyPerCharDB.healerFlagsReset then
+		for _, data in pairs(SpyPerCharDB.PlayerData) do
+			data.isHealer = nil
+			data.healTotal = nil
+			data.healCount = nil
+		end
+		SpyPerCharDB.healerFlagsReset = true
+	end
 	if p.Colors["Spy"] == nil then p.Colors["Spy"] = {} end
 	for k, v in pairs(Default_Profile.profile.Colors["Spy"]) do
 		if p.Colors["Spy"][k] == nil then
@@ -2710,6 +2722,35 @@ function Spy:GetCooldownRemaining(playerData)
 	return left, playerData.cdSpell
 end
 
+-- Heals that reach another player but say nothing about being a healer:
+-- passive procs, leech/lifetap effects, pet upkeep, consumables and shadow
+-- specs' party leech. Rule 1 (source ~= destination) already discards pure
+-- self-healing; this list catches the rest.
+local Spy_NonHealerHeals = {
+	-- warlock leech / pet
+	["Death Coil"] = true, ["Drain Life"] = true, ["Siphon Life"] = true,
+	["Health Funnel"] = true, ["Fel Armor"] = true, ["Healthstone"] = true,
+	["Master Healthstone"] = true, ["Major Healthstone"] = true,
+	-- warrior / melee self-sustain
+	["Bloodthirst"] = true, ["Blood Craze"] = true, ["Second Wind"] = true,
+	["Victory Rush"] = true, ["Enraged Regeneration"] = true,
+	-- passive party procs (not healing output)
+	["Improved Leader of the Pack"] = true, ["Leader of the Pack"] = true,
+	["Blessed Recovery"] = true, ["Spirit Bond"] = true, ["Mend Pet"] = true,
+	["Judgement of Light"] = true, ["Seal of Light"] = true, ["Mercy"] = true,
+	["Holy Concentration"] = true, ["Vampiric Embrace"] = true,
+	["Improved Vampiric Embrace"] = true, ["Vampiric Touch"] = true,
+	["Blood Pact"] = true, ["Twin Empathy"] = true,
+	-- consumables / non-class healing
+	["First Aid"] = true, ["Healing Potion"] = true, ["Super Healing Potion"] = true,
+	["Major Healing Potion"] = true, ["Heavy Netherweave Bandage"] = true,
+	["Netherweave Bandage"] = true, ["Heavy Runecloth Bandage"] = true,
+	["Runecloth Bandage"] = true, ["Whipper Root Tuber"] = true,
+	["Nightmare Seed"] = true, ["Lifegiving Gem"] = true,
+	-- environment / misc
+	["Drain Soul"] = true, ["Consume Magic"] = true,
+}
+
 -- Defined once at file scope rather than rebuilt on every combat-log event
 -- (this fires many times per second in a crowd). Used only to gate the
 -- pet-kill win-tracking below.
@@ -2795,13 +2836,22 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 			end
 		end
 
-		-- CONFIRMED healer detection. Generic and evidence-based: any heal an
-		-- enemy actually lands counts, so it works for every class/spell/rank
-		-- without maintaining a spell-name list. A single panic heal from a DPS
-		-- shouldn't brand them a healer, so we require either a meaningful
-		-- single heal or repeated healing before the flag sticks.
+		-- CONFIRMED healer detection.
+		--
+		-- A healer is someone who heals OTHER PLAYERS. Almost every class has
+		-- self-healing that fires the same SPELL_HEAL event - warlock Death
+		-- Coil / Drain Life / Siphon Life, warrior Bloodthirst / Blood Craze /
+		-- Second Wind, bandages, potions, healthstones - so counting raw heal
+		-- events marks half the server as healers. Three rules keep it honest:
+		--   1. source ~= destination  (self-healing and lifesteal never count)
+		--   2. both source and destination are players (not pets or totems)
+		--   3. the spell isn't a known non-healer proc/leech/pet heal
 		if event == "SPELL_HEAL" or event == "SPELL_PERIODIC_HEAL" then
-			if srcGUID and srcName and strsub(srcGUID, 1, 6) == "Player"
+			if srcGUID and srcName and dstGUID
+				and strsub(srcGUID, 1, 6) == "Player"
+				and strsub(dstGUID, 1, 6) == "Player"
+				and srcGUID ~= dstGUID
+				and not Spy_NonHealerHeals[arg13]
 				and bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE then
 				local amount = arg15
 				if type(amount) == "number" and amount > 0 then
