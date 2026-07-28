@@ -2741,6 +2741,8 @@ local Spy_NonHealerHeals = {
 	["Holy Concentration"] = true, ["Vampiric Embrace"] = true,
 	["Improved Vampiric Embrace"] = true, ["Vampiric Touch"] = true,
 	["Blood Pact"] = true, ["Twin Empathy"] = true,
+	-- racials: any class can have these, so they prove nothing about role
+	["Gift of the Naaru"] = true, ["Cannibalize"] = true,
 	-- consumables / non-class healing
 	["First Aid"] = true, ["Healing Potion"] = true, ["Super Healing Potion"] = true,
 	["Major Healing Potion"] = true, ["Heavy Netherweave Bandage"] = true,
