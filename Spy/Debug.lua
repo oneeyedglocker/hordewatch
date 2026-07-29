@@ -84,6 +84,40 @@ local function apiPresence()
 	return out
 end
 
+-- Decisive test: does UnitPosition actually return anything for a hostile
+-- player? It exists in this client, but is documented as working for only a
+-- very limited set of unit ids. If it ever returns coordinates for an enemy
+-- that is a real enemy position and the arrow becomes exact - so probe it and
+-- record the answer instead of assuming.
+function Spy:ProbeEnemyPositionAPIs()
+	local out = { checkedAt = date("%H:%M:%S") }
+	local unit
+	if UnitExists("target") and UnitIsPlayer("target") and UnitCanAttack("player", "target") then
+		unit = "target"
+	elseif UnitExists("mouseover") and UnitIsPlayer("mouseover") and UnitCanAttack("player", "mouseover") then
+		unit = "mouseover"
+	end
+	out.unit = unit
+	if unit then
+		out.name = GetUnitName(unit, true)
+		if UnitPosition then
+			local ok, y, x, z, inst = pcall(UnitPosition, unit)
+			out.unitPosition = ok and { y = y, x = x, z = z, instance = inst } or { err = tostring(y) }
+			out.unitPositionWorked = (ok and x ~= nil) or false
+		end
+		-- for comparison, the same call on ourselves, which is known to work
+		if UnitPosition then
+			local ok, y, x, z, inst = pcall(UnitPosition, "player")
+			out.selfPosition = ok and { y = y, x = x, z = z, instance = inst } or nil
+		end
+	end
+	out.canCreateLine = (UIParent.CreateLine ~= nil)
+	out.nameplateEnemies = GetCVar and GetCVar("nameplateShowEnemies") or nil
+	out.nameplateMaxDistance = GetCVar and GetCVar("nameplateMaxDistance") or nil
+	db().positionProbe = out
+	return out
+end
+
 function Spy:CaptureDebugEnvironment()
 	local d = db()
 	local version, build, bdate, iface = GetBuildInfo()

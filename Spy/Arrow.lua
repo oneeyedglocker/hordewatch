@@ -141,8 +141,16 @@ function Spy:GetArrowVector()
 	if Spy.db.profile.ArrowUseNameplates ~= false then
 		local live, _, range = Spy:GetLiveBearing(name)
 		if live then
-			return live, range, 0, true	-- angle, distance, age, isLive
+			return live, range, 0, "live"
 		end
+	end
+
+	-- Everything below is a REMEMBERED position. Only trust it if it was
+	-- actually derived from a nameplate reading; a plain sighting records our
+	-- own coordinates, not theirs, so pointing at it is worse than useless -
+	-- it confidently points at a patch of ground we once stood on.
+	if not playerData.posFromNameplate then
+		return nil, nil, nil, "unknown"
 	end
 	local dZone, dX, dY = playerData.mapID, playerData.mapX, playerData.mapY
 	if not dX or not dY then return nil end
@@ -182,7 +190,52 @@ function Spy:GetArrowVector()
 	-- points up, frames advance anticlockwise).
 	local angle = bearing - facing
 	local age = playerData.time and (time() - playerData.time) or 0
-	return angle, distance, age
+	return angle, distance, age, "remembered"
+end
+
+------------------------------------------------------------------------------
+-- nameplate settings, so the arrow can tell you why it has nothing to show
+------------------------------------------------------------------------------
+function Spy:EnemyNameplatesEnabled()
+	if not GetCVar then return true end
+	local v = GetCVar("nameplateShowEnemies")
+	return v == "1" or v == 1
+end
+
+function Spy:GetNameplateRange()
+	if not GetCVar then return nil end
+	return tonumber(GetCVar("nameplateMaxDistance"))
+end
+
+-- 41 yards is the ceiling the TBC client allows.
+function Spy:SetMaxNameplateRange()
+	if not SetCVar then return end
+	SetCVar("nameplateShowEnemies", 1)
+	SetCVar("nameplateMaxDistance", 41)
+	Spy:Print(L["NameplatesMaxed"])
+	Spy:UpdateArrow()
+end
+
+function Spy:EnableEnemyNameplates()
+	if not SetCVar then return end
+	SetCVar("nameplateShowEnemies", 1)
+	Spy:Print(L["NameplatesEnabled"])
+	Spy:UpdateArrow()
+end
+
+-- What the arrow can currently show, and why.
+--   "live"       - nameplate on screen, bearing is real
+--   "remembered" - projected from an earlier nameplate reading
+--   "noplates"   - enemy nameplates are switched off
+--   "unknown"    - we have no position for them that means anything
+function Spy:GetArrowState()
+	local name = Arrow.target
+	if not name then return nil end
+	local _, _, _, state = Spy:GetArrowVector()
+	if state == "unknown" and not Spy:EnemyNameplatesEnabled() then
+		return "noplates"
+	end
+	return state or "unknown"
 end
 
 ------------------------------------------------------------------------------
