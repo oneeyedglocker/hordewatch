@@ -25,6 +25,11 @@ local ARROW_TEXTURE = "Interface\\AddOns\\Spy\\Textures\\SpyArrow"
 local FRAMES, COLS, ROWS = 256, 16, 16
 local TWOPI = math.pi * 2
 
+-- Below this many yards the recorded position and ours are effectively the same
+-- point, so any bearing we compute is just noise amplified into a random spin.
+-- Treat it as "you are on top of the last-seen spot" instead of pointing wrong.
+local NEAR_YARDS = 6
+
 Spy.Arrow = Spy.Arrow or {}
 local Arrow = Spy.Arrow
 
@@ -62,6 +67,65 @@ function Spy:GetTrackedPlayer()
 end
 
 ------------------------------------------------------------------------------
+-- LIVE bearing from the enemy's nameplate
+--
+-- The client refuses to give us an enemy's position, but a nameplate is
+-- anchored to the unit in the 3D world, so where it lands on screen encodes
+-- the horizontal angle from the camera to that player. Dead centre means
+-- dead ahead; the further from centre, the wider the angle.
+--
+-- This is the only genuinely live bearing available, and it is what makes the
+-- arrow point at someone standing in front of you instead of at the spot where
+-- you happened to be when Spy first noticed them.
+--
+-- Only the magnitude depends on the field-of-view estimate. Which side they
+-- are on, and "dead ahead" when centred, are exact regardless.
+------------------------------------------------------------------------------
+local function findNameplateUnit(name)
+	if not C_NamePlate or not C_NamePlate.GetNamePlates then return nil end
+	local ok, plates = pcall(C_NamePlate.GetNamePlates, C_NamePlate)
+	if not ok or type(plates) ~= "table" then return nil end
+	for _, plate in ipairs(plates) do
+		local unit = plate.namePlateUnitToken or (plate.UnitFrame and plate.UnitFrame.unit)
+		if unit and UnitExists(unit) and GetUnitName(unit, true) == name then
+			return unit, plate
+		end
+	end
+	return nil
+end
+
+-- Coarse distance bracket for a unit we can see, used to place their position
+-- rather than to display. Nameplates only draw within roughly 40 yards.
+local function estimateRange(unit)
+	if CheckInteractDistance then
+		if CheckInteractDistance(unit, 3) then return 5 end	-- ~10yd duel range
+		if CheckInteractDistance(unit, 1) then return 18 end	-- ~28yd inspect
+		if CheckInteractDistance(unit, 4) then return 18 end	-- ~28yd follow
+	end
+	return 33
+end
+
+-- relative angle in radians: 0 = dead ahead, positive = anticlockwise (left)
+function Spy:GetLiveBearing(name)
+	local unit, plate = findNameplateUnit(name)
+	if not unit or not plate then return nil end
+	local px = plate:GetCenter()
+	if not px then return nil end
+	local screenWidth = UIParent:GetWidth()
+	if not screenWidth or screenWidth <= 0 then return nil end
+
+	-- normalised horizontal offset from screen centre, -1 (left) .. 1 (right)
+	local dx = (px - screenWidth / 2) / (screenWidth / 2)
+	if dx > 1 then dx = 1 elseif dx < -1 then dx = -1 end
+
+	local halfFov = math.rad((Spy.db.profile.ArrowFieldOfView or 100) / 2)
+	local offset = math.atan(dx * math.tan(halfFov))
+	-- screen-right is a clockwise turn, which is negative in our anticlockwise
+	-- angle convention
+	return -offset, unit, estimateRange(unit)
+end
+
+------------------------------------------------------------------------------
 -- bearing + distance to the tracked player's last known position
 ------------------------------------------------------------------------------
 -- returns angle (radians, relative to the player's facing), distance in yards,
@@ -71,6 +135,15 @@ function Spy:GetArrowVector()
 	if not name then return nil end
 	local playerData = SpyPerCharDB.PlayerData[name]
 	if not playerData then return nil end
+
+	-- A visible nameplate beats any stored position: it is where they are right
+	-- now, not where we were when we last saw them.
+	if Spy.db.profile.ArrowUseNameplates ~= false then
+		local live, _, range = Spy:GetLiveBearing(name)
+		if live then
+			return live, range, 0, true	-- angle, distance, age, isLive
+		end
+	end
 	local dZone, dX, dY = playerData.mapID, playerData.mapX, playerData.mapY
 	if not dX or not dY then return nil end
 	-- Older records were saved without a mapID. Coordinates are always recorded
@@ -87,14 +160,27 @@ function Spy:GetArrowVector()
 	local oX, oY = oPos:GetXY()
 	if not oX or not oY then return nil end
 
-	local distance, deltaX, deltaY = HBD:GetZoneDistance(oZone, oX, oY, dZone, dX, dY)
-	if not distance then return nil end	-- different continent/instance
+	-- Convert both points to continent world yards and let HereBeDragons compute
+	-- the bearing exactly the way it does for its own map pins. Its GetWorldVector
+	-- returns an absolute angle that is guaranteed to line up with GetPlayerFacing
+	-- (0 = due north, growing anticlockwise), so subtracting our facing gives a
+	-- bearing relative to where we are looking. The previous hand-rolled
+	-- atan2(-deltaY, deltaX) had the axes swapped and skipped this normalisation,
+	-- which is why the arrow pointed the wrong way.
+	local oWX, oWY, oInstance = HBD:GetWorldCoordinatesFromZone(oX, oY, oZone)
+	local dWX, dWY, dInstance = HBD:GetWorldCoordinatesFromZone(dX, dY, dZone)
+	if not oWX or not dWX then return nil end
+	if oInstance ~= dInstance then return nil end	-- different continent/instance
+
+	local bearing, distance = HBD:GetWorldVector(oInstance, oWX, oWY, dWX, dWY)
+	if not bearing or not distance then return nil end
 
 	local facing = GetPlayerFacing()
 	if not facing then return nil end
 
-	-- HBD world axes: +X is north, +Y is west. Screen-up is the way we face.
-	local angle = math.atan2(-deltaY, deltaX) - facing
+	-- 0 = dead ahead; grows anticlockwise, matching the sprite sheet (frame 0
+	-- points up, frames advance anticlockwise).
+	local angle = bearing - facing
 	local age = playerData.time and (time() - playerData.time) or 0
 	return angle, distance, age
 end
@@ -263,7 +349,12 @@ function Spy:UpdateArrow()
 	end
 	Spy:UpdateArrowVisibility()
 
-	local cell = math.floor(angle / TWOPI * FRAMES + 0.5) % FRAMES
+	-- When we're standing on the last-seen spot the direction is unknowable, so
+	-- point straight up rather than spinning to noise. This is the case the old
+	-- code got most visibly wrong: a target right on top of you (your current
+	-- target, distance ~0) made the arrow point wherever you were NOT facing.
+	local here = distance and distance < NEAR_YARDS
+	local cell = here and 0 or (math.floor(angle / TWOPI * FRAMES + 0.5) % FRAMES)
 	local tc = texcoords[cell]
 	local r, g, b = arrowColor(age)
 	local style = Spy.db.profile.ArrowStyle
@@ -322,6 +413,68 @@ function Spy:ApplyArrowSettings()
 end
 
 ------------------------------------------------------------------------------
+-- keep the tracked position warm from a live unit
+--
+-- The client never hands us an enemy's position, so a sighting is only ever
+-- "where I was standing when I last saw them". If the tracked player is right
+-- now our target or mouseover AND close enough to interact with, we're standing
+-- next to them, so our own position is the best fix available - refresh it so
+-- the trail doesn't go stale mid-fight and points true the moment they run.
+------------------------------------------------------------------------------
+local lastWarm = 0
+local function warmTrackedPosition()
+	local name = Arrow.target
+	if not name then return end
+	local now = GetTime()
+	if now - lastWarm < 0.5 then return end
+	lastWarm = now
+
+	local pd = SpyPerCharDB.PlayerData[name]
+	if not pd then return end
+
+	local mapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
+	local pos = mapID and C_Map.GetPlayerMapPosition and C_Map.GetPlayerMapPosition(mapID, "player")
+	if not pos then return end
+	local x, y = pos:GetXY()
+	if not x or not y or x == 0 or y == 0 then return end
+
+	-- If we can see their nameplate we know the direction and roughly the range,
+	-- so project where they actually are and store THAT. This is the difference
+	-- between the arrow remembering their position and remembering ours: once
+	-- they break line of sight the stored point is still their spot, not the
+	-- patch of ground we were standing on.
+	local live, unit, range = Spy:GetLiveBearing(name)
+	if live and HBD then
+		local facing = GetPlayerFacing()
+		local wx, wy, instance = HBD:GetWorldCoordinatesFromZone(x, y, mapID)
+		if facing and wx then
+			local bearing = facing + live			-- back to an absolute bearing
+			-- HBD world axes: angle 0 = west, growing clockwise
+			local tx = wx + range * math.sin(bearing)
+			local ty = wy + range * math.cos(bearing)
+			local zx, zy = HBD:GetZoneCoordinatesFromWorld(tx, ty, mapID, true)
+			if zx and zy then
+				pd.mapX, pd.mapY, pd.mapID, pd.time = zx, zy, mapID, time()
+				pd.posFromNameplate = true
+				return
+			end
+		end
+	end
+
+	-- No nameplate. Fall back to standing in for their position with our own,
+	-- but only when we're right on top of them (~10yd), otherwise we'd drag
+	-- their last-seen spot around as we move.
+	local tunit
+	if UnitExists("target") and GetUnitName("target", true) == name then tunit = "target"
+	elseif UnitExists("mouseover") and GetUnitName("mouseover", true) == name then tunit = "mouseover" end
+	if not tunit then return end
+	if not (CheckInteractDistance and CheckInteractDistance(tunit, 3)) then return end
+
+	pd.mapX, pd.mapY, pd.mapID, pd.time = x, y, mapID, time()
+	pd.posFromNameplate = nil
+end
+
+------------------------------------------------------------------------------
 -- driver: the bearing changes as you turn, so this needs a real frame update
 ------------------------------------------------------------------------------
 local driver = CreateFrame("Frame")
@@ -332,5 +485,6 @@ driver:SetScript("OnUpdate", function(_, elapsed)
 	acc = acc + elapsed
 	if acc < 0.05 then return end	-- 20fps is plenty and stays cheap
 	acc = 0
+	warmTrackedPosition()
 	Spy:UpdateArrow()
 end)

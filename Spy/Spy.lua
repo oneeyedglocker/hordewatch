@@ -696,165 +696,11 @@ Spy.options = {
 						Spy:RefreshCurrentList()
 					end,
 				},
-				debugHeader = {
-					name = L["TDebug"],
-					type = "header",
-					order = 90,
-				},
-				DebugMode = {
-					name = L["DebugMode"],
-					desc = L["DebugModeDescription"],
-					type = "toggle",
-					order = 91,
-					width = "full",
-					get = function() return Spy.db.profile.DebugMode end,
-					set = function(_, v)
-						Spy.db.profile.DebugMode = v
-						if v then Spy:CaptureDebugEnvironment() end
-					end,
-				},
-				DebugDump = {
-					name = L["DebugDumpButton"],
-					desc = L["DebugDumpButtonDescription"],
-					type = "execute",
-					order = 92,
-					func = function() Spy:ShowDebugDump() end,
-				},
-				DebugReset = {
-					name = L["DebugResetButton"],
-					type = "execute",
-					order = 93,
-					func = function() Spy:ResetDebug() Spy:Print(L["DebugWasReset"]) end,
-				},
-				arrowHeader = {
-					name = L["TArrow"],
-					type = "header",
-					order = 16,
-				},
-				ArrowEnabled = {
-					name = L["ArrowEnabled"],
-					desc = L["ArrowEnabledDescription"],
-					type = "toggle",
-					order = 16.1,
-					width = "full",
-					get = function() return Spy.db.profile.ArrowEnabled end,
-					set = function(_, v) Spy.db.profile.ArrowEnabled = v Spy:ApplyArrowSettings() end,
-				},
-				ArrowStyle = {
-					name = L["ArrowStyle"],
-					desc = L["ArrowStyleDescription"],
-					type = "select",
-					order = 16.2,
-					values = {
-						["titlebar"] = L["ArrowStyleTitlebar"],
-						["dock"] = L["ArrowStyleDock"],
-						["floating"] = L["ArrowStyleFloating"],
-					},
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowStyle end,
-					set = function(_, v) Spy.db.profile.ArrowStyle = v Spy:ApplyArrowSettings() end,
-				},
-				ArrowClickModifier = {
-					name = L["ArrowClickModifier"],
-					desc = L["ArrowClickModifierDescription"],
-					type = "select",
-					order = 16.3,
-					values = { ["none"] = L["ArrowClickPlain"], ["alt"] = L["ArrowClickAlt"] },
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowClickModifier end,
-					set = function(_, v) Spy.db.profile.ArrowClickModifier = v end,
-				},
-				ArrowSize = {
-					name = L["ArrowSize"],
-					type = "range",
-					order = 16.4,
-					min = 12, max = 48, step = 2,
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowSize end,
-					set = function(_, v) Spy.db.profile.ArrowSize = v Spy:ApplyArrowSettings() end,
-				},
-				ArrowColor = {
-					name = L["ArrowColor"],
-					type = "color",
-					order = 16.5,
-					hasAlpha = false,
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow"] return c.r, c.g, c.b end,
-					set = function(_, r, g, b)
-						local c = Spy.db.profile.Colors["Spy"]["Arrow"]
-						c.r, c.g, c.b = r, g, b
-						Spy:UpdateArrow()
-					end,
-				},
-				ArrowColorByAge = {
-					name = L["ArrowColorByAge"],
-					desc = L["ArrowColorByAgeDescription"],
-					type = "toggle",
-					order = 16.6,
-					width = "full",
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowColorByAge end,
-					set = function(_, v) Spy.db.profile.ArrowColorByAge = v Spy:UpdateArrow() end,
-				},
-				ArrowStaleColor = {
-					name = L["ArrowStaleColor"],
-					type = "color",
-					order = 16.7,
-					hasAlpha = false,
-					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowColorByAge) end,
-					get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"] return c.r, c.g, c.b end,
-					set = function(_, r, g, b)
-						local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"]
-						c.r, c.g, c.b = r, g, b
-						Spy:UpdateArrow()
-					end,
-				},
-				ArrowTimeout = {
-					name = L["ArrowTimeout"],
-					desc = L["ArrowTimeoutDescription"],
-					type = "range",
-					order = 16.8,
-					min = 0, max = 300, step = 10,
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowTimeout end,
-					set = function(_, v) Spy.db.profile.ArrowTimeout = v end,
-				},
-				ArrowDistanceUnit = {
-					name = L["ArrowDistanceUnit"],
-					type = "select",
-					order = 16.9,
-					values = { ["yards"] = L["ArrowYards"], ["meters"] = L["ArrowMeters"] },
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowDistanceUnit end,
-					set = function(_, v) Spy.db.profile.ArrowDistanceUnit = v Spy:UpdateArrow() end,
-				},
-				ArrowFloatLocked = {
-					name = L["ArrowFloatLocked"],
-					desc = L["ArrowFloatLockedDescription"],
-					type = "toggle",
-					order = 16.95,
-					width = "full",
-					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle == "floating") end,
-					get = function() return Spy.db.profile.ArrowFloatLocked end,
-					set = function(_, v) Spy.db.profile.ArrowFloatLocked = v end,
-				},
-				TomTomOnAltClick = {
-					name = L["TomTomOnAltClick"],
-					desc = L["TomTomOnAltClickDescription"],
-					type = "toggle",
-					order = 17.2,
-					width = "full",
-					get = function() return Spy.db.profile.TomTomOnAltClick end,
-					set = function(_, value)
-						Spy.db.profile.TomTomOnAltClick = value
-						if not value then Spy:ClearTomTomWaypoint() end
-					end,
-				},
 				UseZoneLevelFloor = {
 					name = L["UseZoneLevelFloor"],
 					desc = L["UseZoneLevelFloorDescription"],
 					type = "toggle",
-					order = 17.5,
+					order = 19.9,
 					width = "full",
 					get = function() return Spy.db.profile.UseZoneLevelFloor end,
 					set = function(_, value)
@@ -865,18 +711,18 @@ Spy.options = {
 				massHeader = {
 					name = L["TMassFights"],
 					type = "header",
-					order = 18,
+					order = 19.5,
 				},
 				massDesc = {
 					name = L["MassFightsDescription"],
 					type = "description",
-					order = 18.1,
+					order = 19.51,
 				},
 				HealerOnlyFilter = {
 					name = L["HealerOnlyFilter"],
 					desc = L["HealerOnlyFilterDescription"],
 					type = "toggle",
-					order = 18.2,
+					order = 19.6,
 					width = "full",
 					get = function() return Spy.db.profile.HealerOnlyFilter end,
 					set = function(_, value)
@@ -889,7 +735,7 @@ Spy.options = {
 					name = L["KillPriorityOrder"],
 					desc = L["KillPriorityOrderDescription"],
 					type = "toggle",
-					order = 18.3,
+					order = 19.7,
 					width = "full",
 					get = function() return Spy.db.profile.KillPriorityOrder end,
 					set = function(_, value)
@@ -901,7 +747,7 @@ Spy.options = {
 					name = L["ShowAggregateHeader"],
 					desc = L["ShowAggregateHeaderDescription"],
 					type = "toggle",
-					order = 18.4,
+					order = 19.8,
 					width = "full",
 					get = function() return Spy.db.profile.ShowAggregateHeader end,
 					set = function(_, value)
@@ -1157,6 +1003,205 @@ Spy.options = {
 						c.r, c.g, c.b, c.a = r, g, b, a
 						Spy:RefreshCurrentList()
 					end,
+				},
+			},
+		},
+		Arrow = {
+			name = L["TArrow"],
+			desc = L["TArrow"],
+			type = "group",
+			order = 2.7,
+			args = {
+				intro = {
+					name = L["ArrowEnabledDescription"],
+					type = "description",
+					order = 1,
+					fontSize = "medium",
+				},
+				ArrowEnabled = {
+					name = L["ArrowEnabled"],
+					desc = L["ArrowEnabledDescription"],
+					type = "toggle",
+					order = 2,
+					width = "full",
+					get = function() return Spy.db.profile.ArrowEnabled end,
+					set = function(_, v) Spy.db.profile.ArrowEnabled = v Spy:ApplyArrowSettings() end,
+				},
+				ArrowStyle = {
+					name = L["ArrowStyle"],
+					desc = L["ArrowStyleDescription"],
+					type = "select",
+					order = 3,
+					values = {
+						["titlebar"] = L["ArrowStyleTitlebar"],
+						["dock"] = L["ArrowStyleDock"],
+						["floating"] = L["ArrowStyleFloating"],
+					},
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowStyle end,
+					set = function(_, v) Spy.db.profile.ArrowStyle = v Spy:ApplyArrowSettings() end,
+				},
+				ArrowUseNameplates = {
+					name = L["ArrowUseNameplates"],
+					desc = L["ArrowUseNameplatesDescription"],
+					type = "toggle",
+					order = 16.15,
+					width = "full",
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowUseNameplates end,
+					set = function(_, v) Spy.db.profile.ArrowUseNameplates = v end,
+				},
+				ArrowFieldOfView = {
+					name = L["ArrowFieldOfView"],
+					desc = L["ArrowFieldOfViewDescription"],
+					type = "range",
+					order = 16.16,
+					min = 60, max = 140, step = 5,
+					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowUseNameplates) end,
+					get = function() return Spy.db.profile.ArrowFieldOfView end,
+					set = function(_, v) Spy.db.profile.ArrowFieldOfView = v end,
+				},
+				ArrowClickModifier = {
+					name = L["ArrowClickModifier"],
+					desc = L["ArrowClickModifierDescription"],
+					type = "select",
+					order = 4,
+					values = { ["none"] = L["ArrowClickPlain"], ["alt"] = L["ArrowClickAlt"] },
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowClickModifier end,
+					set = function(_, v) Spy.db.profile.ArrowClickModifier = v end,
+				},
+				ArrowSize = {
+					name = L["ArrowSize"],
+					type = "range",
+					order = 5,
+					min = 12, max = 48, step = 2,
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowSize end,
+					set = function(_, v) Spy.db.profile.ArrowSize = v Spy:ApplyArrowSettings() end,
+				},
+				ArrowColor = {
+					name = L["ArrowColor"],
+					type = "color",
+					order = 6,
+					hasAlpha = false,
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow"] return c.r, c.g, c.b end,
+					set = function(_, r, g, b)
+						local c = Spy.db.profile.Colors["Spy"]["Arrow"]
+						c.r, c.g, c.b = r, g, b
+						Spy:UpdateArrow()
+					end,
+				},
+				ArrowColorByAge = {
+					name = L["ArrowColorByAge"],
+					desc = L["ArrowColorByAgeDescription"],
+					type = "toggle",
+					order = 7,
+					width = "full",
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowColorByAge end,
+					set = function(_, v) Spy.db.profile.ArrowColorByAge = v Spy:UpdateArrow() end,
+				},
+				ArrowStaleColor = {
+					name = L["ArrowStaleColor"],
+					type = "color",
+					order = 8,
+					hasAlpha = false,
+					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowColorByAge) end,
+					get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"] return c.r, c.g, c.b end,
+					set = function(_, r, g, b)
+						local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"]
+						c.r, c.g, c.b = r, g, b
+						Spy:UpdateArrow()
+					end,
+				},
+				ArrowTimeout = {
+					name = L["ArrowTimeout"],
+					desc = L["ArrowTimeoutDescription"],
+					type = "range",
+					order = 9,
+					min = 0, max = 300, step = 10,
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowTimeout end,
+					set = function(_, v) Spy.db.profile.ArrowTimeout = v end,
+				},
+				ArrowDistanceUnit = {
+					name = L["ArrowDistanceUnit"],
+					type = "select",
+					order = 10,
+					values = { ["yards"] = L["ArrowYards"], ["meters"] = L["ArrowMeters"] },
+					disabled = function() return not Spy.db.profile.ArrowEnabled end,
+					get = function() return Spy.db.profile.ArrowDistanceUnit end,
+					set = function(_, v) Spy.db.profile.ArrowDistanceUnit = v Spy:UpdateArrow() end,
+				},
+				ArrowFloatLocked = {
+					name = L["ArrowFloatLocked"],
+					desc = L["ArrowFloatLockedDescription"],
+					type = "toggle",
+					order = 11,
+					width = "full",
+					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle == "floating") end,
+					get = function() return Spy.db.profile.ArrowFloatLocked end,
+					set = function(_, v) Spy.db.profile.ArrowFloatLocked = v end,
+				},
+				TomTomOnAltClick = {
+					name = L["TomTomOnAltClick"],
+					desc = L["TomTomOnAltClickDescription"],
+					type = "toggle",
+					order = 12,
+					width = "full",
+					get = function() return Spy.db.profile.TomTomOnAltClick end,
+					set = function(_, value)
+						Spy.db.profile.TomTomOnAltClick = value
+						if not value then Spy:ClearTomTomWaypoint() end
+					end,
+				},
+			},
+		},
+		Diagnostics = {
+			name = L["TDebug"],
+			desc = L["TDebug"],
+			type = "group",
+			order = 7,
+			args = {
+				intro = {
+					name = L["DebugModeDescription"],
+					type = "description",
+					order = 1,
+					fontSize = "medium",
+				},
+				DebugMode = {
+					name = L["DebugMode"],
+					desc = L["DebugModeDescription"],
+					type = "toggle",
+					order = 2,
+					width = "full",
+					get = function() return Spy.db.profile.DebugMode end,
+					set = function(_, v)
+						Spy.db.profile.DebugMode = v
+						if v then Spy:CaptureDebugEnvironment() end
+					end,
+				},
+				DebugDump = {
+					name = L["DebugDumpButton"],
+					desc = L["DebugDumpButtonDescription"],
+					type = "execute",
+					order = 3,
+					func = function() Spy:ShowDebugDump() end,
+				},
+				DebugStatus = {
+					name = L["DebugStatusButton"],
+					desc = L["DebugStatusButtonDescription"],
+					type = "execute",
+					order = 4,
+					func = function() Spy:DebugStatus() end,
+				},
+				DebugReset = {
+					name = L["DebugResetButton"],
+					type = "execute",
+					order = 5,
+					func = function() Spy:ResetDebug() Spy:Print(L["DebugWasReset"]) end,
 				},
 			},
 		},
@@ -2113,6 +2158,8 @@ local Default_Profile = {
 		ArrowHideOffZone=true,
 		ArrowFloatLocked=false,
 		ArrowFloatPosition={},
+		ArrowUseNameplates=true,
+		ArrowFieldOfView=100,
 		DebugMode=false,
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
 		KillPriorityOrder=false,	-- order by target value instead of recency
@@ -2382,7 +2429,8 @@ function Spy:CheckDatabase()
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
 	for _, k in ipairs({"ArrowEnabled","ArrowStyle","ArrowClickModifier","ArrowSize","ArrowColorByAge",
-		"ArrowStaleSeconds","ArrowTimeout","ArrowDistanceUnit","ArrowHideOffZone","ArrowFloatLocked"}) do
+		"ArrowStaleSeconds","ArrowTimeout","ArrowDistanceUnit","ArrowHideOffZone","ArrowFloatLocked",
+		"ArrowUseNameplates","ArrowFieldOfView"}) do
 		if p[k] == nil then p[k] = Default_Profile.profile[k] end
 	end
 	if type(p.ArrowFloatPosition) ~= "table" then p.ArrowFloatPosition = {} end
@@ -2451,9 +2499,11 @@ function Spy:SetupOptions()
 	self.optionsFrames.About = ACD3:AddToBlizOptions("Spy", L["About"], L["Spy Option"], "About")
 	self.optionsFrames.DisplayOptions = ACD3:AddToBlizOptions("Spy", L["DisplayOptions"], L["Spy Option"], "DisplayOptions")
 	self.optionsFrames.TargetPicker = ACD3:AddToBlizOptions("Spy", L["TargetPicker"], L["Spy Option"], "TargetPicker")
+	self.optionsFrames.Arrow = ACD3:AddToBlizOptions("Spy", L["TArrow"], L["Spy Option"], "Arrow")
 	self.optionsFrames.AlertOptions = ACD3:AddToBlizOptions("Spy", L["AlertOptions"], L["Spy Option"], "AlertOptions")
 	self.optionsFrames.MapOptions = ACD3:AddToBlizOptions("Spy", L["MapOptions"], L["Spy Option"], "MapOptions")
 	self.optionsFrames.DataOptions = ACD3:AddToBlizOptions("Spy", L["DataOptions"], L["Spy Option"], "DataOptions")
+	self.optionsFrames.Diagnostics = ACD3:AddToBlizOptions("Spy", L["TDebug"], L["Spy Option"], "Diagnostics")
 
 	self:RegisterModuleOptions("Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), L["Profiles"])
 	Spy.options.args.Profiles.order = -2

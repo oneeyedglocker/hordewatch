@@ -182,8 +182,9 @@ function Spy:DebugArrowSample(force)
 	if not force and (now - lastArrowSample) < 2 then return end
 	lastArrowSample = now
 
-	local angle, distance, age = Spy:GetArrowVector()
+	local angle, distance, age, isLive = Spy:GetArrowVector()
 	if not angle then return end
+	local liveAngle = Spy.GetLiveBearing and Spy:GetLiveBearing(name) or nil
 
 	-- is the tracked player actually in front of us right now?
 	local unit
@@ -205,6 +206,10 @@ function Spy:DebugArrowSample(force)
 		when = date("%H:%M:%S"), name = name,
 		computedDist = distance and math.floor(distance * 10) / 10,
 		computedAngle = math.floor(angle * 100) / 100,
+		isLive = isLive or nil,
+		liveAngle = liveAngle and math.floor(liveAngle * 100) / 100 or nil,
+		fov = Spy.db.profile.ArrowFieldOfView,
+		posFromNameplate = playerData and playerData.posFromNameplate or nil,
 		facing = GetPlayerFacing() and math.floor(GetPlayerFacing() * 100) / 100,
 		age = age,
 		-- ground truth bracket, only present when they were actually in front of us
