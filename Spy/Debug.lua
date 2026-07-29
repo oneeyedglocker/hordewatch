@@ -114,6 +114,10 @@ function Spy:ProbeEnemyPositionAPIs()
 	out.canCreateLine = (UIParent.CreateLine ~= nil)
 	out.nameplateEnemies = GetCVar and GetCVar("nameplateShowEnemies") or nil
 	out.nameplateMaxDistance = GetCVar and GetCVar("nameplateMaxDistance") or nil
+	-- Clamping pins the target's plate to the screen edge, which silently
+	-- destroys the bearing for the one unit we care most about.
+	out.clampTargetNameplate = GetCVar and GetCVar("clampTargetNameplateToScreen") or nil
+	out.nameplateGlobalScale = GetCVar and GetCVar("nameplateGlobalScale") or nil
 	out.nameplateAddon = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or nil
 	out.nameplates = Spy:ProbeNameplates()
 	db().positionProbe = out

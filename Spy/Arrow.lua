@@ -152,7 +152,22 @@ local function estimateRange(unit)
 	return 33
 end
 
+-- The client can pin your current target's nameplate to the edge of the screen
+-- so it never disappears, including when they are directly behind you. That is
+-- a helpful setting to play with and a poisonous one to read a bearing from:
+-- the plate stops reporting where they are and starts reporting "off that way
+-- somewhere". Platynator turns it on, so it is on for most people.
+--
+-- We cannot un-clamp a reading, but we can refuse to dress it up as precision.
+local function targetPlateIsClamped(unit)
+	if not GetCVar then return false end
+	if GetCVar("clampTargetNameplateToScreen") ~= "1" then return false end
+	return UnitIsUnit and UnitIsUnit(unit, "target") or false
+end
+
 -- relative angle in radians: 0 = dead ahead, positive = anticlockwise (left)
+-- fourth return is true when the reading hit the screen rail and should be
+-- treated as a direction to turn rather than a measured angle.
 function Spy:GetLiveBearing(name)
 	local unit, plate = findNameplateUnit(name)
 	if not unit or not plate then return nil end
@@ -178,11 +193,20 @@ function Spy:GetLiveBearing(name)
 	local dx = (px * plateScale - halfScreen) / halfScreen
 	if dx > 1 then dx = 1 elseif dx < -1 then dx = -1 end
 
+	-- Sitting on the rail with target clamping on means the angle is a floor,
+	-- not a measurement: they are at least this far round, possibly behind us.
+	-- Say "turn hard that way" instead of naming a precise angle we don't have.
+	local clamped = false
+	if math.abs(dx) >= 0.98 and targetPlateIsClamped(unit) then
+		clamped = true
+		return (dx > 0 and -math.pi / 2 or math.pi / 2), unit, estimateRange(unit), true
+	end
+
 	local halfFov = math.rad((Spy.db.profile.ArrowFieldOfView or 100) / 2)
 	local offset = math.atan(dx * math.tan(halfFov))
 	-- screen-right is a clockwise turn, which is negative in our anticlockwise
 	-- angle convention
-	return -offset, unit, estimateRange(unit)
+	return -offset, unit, estimateRange(unit), clamped
 end
 
 ------------------------------------------------------------------------------
@@ -199,9 +223,9 @@ function Spy:GetArrowVector()
 	-- A visible nameplate beats any stored position: it is where they are right
 	-- now, not where we were when we last saw them.
 	if Spy.db.profile.ArrowUseNameplates ~= false then
-		local live, _, range = Spy:GetLiveBearing(name)
+		local live, _, range, clamped = Spy:GetLiveBearing(name)
 		if live then
-			return live, range, 0, "live"
+			return live, range, 0, clamped and "edge" or "live"
 		end
 	end
 
@@ -267,13 +291,27 @@ function Spy:GetNameplateRange()
 	return tonumber(GetCVar("nameplateMaxDistance"))
 end
 
--- 41 yards is the ceiling the TBC client allows.
+-- 41 yards is the ceiling the TBC client enforces, but a nameplate addon may
+-- have written a larger number in (Platynator writes 60). Never talk the
+-- setting down: raise it to our ceiling only if it is currently below that.
+local NAMEPLATE_RANGE_CEILING = 41
+
 function Spy:SetMaxNameplateRange()
 	if not SetCVar then return end
 	SetCVar("nameplateShowEnemies", 1)
-	SetCVar("nameplateMaxDistance", 41)
+	local current = Spy:GetNameplateRange()
+	if not current or current < NAMEPLATE_RANGE_CEILING then
+		SetCVar("nameplateMaxDistance", NAMEPLATE_RANGE_CEILING)
+	end
 	Spy:Print(L["NameplatesMaxed"])
 	Spy:UpdateArrow()
+end
+
+-- True when the range is already at or above what we would set it to, so the
+-- UI can skip offering a button that would do nothing.
+function Spy:NameplateRangeIsMaxed()
+	local current = Spy:GetNameplateRange()
+	return current ~= nil and current >= NAMEPLATE_RANGE_CEILING
 end
 
 function Spy:EnableEnemyNameplates()
@@ -285,6 +323,7 @@ end
 
 -- What the arrow can currently show, and why.
 --   "live"       - nameplate on screen, bearing is real
+--   "edge"       - plate is clamped to the screen edge, so only "turn that way"
 --   "remembered" - projected from an earlier nameplate reading
 --   "noplates"   - enemy nameplates are switched off
 --   "unknown"    - we have no position for them that means anything
@@ -443,7 +482,7 @@ function Spy:UpdateArrow()
 	local name = Arrow.target
 	if not name then return end
 
-	local angle, distance, age = Spy:GetArrowVector()
+	local angle, distance, age, state = Spy:GetArrowVector()
 
 	-- give up on a position that has gone too stale to be useful
 	local timeout = Spy.db.profile.ArrowTimeout or 0
@@ -474,6 +513,14 @@ function Spy:UpdateArrow()
 	local dist = fmtDistance(distance)
 	local playerData = SpyPerCharDB.PlayerData[name]
 	local ageText = (age and age > 3) and format(L["ArrowAgo"], SecondsToTime(age)) or L["ArrowNow"]
+
+	-- A clamped plate only tells us which way to spin, so say that rather than
+	-- letting a hard 90 degrees read as a measurement, and drop the distance -
+	-- an edge reading carries no range information at all.
+	if state == "edge" then
+		ageText = L["ArrowEdge"]
+		dist = ""
+	end
 
 	if style == "titlebar" and Arrow.titleArrow then
 		Arrow.titleArrow:SetTexCoord(tc[1], tc[2], tc[3], tc[4])
