@@ -139,8 +139,13 @@ local NAMEPLATE_ADDONS = {
 	"NeatPlates", "ElvUI", "NamePlateSCT", "BetterBlizzPlates",
 }
 
+-- These moved into the C_AddOns namespace and the globals were removed, which
+-- is why the diagnostics were reporting the nameplate addon as "unknown" and
+-- Spy's own version as "?" on a current client.
+local isAddOnLoaded = (C_AddOns and C_AddOns.IsAddOnLoaded) or IsAddOnLoaded
+
 function Spy:GetNameplateDriver()
-	local loaded = IsAddOnLoaded
+	local loaded = isAddOnLoaded
 	if not loaded then return "unknown" end
 	for _, addon in ipairs(NAMEPLATE_ADDONS) do
 		local ok, isLoaded = pcall(loaded, addon)

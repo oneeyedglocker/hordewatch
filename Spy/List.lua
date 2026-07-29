@@ -488,6 +488,11 @@ function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy,
 		end
 		playerData.time = time()
 		Spy:ApplyZoneLevelFloor(playerData)
+		-- Detection accounting. This was written and then never called, so every
+		-- dump reported zero detections while the arrow samples were filling up.
+		if Spy.DebugDetection then
+			Spy:DebugDetection(isGuess == false and "verified" or "guess", playerData)
+		end
 
 		-- Position is refreshed on EVERY detection, not just the first.
 		-- Previously this was gated on "not already in the ActiveList", so once

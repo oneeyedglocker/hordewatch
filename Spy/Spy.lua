@@ -3266,7 +3266,29 @@ end
 -- the minimum for the zone it was seen in. Keyed by UiMapID rather than zone
 -- name so it works in every locale.
 -- ============================================================
+-- The CONTINENT floor is the one that does the work, and it is keyed by
+-- instanceID - the map file's own id, which is the same number on retail, on
+-- Classic and in every locale. Reaching Outland at all requires the Dark Portal,
+-- so nothing standing there is level 11 whatever the guess says.
+--
+-- This replaces a per-zone table keyed by UiMapID that never once matched:
+-- those were the RETAIL ids (Terokkar 108), and this client reports 1952. The
+-- floor silently did nothing, which is why the level guesses stayed bad after
+-- being "fixed". Per-zone refinement lives below and is now a bonus rather than
+-- the mechanism.
+Spy.ContinentLevelFloor = {
+	[530] = 58,	-- Outland - Dark Portal, so Hellfire's entry level
+	[571] = 68,	-- Northrend, harmless here and correct if ever used
+}
+
+-- Per-zone refinement, keyed by UiMapID. Both id spaces are listed because the
+-- same addon runs on both, and a wrong floor is worse than no floor - so only
+-- ids that have been confirmed against a real client are here. Anything absent
+-- falls back to the continent floor above.
 Spy.ZoneLevelFloor = {
+	-- TBC Classic (2.5.x). Confirmed from a live client:
+	[1952] = 62,	-- Terokkar Forest
+	-- Retail, for the same zones:
 	[100] = 58,	-- Hellfire Peninsula
 	[102] = 60,	-- Zangarmarsh
 	[104] = 67,	-- Shadowmoon Valley
@@ -3278,14 +3300,28 @@ Spy.ZoneLevelFloor = {
 	[122] = 70,	-- Isle of Quel'Danas
 }
 
+-- Which continent the player is standing on, as an instanceID.
+local function currentInstanceID()
+	if not GetInstanceInfo then return nil end
+	local ok, _, _, _, _, _, _, _, instanceID = pcall(GetInstanceInfo)
+	return ok and instanceID or nil
+end
+
 -- Floor for a given map, or for where the player is standing when omitted.
+-- Takes the higher of the zone floor and the continent floor, so a known zone
+-- refines the continent rather than being overridden by it.
 function Spy:GetZoneLevelFloor(mapID)
 	if not Spy.db.profile.UseZoneLevelFloor then return nil end
 	if not mapID and C_Map and C_Map.GetBestMapForUnit then
 		mapID = C_Map.GetBestMapForUnit("player")
 	end
-	if type(mapID) ~= "number" then return nil end
-	local floor = Spy.ZoneLevelFloor[mapID]
+
+	local floor = (type(mapID) == "number") and Spy.ZoneLevelFloor[mapID] or nil
+
+	local instanceID = currentInstanceID()
+	local continent = instanceID and Spy.ContinentLevelFloor[instanceID] or nil
+	if continent and (not floor or continent > floor) then floor = continent end
+
 	if floor and floor > Spy.MaximumPlayerLevel then floor = Spy.MaximumPlayerLevel end
 	return floor
 end
@@ -3298,6 +3334,10 @@ function Spy:ApplyZoneLevelFloor(playerData)
 	-- it's nil for most records. Detection always happens near us, so fall back
 	-- to the zone we're standing in.
 	local floor = Spy:GetZoneLevelFloor(playerData.mapID) or Spy:GetZoneLevelFloor()
+	if Spy.DebugZone then
+		Spy:DebugZone(playerData.mapID or (C_Map and C_Map.GetBestMapForUnit
+			and C_Map.GetBestMapForUnit("player")))
+	end
 	if not floor then return end
 	local current = tonumber(playerData.level)
 	if not current or current < floor then

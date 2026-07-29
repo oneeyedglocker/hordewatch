@@ -31,6 +31,9 @@ local HBD = LibStub("HereBeDragons-2.0", true)
 
 SpyDebugDB = SpyDebugDB or {}
 
+-- Moved into the C_AddOns namespace; the bare global is gone on current clients.
+local getAddOnMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
+
 local CAP = { errors = 60, arrow = 250, levels = 250, notes = 100 }
 
 local Debug = {}
@@ -43,6 +46,7 @@ local function db()
 		SpyDebugDB.levels, SpyDebugDB.notes = {}, {}
 		SpyDebugDB.detect = { method = {}, noPosition = 0, noMapID = 0, total = 0 }
 		SpyDebugDB.dropped = {}
+		SpyDebugDB.zones = {}
 	end
 	return SpyDebugDB
 end
@@ -211,7 +215,7 @@ function Spy:CaptureDebugEnvironment()
 	local d = db()
 	local version, build, bdate, iface = GetBuildInfo()
 	d.env = {
-		spyVersion = GetAddOnMetadata and GetAddOnMetadata("Spy", "Version") or "?",
+		spyVersion = getAddOnMetadata and getAddOnMetadata("Spy", "Version") or "?",
 		wow = version, build = build, buildDate = bdate, interface = iface,
 		locale = GetLocale(),
 		player = UnitName("player"), realm = GetRealmName(),
@@ -235,12 +239,54 @@ function Spy:HookDebugErrors()
 	seterrorhandler(function(err)
 		if Spy:IsDebugging() then
 			local text = tostring(err)
-			if text:find("Spy", 1, true) then
-				push(db().errors, "errors", { when = date("%H:%M:%S"), err = text:sub(1, 400) })
+			-- Matching only the message misses most of Spy's own errors, because
+			-- the message describes the failed API and never mentions us. The
+			-- nameplate measurement error is exactly that shape:
+			-- "NamePlate3:GetCenter(): ... Can't measure restricted regions".
+			-- Only the stack names Spy, so check the stack too.
+			local stack = debugstack and debugstack(2, 8, 0) or ""
+			if text:find("Spy", 1, true) or stack:find("Spy", 1, true) then
+				push(db().errors, "errors", {
+					when = date("%H:%M:%S"),
+					err = text:sub(1, 400),
+					stack = stack:sub(1, 500),
+				})
 			end
 		end
 		return previous(err)
 	end)
+end
+
+------------------------------------------------------------------------------
+-- zone identity
+--
+-- The level floor is keyed by UiMapID, and those ids differ between retail and
+-- Classic - which is how the floor came to be keyed entirely by the wrong ones.
+-- Record the real id, name and continent for every zone visited so the table can
+-- be completed from evidence instead of from assumption.
+------------------------------------------------------------------------------
+function Spy:DebugZone(mapID)
+	if not Spy:IsDebugging() then return end
+	if type(mapID) ~= "number" then return end
+	local d = db()
+	d.zones = d.zones or {}
+	if d.zones[mapID] then return end
+
+	local entry = { mapID = mapID }
+	if C_Map and C_Map.GetMapInfo then
+		local ok, info = pcall(C_Map.GetMapInfo, mapID)
+		if ok and info then
+			entry.name = info.name
+			entry.mapType = info.mapType
+			entry.parent = info.parentMapID
+		end
+	end
+	if GetInstanceInfo then
+		local ok, _, _, _, _, _, _, _, instanceID = pcall(GetInstanceInfo)
+		if ok then entry.instanceID = instanceID end
+	end
+	entry.floorApplied = Spy.GetZoneLevelFloor and Spy:GetZoneLevelFloor(mapID) or nil
+	d.zones[mapID] = entry
 end
 
 ------------------------------------------------------------------------------
