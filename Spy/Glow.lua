@@ -169,11 +169,24 @@ function Spy:UpdateGlow()
 	local f = Glow.frame
 	if Glow.plate ~= plate then
 		-- Plates are recycled between units, so re-anchor whenever ours moves.
-		f:SetParent(plate)
-		f:SetFrameStrata(plate:GetFrameStrata())
-		f:ClearAllPoints()
-		f:SetPoint("CENTER", plate, "CENTER", p.GlowOffsetX or 0, p.GlowOffsetY or 0)
-		f:SetFrameLevel(topChildLevel(plate, f) + 5)
+		--
+		-- Anchoring to a nameplate is permitted where MEASURING one is not - that
+		-- asymmetry is why the glow survives the restriction the arrow runs into.
+		-- Guarded anyway: if a client ever does refuse, one failure per plate is
+		-- a hidden glow, whereas an unguarded error here would be an error every
+		-- frame for as long as the target is on screen.
+		local ok, err = pcall(function()
+			f:SetParent(plate)
+			f:SetFrameStrata(plate:GetFrameStrata())
+			f:ClearAllPoints()
+			f:SetPoint("CENTER", plate, "CENTER", p.GlowOffsetX or 0, p.GlowOffsetY or 0)
+			f:SetFrameLevel(topChildLevel(plate, f) + 5)
+		end)
+		if not ok then
+			Glow.lastError = tostring(err)
+			hideGlow()
+			return
+		end
 		Glow.plate = plate
 	end
 

@@ -206,6 +206,7 @@ L["ArrowFloatLockedDescription"] = "Stops the floating arrow window being dragge
 L["ArrowAgo"] = "%s ago"
 L["ArrowNow"] = "in sight"
 L["ArrowEdge"] = "off screen - turn"
+L["ArrowRestrictedWarning"] = "the game is not letting Spy read nameplate positions right now, so the arrow has nothing to point with. This is a client restriction on nameplates, not a setting - the target glow still works. |cffffd000/spy debug on|r and send a dump if you want this looked into."
 
 -- Tracked-target nameplate glow
 L["TGlow"] = "Target Glow"

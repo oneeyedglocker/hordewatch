@@ -139,6 +139,12 @@ function Spy:ProbeNameplates()
 		tokenSweep = {},
 		listed = 0,
 	}
+	if Spy.GetMeasureStrategy then
+		local how, err = Spy:GetMeasureStrategy()
+		out.measureStrategy = how or "none"
+		out.measureError = err
+	end
+	out.glowAnchorError = Spy.Glow and Spy.Glow.lastError or nil
 	if not C_NamePlate then return out end
 
 	if C_NamePlate.GetNamePlateForUnit then
@@ -154,12 +160,33 @@ function Spy:ProbeNameplates()
 				local ok, plate = pcall(C_NamePlate.GetNamePlateForUnit, unit)
 				if ok and plate then
 					entry.baseFrame = plate:GetName() or "(anonymous)"
-					entry.centerX = plate:GetCenter()
-					entry.scale = plate:GetEffectiveScale()
-					entry.shown = plate:IsShown()
-					entry.width = plate:GetWidth()
-					-- what the nameplate addon hung on it, if anything
-					entry.unitFrameShown = plate.UnitFrame and plate.UnitFrame:IsShown() or false
+					-- Nameplates are restricted regions: the measurement APIs
+					-- can be refused outright. Record WHICH of the routes the
+					-- arrow tries actually answers, because that is the whole
+					-- question when the arrow has nothing to show.
+					local okc, cx = pcall(plate.GetCenter, plate)
+					entry.plateCenterX = okc and cx or nil
+					entry.plateMeasureError = (not okc) and tostring(cx) or nil
+					local uf = plate.UnitFrame
+					if uf then
+						entry.unitFrameOnPlate = (uf:GetParent() == plate)
+						entry.unitFrameShown = uf:IsShown() or false
+						local oku, ux = pcall(uf.GetCenter, uf)
+						entry.unitFrameCenterX = oku and ux or nil
+					end
+					local kids = { plate:GetChildren() }
+					entry.childCount = #kids
+					for i = 1, #kids do
+						local kid = kids[i]
+						if kid ~= uf and kid.IsShown and kid:IsShown() then
+							local okk, kx = pcall(kid.GetCenter, kid)
+							if okk and kx then
+								entry.childCenterX = kx
+								entry.childName = kid:GetName() or "(anonymous)"
+								break
+							end
+						end
+					end
 				else
 					entry.baseFrame = false
 				end

@@ -173,20 +173,97 @@ local function targetPlateIsClamped(unit)
 	return UnitIsUnit and UnitIsUnit(unit, "target") or false
 end
 
+-- Nameplates are RESTRICTED regions. Blizzard blocks the measurement widget
+-- APIs on them from addon code - "Can't measure restricted regions" - and the
+-- restriction exists for exactly the reason we are here: to stop addons reading
+-- a unit's position off the screen. Anchoring to a plate is still allowed, which
+-- is why the glow works and this does not.
+--
+-- So every measurement goes through here, and a refusal is a normal outcome
+-- rather than an error. Restricted-ness is not constant: it depends on the taint
+-- of the running call path, so a plate that refuses now may answer later. We
+-- retry, but on a cooldown, because the failing call is not free.
+local measure = { blockedUntil = 0, strategy = nil, lastError = nil }
+local MEASURE_RETRY = 5
+
+local function safeCenter(region)
+	if not region or not region.GetCenter then return nil end
+	local ok, x = pcall(region.GetCenter, region)
+	if not ok then
+		measure.lastError = tostring(x)
+		return nil
+	end
+	return x
+end
+
+local function safeScale(region)
+	if not region or not region.GetEffectiveScale then return nil end
+	local ok, s = pcall(region.GetEffectiveScale, region)
+	if ok and s and s > 0 then return s end
+	return nil
+end
+
+-- The plate itself is restricted, but the frames hanging off it are ordinary
+-- addon or Blizzard-Lua frames anchored to it. Measuring one of those gives the
+-- same horizontal position without touching the restricted region. Which one
+-- exists depends entirely on what is drawing the nameplates, so try in order and
+-- remember what worked.
+local function plateCenterX(plate, glowFrame)
+	-- 1. the plate itself, for the untainted case where this is simply allowed
+	local x = safeCenter(plate)
+	if x then return x, safeScale(plate) or 1, "plate" end
+
+	-- 2. Blizzard's own nameplate UnitFrame. Present and anchored to the plate
+	--    with default nameplates; reparented away by Platynator and friends, so
+	--    only trust it while it is still a child of this plate.
+	local uf = plate.UnitFrame
+	if uf and uf.GetParent and uf:GetParent() == plate then
+		x = safeCenter(uf)
+		if x then return x, safeScale(uf) or 1, "unitframe" end
+	end
+
+	-- 3. whatever the nameplate addon put there - Platynator parents its display
+	--    to the plate, so it tracks the unit just as faithfully
+	local kids = { plate:GetChildren() }
+	for i = 1, #kids do
+		local kid = kids[i]
+		if kid ~= glowFrame and kid ~= uf and kid.IsShown and kid:IsShown() then
+			x = safeCenter(kid)
+			if x then return x, safeScale(kid) or 1, "child" end
+		end
+	end
+
+	return nil
+end
+
+-- Which measurement route is working, for diagnostics and for the UI to explain
+-- itself: "plate", "unitframe", "child", or nil when everything is refused.
+function Spy:GetMeasureStrategy()
+	return measure.strategy, measure.lastError
+end
+
 -- relative angle in radians: 0 = dead ahead, positive = anticlockwise (left)
 -- fourth return is true when the reading hit the screen rail and should be
 -- treated as a direction to turn rather than a measured angle.
 function Spy:GetLiveBearing(name)
 	local unit, plate = findNameplateUnit(name)
 	if not unit or not plate then return nil end
-	local px = plate:GetCenter()
-	if not px then return nil end
+
+	local now = GetTime()
+	if now < measure.blockedUntil then return nil, nil, nil, nil, "restricted" end
+
+	local px, plateScale, how = plateCenterX(plate, Spy.Glow and Spy.Glow.frame)
+	if not px then
+		measure.strategy = nil
+		measure.blockedUntil = now + MEASURE_RETRY
+		return nil, nil, nil, nil, "restricted"
+	end
+	measure.strategy = how
 
 	-- GetCenter reports in the frame's own scale, and nameplates do not share
 	-- UIParent's scale (nameplateGlobalScale, and addons set their own). Convert
 	-- both sides to real screen pixels before comparing them, otherwise every
 	-- bearing is stretched or squashed by the ratio between the two scales.
-	local plateScale = plate:GetEffectiveScale()
 	local uiScale = UIParent:GetEffectiveScale()
 	if not plateScale or plateScale <= 0 then plateScale = 1 end
 	if not uiScale or uiScale <= 0 then uiScale = 1 end
@@ -231,9 +308,15 @@ function Spy:GetArrowVector()
 	-- A visible nameplate beats any stored position: it is where they are right
 	-- now, not where we were when we last saw them.
 	if Spy.db.profile.ArrowUseNameplates ~= false then
-		local live, _, range, clamped = Spy:GetLiveBearing(name)
+		local live, _, range, clamped, blocked = Spy:GetLiveBearing(name)
 		if live then
 			return live, range, 0, clamped and "edge" or "live"
+		end
+		-- Their plate is on screen but the client will not let us measure it.
+		-- Say so rather than falling through to a remembered position, which
+		-- would quietly replace a live answer with a stale one.
+		if blocked == "restricted" then
+			return nil, nil, nil, "restricted"
 		end
 	end
 
@@ -333,6 +416,7 @@ end
 --   "live"       - nameplate on screen, bearing is real
 --   "edge"       - plate is clamped to the screen edge, so only "turn that way"
 --   "remembered" - projected from an earlier nameplate reading
+--   "restricted" - their plate is up, but the client refuses to let us measure it
 --   "noplates"   - enemy nameplates are switched off
 --   "unknown"    - we have no position for them that means anything
 function Spy:GetArrowState()
@@ -343,6 +427,17 @@ function Spy:GetArrowState()
 		return "noplates"
 	end
 	return state or "unknown"
+end
+
+-- Explain the restriction once per session. It is a client rule, not something
+-- the user can fix by changing a setting, so nagging about it every tick would
+-- be noise - but saying nothing leaves an arrow that silently never appears.
+local warnedRestricted = false
+
+local function warnRestrictedOnce()
+	if warnedRestricted then return end
+	warnedRestricted = true
+	Spy:Print(L["ArrowRestrictedWarning"])
 end
 
 ------------------------------------------------------------------------------
@@ -500,6 +595,7 @@ function Spy:UpdateArrow()
 	end
 	if not angle then
 		-- can't compute a bearing (different zone, or no recorded position)
+		if state == "restricted" then warnRestrictedOnce() end
 		if Spy.db.profile.ArrowHideOffZone then
 			if Arrow.dock then Arrow.dock:Hide() end
 			if Arrow.float then Arrow.float:Hide() end
