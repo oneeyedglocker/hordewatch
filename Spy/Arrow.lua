@@ -48,6 +48,11 @@ end
 ------------------------------------------------------------------------------
 function Spy:TrackPlayer(name)
 	if not name or name == "" then return end
+	-- Re-tracking whoever we are already tracking is a no-op. One click was
+	-- producing twenty of these: the row rebuild that RefreshCurrentList does at
+	-- the end feeds back into the click handler, so this recursed until the
+	-- frame ended. Cheap to make idempotent and it stops the loop at the source.
+	if Arrow.target == name then return end
 	Arrow.target = name
 	Arrow.since = GetTime()
 	-- Logged so "I clicked and nothing happened" can be told apart from "the

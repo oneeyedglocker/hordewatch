@@ -2330,7 +2330,12 @@ local Default_Profile = {
 		UseZoneLevelFloor=true,		-- clamp guessed levels to the zone's entry level
 		TomTomOnAltClick=true,		-- alt-click a row to point TomTom at their last position
 		-- Native direction arrow
-		ArrowEnabled=true,
+		-- OFF by default. The bearing needs a nameplate's screen position, and
+		-- the client refuses to measure nameplates from addon code - see the
+		-- comment on GetLiveBearing. Left in place, off, rather than deleted,
+		-- because it costs nothing switched off and a future client may allow it.
+		ArrowRetiredMigration=true,
+		ArrowEnabled=false,
 		ArrowStyle="titlebar",		-- titlebar | dock | floating | off
 		ArrowClickModifier="none",	-- none (plain click) | alt
 		ArrowSize=24,
@@ -2634,6 +2639,13 @@ function Spy:CheckDatabase()
 	if type(p.ArrowFloatPosition) ~= "table" then p.ArrowFloatPosition = {} end
 	if type(p.Colors["Spy"]["Glow"]) ~= "table" then
 		p.Colors["Spy"]["Glow"] = Default_Profile.profile.Colors["Spy"]["Glow"]
+	end
+	-- Existing profiles have ArrowEnabled saved as true from when the arrow was
+	-- on by default, and a changed default does not reach them. Switch it off
+	-- once, and record that we did so a deliberate re-enable is never undone.
+	if not p.ArrowRetiredMigration then
+		p.ArrowRetiredMigration = true
+		p.ArrowEnabled = false
 	end
 	if p.DebugMode == nil then p.DebugMode = Default_Profile.profile.DebugMode end
 	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end

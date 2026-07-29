@@ -173,7 +173,7 @@ L["DebugStatus"] = "diagnostics=%s  errors=%d  arrow=%d  levels=%d  notes=%d  de
 L["DebugDropped"] = "|cffff8000%d records were dropped (buffer full) - dump and reset to keep collecting.|r"
 L["TArrow"] = "Direction Arrow"
 L["ArrowEnabled"] = "Show a direction arrow"
-L["ArrowEnabledDescription"] = "Click a name in the list to point a 3D arrow at where that player was last seen, with the distance. Built into Spy - TomTom is not required."
+L["ArrowEnabledDescription"] = "|cffff4040Off by default, and it will not work.|r Pointing at a player needs their nameplate's position on screen, and the game refuses to let addons measure nameplates - the one exception being your own position, which is no use for finding somebody else. This was tested to destruction: the plate, the frames on it, and UnitPosition on an enemy are all refused. |cffffd000Use Target Glow instead|r - it marks the tracked player's nameplate directly and works. The arrow is left here switched off in case a future client permits it."
 L["ArrowStyle"] = "Arrow position"
 L["ArrowStyleDescription"] = "Where the arrow is shown."
 L["ArrowStyleTitlebar"] = "In the title bar"
@@ -715,7 +715,7 @@ L["TTabBigFights"] = "Big fights"
 L["TTabCooldowns"] = "Cooldowns"
 
 L["TPageFinding"] = "Finding them"
-L["TTabArrow"] = "Arrow"
+L["TTabArrow"] = "Arrow (retired)"
 L["TTabGlow"] = "Glow"
 L["TTabMap"] = "Map"
 
