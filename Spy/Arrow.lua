@@ -50,6 +50,9 @@ function Spy:TrackPlayer(name)
 	if not name or name == "" then return end
 	Arrow.target = name
 	Arrow.since = GetTime()
+	-- Logged so "I clicked and nothing happened" can be told apart from "the
+	-- click never reached the tracker", which is otherwise invisible in a dump.
+	if Spy.DebugTracking then Spy:DebugTracking("start", name) end
 	Spy:UpdateArrowVisibility()
 	Spy:UpdateArrow()
 	if Spy.UpdateGlow then Spy:UpdateGlow() end
@@ -57,6 +60,7 @@ function Spy:TrackPlayer(name)
 end
 
 function Spy:StopTracking()
+	if Spy.DebugTracking and Arrow.target then Spy:DebugTracking("stop", Arrow.target) end
 	Arrow.target = nil
 	Arrow.since = nil
 	Spy:UpdateArrowVisibility()

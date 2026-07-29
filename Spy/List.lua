@@ -1157,18 +1157,28 @@ function Spy:ClearTomTomWaypoint()
 	end
 end
 
+-- Tracking is shared: the arrow and the nameplate glow both follow the tracked
+-- player. This used to be gated on the arrow alone, so turning the arrow off - or
+-- setting its position to "off" - stopped clicks starting tracking at all, and
+-- took the glow down with it despite the glow being advertised as independent.
+local function trackingWanted()
+	local p = Spy.db.profile
+	if p.ArrowEnabled and p.ArrowStyle ~= "off" then return true end
+	return p.GlowEnabled == true
+end
+
 function Spy:ButtonClicked(self, button)
 	local name = Spy.ButtonName[self.id]
 	if name and name ~= "" then
 		if button == "LeftButton" then
-			if Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle ~= "off"
+			if trackingWanted()
 				and Spy.db.profile.ArrowClickModifier == "none"
 				and not IsAltKeyDown() and not IsShiftKeyDown() and not IsControlKeyDown() then
 				Spy:TrackPlayer(name)
 				if not InCombatLockdown() then
 					self:SetAttribute("macrotext", "/targetexact "..name)
 				end
-			elseif Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle ~= "off"
+			elseif trackingWanted()
 				and Spy.db.profile.ArrowClickModifier == "alt" and IsAltKeyDown() then
 				Spy:TrackPlayer(name)
 				if not InCombatLockdown() then

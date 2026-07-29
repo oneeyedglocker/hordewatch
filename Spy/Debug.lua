@@ -34,7 +34,7 @@ SpyDebugDB = SpyDebugDB or {}
 -- Moved into the C_AddOns namespace; the bare global is gone on current clients.
 local getAddOnMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
 
-local CAP = { errors = 60, arrow = 250, levels = 250, notes = 100 }
+local CAP = { errors = 60, arrow = 250, levels = 250, notes = 100, tracking = 80 }
 
 local Debug = {}
 Spy.Debug = Debug
@@ -47,6 +47,7 @@ local function db()
 		SpyDebugDB.detect = { method = {}, noPosition = 0, noMapID = 0, total = 0 }
 		SpyDebugDB.dropped = {}
 		SpyDebugDB.zones = {}
+		SpyDebugDB.tracking = {}
 	end
 	return SpyDebugDB
 end
@@ -344,6 +345,21 @@ local function realRangeBand(unit)
 	return 28, nil                                              -- further than 28
 end
 
+-- Tracking start/stop, so a dump distinguishes "nothing was ever tracked" from
+-- "tracking worked and the arrow had nothing to show". Those look identical
+-- otherwise, and we have already lost a round of testing to that ambiguity.
+function Spy:DebugTracking(what, name)
+	if not Spy:IsDebugging() then return end
+	local d = db()
+	d.tracking = d.tracking or {}
+	push(d.tracking, "tracking", {
+		when = date("%H:%M:%S"), event = what, name = name,
+		arrowEnabled = Spy.db.profile.ArrowEnabled,
+		arrowStyle = Spy.db.profile.ArrowStyle,
+		glowEnabled = Spy.db.profile.GlowEnabled,
+	})
+end
+
 function Spy:DebugArrowSample(force)
 	if not Spy:IsDebugging() then return end
 	local name = Spy.GetTrackedPlayer and Spy:GetTrackedPlayer()
@@ -352,8 +368,11 @@ function Spy:DebugArrowSample(force)
 	if not force and (now - lastArrowSample) < 2 then return end
 	lastArrowSample = now
 
-	local angle, distance, age, isLive = Spy:GetArrowVector()
-	if not angle then return end
+	-- Record the FAILURE cases too. This used to bail out when no bearing could
+	-- be computed, which blinded the diagnostics at precisely the moment there
+	-- was something to diagnose: an arrow that shows nothing produced no samples
+	-- at all, so a dump looked identical to a session where nothing was tracked.
+	local angle, distance, age, state = Spy:GetArrowVector()
 	local liveAngle = Spy.GetLiveBearing and Spy:GetLiveBearing(name) or nil
 
 	-- is the tracked player actually in front of us right now?
@@ -372,11 +391,34 @@ function Spy:DebugArrowSample(force)
 		if pos then px, py = pos:GetXY() end
 	end
 
+	-- Why the arrow is or is not showing, which is the whole question when it
+	-- never appears. Recorded on every sample, bearing or no bearing.
+	local plateUnit, plate
+	if Spy.FindNameplateForPlayer then
+		plateUnit, plate = Spy:FindNameplateForPlayer(name)
+	end
+	local measureHow, measureErr
+	if Spy.GetMeasureStrategy then measureHow, measureErr = Spy:GetMeasureStrategy() end
+	local plateCount = 0
+	if C_NamePlate and C_NamePlate.GetNamePlates then
+		local okp, plates = pcall(C_NamePlate.GetNamePlates, C_NamePlate)
+		if okp and type(plates) == "table" then plateCount = #plates end
+	end
+
 	push(db().arrow, "arrow", {
 		when = date("%H:%M:%S"), name = name,
+		-- the answer to "why is there no arrow"
+		state = state or "nil",
+		plateFound = plateUnit or false,
+		plateName = plate and (plate:GetName() or "(anonymous)") or nil,
+		platesOnScreen = plateCount,
+		measureStrategy = measureHow or "none",
+		measureError = measureErr,
+		glowShown = (Spy.Glow and Spy.Glow.frame and Spy.Glow.frame:IsShown()) or false,
+		glowError = Spy.Glow and Spy.Glow.lastError or nil,
+		nameplatesEnabled = Spy.EnemyNameplatesEnabled and Spy:EnemyNameplatesEnabled() or nil,
 		computedDist = distance and math.floor(distance * 10) / 10,
-		computedAngle = math.floor(angle * 100) / 100,
-		isLive = isLive or nil,
+		computedAngle = angle and math.floor(angle * 100) / 100 or nil,
 		liveAngle = liveAngle and math.floor(liveAngle * 100) / 100 or nil,
 		fov = Spy.db.profile.ArrowFieldOfView,
 		posFromNameplate = playerData and playerData.posFromNameplate or nil,
@@ -433,6 +475,13 @@ end
 
 function Spy:ShowDebugDump()
 	Spy:CaptureDebugEnvironment()
+	-- Run the position probes as part of taking a dump rather than leaving them
+	-- to a separate command nobody knows to type. Two dumps arrived without this
+	-- block because it had to be triggered by hand.
+	if Spy.ProbeEnemyPositionAPIs then pcall(Spy.ProbeEnemyPositionAPIs, Spy) end
+	-- One final sample, forced past the rate limit, so the state at the moment of
+	-- the dump is always on the record.
+	pcall(Spy.DebugArrowSample, Spy, true)
 	local d = db()
 	local text = "SpyDebug=" .. table.concat(serialize(d))
 
