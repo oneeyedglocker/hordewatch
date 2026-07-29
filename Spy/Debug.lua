@@ -114,7 +114,65 @@ function Spy:ProbeEnemyPositionAPIs()
 	out.canCreateLine = (UIParent.CreateLine ~= nil)
 	out.nameplateEnemies = GetCVar and GetCVar("nameplateShowEnemies") or nil
 	out.nameplateMaxDistance = GetCVar and GetCVar("nameplateMaxDistance") or nil
+	out.nameplateAddon = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or nil
+	out.nameplates = Spy:ProbeNameplates()
 	db().positionProbe = out
+	return out
+end
+
+-- The arrow reads the engine's base nameplate frame, not whatever a nameplate
+-- addon draws on top of it. This dumps both so a bad bearing can be traced to
+-- the right layer: if tokenSweep finds units but the base frames have no centre
+-- or a wild scale, that is the arrow's problem; if no units turn up at all,
+-- nameplates simply are not showing.
+function Spy:ProbeNameplates()
+	local out = {
+		driver = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or "unknown",
+		hasGetNamePlateForUnit = (C_NamePlate and C_NamePlate.GetNamePlateForUnit) ~= nil,
+		hasGetNamePlates = (C_NamePlate and C_NamePlate.GetNamePlates) ~= nil,
+		uiScale = UIParent:GetEffectiveScale(),
+		uiWidth = UIParent:GetWidth(),
+		tokenSweep = {},
+		listed = 0,
+	}
+	if not C_NamePlate then return out end
+
+	if C_NamePlate.GetNamePlateForUnit then
+		for i = 1, 40 do
+			local unit = "nameplate"..i
+			if UnitExists(unit) then
+				local entry = {
+					unit = unit,
+					name = GetUnitName(unit, true),
+					hostile = UnitCanAttack("player", unit) or false,
+					isPlayer = UnitIsPlayer(unit) or false,
+				}
+				local ok, plate = pcall(C_NamePlate.GetNamePlateForUnit, unit)
+				if ok and plate then
+					entry.baseFrame = plate:GetName() or "(anonymous)"
+					entry.centerX = plate:GetCenter()
+					entry.scale = plate:GetEffectiveScale()
+					entry.shown = plate:IsShown()
+					entry.width = plate:GetWidth()
+					-- what the nameplate addon hung on it, if anything
+					entry.unitFrameShown = plate.UnitFrame and plate.UnitFrame:IsShown() or false
+				else
+					entry.baseFrame = false
+				end
+				if entry.name and Spy.GetLiveBearing then
+					local bearing = Spy:GetLiveBearing(entry.name)
+					entry.bearingDeg = bearing and math.floor(math.deg(bearing) + 0.5) or nil
+				end
+				tinsert(out.tokenSweep, entry)
+			end
+		end
+	end
+
+	if C_NamePlate.GetNamePlates then
+		local ok, plates = pcall(C_NamePlate.GetNamePlates, C_NamePlate)
+		if ok and type(plates) == "table" then out.listed = #plates end
+	end
+
 	return out
 end
 
@@ -130,6 +188,7 @@ function Spy:CaptureDebugEnvironment()
 		faction = UnitFactionGroup("player"),
 		hbd = HBD ~= nil,
 		tomtom = TomTom ~= nil,
+		nameplateAddon = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or nil,
 		api = apiPresence(),
 	}
 end

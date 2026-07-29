@@ -81,17 +81,64 @@ end
 -- Only the magnitude depends on the field-of-view estimate. Which side they
 -- are on, and "dead ahead" when centred, are exact regardless.
 ------------------------------------------------------------------------------
+-- Nameplate addons (Platynator, Plater, Kui, ElvUI, ...) hide or replace the
+-- default UnitFrame that lives on each nameplate, and hang their own artwork
+-- off it. What none of them can move is the base nameplate frame itself: the
+-- engine owns it and anchors it to the unit in the world, which is exactly the
+-- thing we read. So we deliberately measure the BASE frame, never the addon's
+-- decoration, and we find it through the nameplateN unit tokens - which the
+-- engine hands out regardless of what is drawing on top.
+local MAX_NAMEPLATES = 40
+
 local function findNameplateUnit(name)
-	if not C_NamePlate or not C_NamePlate.GetNamePlates then return nil end
-	local ok, plates = pcall(C_NamePlate.GetNamePlates, C_NamePlate)
-	if not ok or type(plates) ~= "table" then return nil end
-	for _, plate in ipairs(plates) do
-		local unit = plate.namePlateUnitToken or (plate.UnitFrame and plate.UnitFrame.unit)
-		if unit and UnitExists(unit) and GetUnitName(unit, true) == name then
-			return unit, plate
+	if not C_NamePlate then return nil end
+
+	-- Preferred path: engine unit tokens -> engine base frame. Works with any
+	-- nameplate addon, and with none.
+	if C_NamePlate.GetNamePlateForUnit then
+		for i = 1, MAX_NAMEPLATES do
+			local unit = "nameplate"..i
+			if UnitExists(unit) and GetUnitName(unit, true) == name then
+				local ok, plate = pcall(C_NamePlate.GetNamePlateForUnit, unit)
+				if ok and plate then
+					return unit, plate
+				end
+			end
 		end
 	end
+
+	-- Fallback for clients where the token sweep comes up empty.
+	if C_NamePlate.GetNamePlates then
+		local ok, plates = pcall(C_NamePlate.GetNamePlates, C_NamePlate)
+		if ok and type(plates) == "table" then
+			for _, plate in ipairs(plates) do
+				local unit = plate.namePlateUnitToken
+					or (plate.UnitFrame and plate.UnitFrame.unit)
+				if unit and UnitExists(unit) and GetUnitName(unit, true) == name then
+					return unit, plate
+				end
+			end
+		end
+	end
+
 	return nil
+end
+
+-- Which nameplate addon, if any, is decorating the plates. Purely diagnostic:
+-- the bearing maths does not care, but knowing this makes a bug report legible.
+local NAMEPLATE_ADDONS = {
+	"Platynator", "Plater", "Kui_Nameplates", "TidyPlates", "ThreatPlates",
+	"NeatPlates", "ElvUI", "NamePlateSCT", "BetterBlizzPlates",
+}
+
+function Spy:GetNameplateDriver()
+	local loaded = IsAddOnLoaded
+	if not loaded then return "unknown" end
+	for _, addon in ipairs(NAMEPLATE_ADDONS) do
+		local ok, isLoaded = pcall(loaded, addon)
+		if ok and isLoaded then return addon end
+	end
+	return "Blizzard"
 end
 
 -- Coarse distance bracket for a unit we can see, used to place their position
@@ -111,11 +158,24 @@ function Spy:GetLiveBearing(name)
 	if not unit or not plate then return nil end
 	local px = plate:GetCenter()
 	if not px then return nil end
+
+	-- GetCenter reports in the frame's own scale, and nameplates do not share
+	-- UIParent's scale (nameplateGlobalScale, and addons set their own). Convert
+	-- both sides to real screen pixels before comparing them, otherwise every
+	-- bearing is stretched or squashed by the ratio between the two scales.
+	local plateScale = plate:GetEffectiveScale()
+	local uiScale = UIParent:GetEffectiveScale()
+	if not plateScale or plateScale <= 0 then plateScale = 1 end
+	if not uiScale or uiScale <= 0 then uiScale = 1 end
+
 	local screenWidth = UIParent:GetWidth()
 	if not screenWidth or screenWidth <= 0 then return nil end
 
+	local halfScreen = (screenWidth * uiScale) / 2
+	if halfScreen <= 0 then return nil end
+
 	-- normalised horizontal offset from screen centre, -1 (left) .. 1 (right)
-	local dx = (px - screenWidth / 2) / (screenWidth / 2)
+	local dx = (px * plateScale - halfScreen) / halfScreen
 	if dx > 1 then dx = 1 elseif dx < -1 then dx = -1 end
 
 	local halfFov = math.rad((Spy.db.profile.ArrowFieldOfView or 100) / 2)
