@@ -840,6 +840,7 @@ function Spy:CreateMainWindow()
 		Spy:ApplyWindowStyle()
 		Spy:CreateArrowFrames()
 		Spy:ApplyArrowSettings()
+		Spy:ApplyGlowSettings()
 	end
 
 	if not Spy.AlertWindow then

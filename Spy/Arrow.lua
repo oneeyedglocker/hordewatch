@@ -52,6 +52,7 @@ function Spy:TrackPlayer(name)
 	Arrow.since = GetTime()
 	Spy:UpdateArrowVisibility()
 	Spy:UpdateArrow()
+	if Spy.UpdateGlow then Spy:UpdateGlow() end
 	Spy:RefreshCurrentList()	-- highlight the tracked row
 end
 
@@ -59,6 +60,7 @@ function Spy:StopTracking()
 	Arrow.target = nil
 	Arrow.since = nil
 	Spy:UpdateArrowVisibility()
+	if Spy.UpdateGlow then Spy:UpdateGlow() end
 	Spy:RefreshCurrentList()
 end
 
@@ -122,6 +124,12 @@ local function findNameplateUnit(name)
 	end
 
 	return nil
+end
+
+-- Exposed so the nameplate glow can hang off the same base frame the bearing is
+-- measured from, rather than duplicating the lookup.
+function Spy:FindNameplateForPlayer(name)
+	return findNameplateUnit(name)
 end
 
 -- Which nameplate addon, if any, is decorating the plates. Purely diagnostic:
@@ -647,4 +655,7 @@ driver:SetScript("OnUpdate", function(_, elapsed)
 	acc = 0
 	warmTrackedPosition()
 	Spy:UpdateArrow()
+	-- Deliberately outside UpdateArrow: the glow is useful on its own, so it
+	-- keeps working when the arrow itself is switched off.
+	if Spy.UpdateGlow then Spy:UpdateGlow() end
 end)

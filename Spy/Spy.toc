@@ -53,6 +53,7 @@ WindowOrder.lua
 MainWindow.lua
 List.lua
 Arrow.lua
+Glow.lua
 Debug.lua
 SpyStats.xml
 SpyData.lua

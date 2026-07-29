@@ -1159,6 +1159,180 @@ Spy.options = {
 				},
 			},
 		},
+		Glow = {
+			name = L["TGlow"],
+			desc = L["TGlow"],
+			type = "group",
+			order = 2.8,
+			args = {
+				intro = {
+					name = L["GlowIntro"],
+					type = "description",
+					order = 1,
+					fontSize = "medium",
+				},
+				GlowEnabled = {
+					name = L["GlowEnabled"],
+					desc = L["GlowEnabledDescription"],
+					type = "toggle",
+					order = 2,
+					width = "full",
+					get = function() return Spy.db.profile.GlowEnabled end,
+					set = function(_, v) Spy.db.profile.GlowEnabled = v Spy:ApplyGlowSettings() end,
+				},
+				driver = {
+					name = function()
+						local d = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or "?"
+						return format(L["GlowDriver"], d)
+					end,
+					type = "description",
+					order = 3,
+				},
+				preview = {
+					name = L["GlowPreview"],
+					desc = L["GlowPreviewDescription"],
+					type = "execute",
+					order = 4,
+					func = function() Spy:ToggleGlowPreview() end,
+				},
+				sizeHeader = {
+					name = L["GlowSizeHeader"],
+					type = "header",
+					order = 10,
+				},
+				GlowWidth = {
+					name = L["GlowWidth"],
+					type = "range",
+					order = 11,
+					min = 40, max = 300, step = 2,
+					disabled = function() return not Spy.db.profile.GlowEnabled end,
+					get = function() return Spy.db.profile.GlowWidth end,
+					set = function(_, v) Spy.db.profile.GlowWidth = v Spy:ApplyGlowSettings() end,
+				},
+				GlowHeight = {
+					name = L["GlowHeight"],
+					type = "range",
+					order = 12,
+					min = 20, max = 160, step = 2,
+					disabled = function() return not Spy.db.profile.GlowEnabled end,
+					get = function() return Spy.db.profile.GlowHeight end,
+					set = function(_, v) Spy.db.profile.GlowHeight = v Spy:ApplyGlowSettings() end,
+				},
+				GlowOffsetX = {
+					name = L["GlowOffsetX"],
+					desc = L["GlowOffsetDescription"],
+					type = "range",
+					order = 13,
+					min = -100, max = 100, step = 1,
+					disabled = function() return not Spy.db.profile.GlowEnabled end,
+					get = function() return Spy.db.profile.GlowOffsetX end,
+					set = function(_, v)
+						Spy.db.profile.GlowOffsetX = v
+						Spy.Glow.plate = nil	-- force a re-anchor on the next tick
+						Spy:ApplyGlowSettings()
+					end,
+				},
+				GlowOffsetY = {
+					name = L["GlowOffsetY"],
+					desc = L["GlowOffsetDescription"],
+					type = "range",
+					order = 14,
+					min = -100, max = 100, step = 1,
+					disabled = function() return not Spy.db.profile.GlowEnabled end,
+					get = function() return Spy.db.profile.GlowOffsetY end,
+					set = function(_, v)
+						Spy.db.profile.GlowOffsetY = v
+						Spy.Glow.plate = nil
+						Spy:ApplyGlowSettings()
+					end,
+				},
+				lookHeader = {
+					name = L["GlowLookHeader"],
+					type = "header",
+					order = 20,
+				},
+				GlowColor = {
+					name = L["GlowColor"],
+					type = "color",
+					order = 21,
+					hasAlpha = false,
+					disabled = function()
+						local p = Spy.db.profile
+						return not p.GlowEnabled or p.GlowUseClassColor
+					end,
+					get = function() local c = Spy.db.profile.Colors["Spy"]["Glow"] return c.r, c.g, c.b end,
+					set = function(_, r, g, b)
+						local c = Spy.db.profile.Colors["Spy"]["Glow"]
+						c.r, c.g, c.b = r, g, b
+						Spy:ApplyGlowSettings()
+					end,
+				},
+				GlowUseClassColor = {
+					name = L["GlowUseClassColor"],
+					desc = L["GlowUseClassColorDescription"],
+					type = "toggle",
+					order = 22,
+					disabled = function() return not Spy.db.profile.GlowEnabled end,
+					get = function() return Spy.db.profile.GlowUseClassColor end,
+					set = function(_, v) Spy.db.profile.GlowUseClassColor = v Spy:ApplyGlowSettings() end,
+				},
+				GlowAlpha = {
+					name = L["GlowAlpha"],
+					type = "range",
+					order = 23,
+					min = 0.1, max = 1, step = 0.05, isPercent = true,
+					disabled = function() return not Spy.db.profile.GlowEnabled end,
+					get = function() return Spy.db.profile.GlowAlpha end,
+					set = function(_, v) Spy.db.profile.GlowAlpha = v Spy:ApplyGlowSettings() end,
+				},
+				GlowAdditive = {
+					name = L["GlowAdditive"],
+					desc = L["GlowAdditiveDescription"],
+					type = "toggle",
+					order = 24,
+					width = "full",
+					disabled = function() return not Spy.db.profile.GlowEnabled end,
+					get = function() return Spy.db.profile.GlowAdditive end,
+					set = function(_, v) Spy.db.profile.GlowAdditive = v Spy:ApplyGlowSettings() end,
+				},
+				GlowPulse = {
+					name = L["GlowPulse"],
+					desc = L["GlowPulseDescription"],
+					type = "toggle",
+					order = 25,
+					width = "full",
+					disabled = function() return not Spy.db.profile.GlowEnabled end,
+					get = function() return Spy.db.profile.GlowPulse end,
+					set = function(_, v) Spy.db.profile.GlowPulse = v Spy:ApplyGlowSettings() end,
+				},
+				GlowPulseSpeed = {
+					name = L["GlowPulseSpeed"],
+					desc = L["GlowPulseSpeedDescription"],
+					type = "range",
+					order = 26,
+					min = 0.2, max = 2, step = 0.05,
+					disabled = function()
+						local p = Spy.db.profile
+						return not (p.GlowEnabled and p.GlowPulse)
+					end,
+					get = function() return Spy.db.profile.GlowPulseSpeed end,
+					set = function(_, v) Spy.db.profile.GlowPulseSpeed = v Spy:ApplyGlowSettings() end,
+				},
+				GlowPulseDepth = {
+					name = L["GlowPulseDepth"],
+					desc = L["GlowPulseDepthDescription"],
+					type = "range",
+					order = 27,
+					min = 0, max = 0.9, step = 0.05, isPercent = true,
+					disabled = function()
+						local p = Spy.db.profile
+						return not (p.GlowEnabled and p.GlowPulse)
+					end,
+					get = function() return Spy.db.profile.GlowPulseDepth end,
+					set = function(_, v) Spy.db.profile.GlowPulseDepth = v Spy:ApplyGlowSettings() end,
+				},
+			},
+		},
 		Diagnostics = {
 			name = L["TDebug"],
 			desc = L["TDebug"],
@@ -2086,6 +2260,7 @@ local Default_Profile = {
 				["Cooldown"] = { r = 1, g = 0.82, b = 0, a = 1 },
 				["Arrow"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
 				["Arrow Stale"] = { r = 217/255, g = 161/255, b = 59/255, a = 1 },
+			["Glow"] = { r = 1, g = 0.31, b = 0.27, a = 1 },
 			},
 		},
 		MainWindow={
@@ -2160,6 +2335,19 @@ local Default_Profile = {
 		ArrowFloatPosition={},
 		ArrowUseNameplates=true,
 		ArrowFieldOfView=100,
+		-- Tracked-target nameplate glow. Hangs off the engine's base nameplate
+		-- frame, so it behaves the same under any nameplate addon or none.
+		GlowEnabled=true,
+		GlowWidth=132,
+		GlowHeight=58,
+		GlowOffsetX=0,
+		GlowOffsetY=0,
+		GlowAlpha=1,
+		GlowAdditive=true,		-- ADD reads as light, BLEND as paint
+		GlowPulse=true,
+		GlowPulseSpeed=0.55,
+		GlowPulseDepth=0.35,
+		GlowUseClassColor=false,
 		DebugMode=false,
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
 		KillPriorityOrder=false,	-- order by target value instead of recency
@@ -2430,10 +2618,15 @@ function Spy:CheckDatabase()
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
 	for _, k in ipairs({"ArrowEnabled","ArrowStyle","ArrowClickModifier","ArrowSize","ArrowColorByAge",
 		"ArrowStaleSeconds","ArrowTimeout","ArrowDistanceUnit","ArrowHideOffZone","ArrowFloatLocked",
-		"ArrowUseNameplates","ArrowFieldOfView"}) do
+		"ArrowUseNameplates","ArrowFieldOfView",
+		"GlowEnabled","GlowWidth","GlowHeight","GlowOffsetX","GlowOffsetY","GlowAlpha",
+		"GlowAdditive","GlowPulse","GlowPulseSpeed","GlowPulseDepth","GlowUseClassColor"}) do
 		if p[k] == nil then p[k] = Default_Profile.profile[k] end
 	end
 	if type(p.ArrowFloatPosition) ~= "table" then p.ArrowFloatPosition = {} end
+	if type(p.Colors["Spy"]["Glow"]) ~= "table" then
+		p.Colors["Spy"]["Glow"] = Default_Profile.profile.Colors["Spy"]["Glow"]
+	end
 	if p.DebugMode == nil then p.DebugMode = Default_Profile.profile.DebugMode end
 	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end
 	if p.KillPriorityOrder == nil then p.KillPriorityOrder = Default_Profile.profile.KillPriorityOrder end
