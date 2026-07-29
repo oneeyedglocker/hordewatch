@@ -53,7 +53,11 @@ Spy.options = {
 			name = L["About"],
 			desc = L["About"],
 			type = "group",
-			order = 1,
+			-- Reference material, not settings. AceConfigDialog sorts negative
+			-- orders after positive ones, so this sits at the foot of the
+			-- sidebar (just above Profiles at -2) and /spy config now opens on
+			-- a page that actually has controls on it.
+			order = -3,
 			args = {
 				intro1 = {
 					name = L["SpyDescription1"],
@@ -75,1960 +79,1964 @@ Spy.options = {
 				},
 			},
 		},
-		General = {
-			name = L["GeneralSettings"],
-			desc = L["GeneralSettings"],
-			type = "group",
-			order = 1,
-			args = {
-				intro = {
-					name = L["GeneralSettingsDescription"],
-					type = "description",
-					order = 1,
-					fontSize = "medium",
-				},
-				EnabledInBattlegrounds = {
-					name = L["EnabledInBattlegrounds"],
-					desc = L["EnabledInBattlegroundsDescription"],
-					type = "toggle",
-					order = 2,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.EnabledInBattlegrounds
-					end,
-					set = function(info, value)
-						Spy.db.profile.EnabledInBattlegrounds = value
-						Spy:ZoneChangedEvent()
-					end,
-				},
-				EnabledInArenas = {
-					name = L["EnabledInArenas"],
-					desc = L["EnabledInArenasDescription"],
-					type = "toggle",
-					order = 3,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.EnabledInArenas
-					end,
-					set = function(info, value)
-						Spy.db.profile.EnabledInArenas = value
-						Spy:ZoneChangedEvent()
-					end,
-				},
---[[				EnabledInWintergrasp = {
-					name = L["EnabledInWintergrasp"],
-					desc = L["EnabledInWintergraspDescription"],
-					type = "toggle",
-					order = 4,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.EnabledInWintergrasp
-					end,
-					set = function(info, value)
-						Spy.db.profile.EnabledInWintergrasp = value
-						Spy:ZoneChangedEvent()
-					end,
-				},]]--
-				EnabledInSanctuaries = {
-					name = L["EnabledInSanctuaries"],
-					desc = L["EnabledInSanctuariesDescription"],
-					type = "toggle",
-					order = 5,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.EnabledInSanctuaries
-					end,
-					set = function(info, value)
-						Spy.db.profile.EnabledInSanctuaries = value
-						Spy:ZoneChangedEvent()
-					end,
-				},
-				DisableWhenPVPUnflagged = {
-					name = L["DisableWhenPVPUnflagged"],
-					desc = L["DisableWhenPVPUnflaggedDescription"],
-					type = "toggle",
-					order = 6,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.DisableWhenPVPUnflagged
-					end,
-					set = function(info, value)
-						Spy.db.profile.DisableWhenPVPUnflagged = value
-						Spy:ZoneChangedEvent()
-					end,
-				},
-				DisabledInZones = {
-					name = L["DisabledInZones"],
-					desc = L["DisabledInZonesDescription"],
-					type = "multiselect",
-					order = 7,
-					get = function(info, key) 
-						return Spy.db.profile.FilteredZones[key] 
-					end,
-					set = function(info, key, value) 
-						Spy.db.profile.FilteredZones[key] = value 
-					end,
-					values = {
-						["Booty Bay"] = L["Booty Bay"],
-						["Everlook"] = L["Everlook"],
-						["Gadgetzan"] = L["Gadgetzan"],
-						["Ratchet"] = L["Ratchet"],
-						["The Salty Sailor Tavern"] = L["The Salty Sailor Tavern"],
-						["Cenarion Hold"] = L["Cenarion Hold"],
-						["Shattrath City"] = L["Shattrath City"],
-						["Area 52"] = L["Area 52"],
---						["Dalaran"] = L["Dalaran"],
---						["Bogpaddle"] = L["Bogpaddle"],
---						["The Vindicaar"] = L["The Vindicaar"],
---						["Krasus' Landing"] = L["Krasus' Landing"],
---						["The Violet Gate"] = L["The Violet Gate"],
---						["Magni's Encampment"] = L["Magni's Encampment"],
---						["Chamber of Heart"] = L["Chamber of Heart"],
---						["Hall of Ancient Paths"] = L["Hall of Ancient Paths"],
---						["Sanctum of the Sages"] = L["Sanctum of the Sages"],
---						["Rustbolt"] = L["Rustbolt"],
---						["Oribos"] = L["Oribos"],
---						["Valdrakken"] = L["Valdrakken"],
---						["The Roasted Ram"] = L["The Roasted Ram"],
---						["Dornogal"] = L["Dornogal"],						
---						["Stonelight Rest"] = L["Stonelight Rest"],
---						["Delver's Headquarters"] = L["Delver's Headquarters"],
-					},
-				},
-				ShowOnDetection = {
-					name = L["ShowOnDetection"],
-					desc = L["ShowOnDetectionDescription"],
-					type = "toggle",
-					order = 8,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.ShowOnDetection
-					end,
-					set = function(info, value)
-						Spy.db.profile.ShowOnDetection = value
-					end,
-				},
-				HideSpy = {
-					name = L["HideSpy"],
-					desc = L["HideSpyDescription"],
-					type = "toggle",
-					order = 9,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.HideSpy
-					end,
-					set = function(info, value)
-						Spy.db.profile.HideSpy = value
-						if Spy.db.profile.HideSpy and Spy:GetNearbyListSize() == 0 then
-							Spy.MainWindow:Hide()
-						end
-					end,
-				},
---[[				ShowOnlyPvPFlagged = {
-					name = L["ShowOnlyPvPFlagged"],
-					desc = L["ShowOnlyPvPFlaggedDescription"],
-					type = "toggle",
-					order = 4,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.ShowOnlyPvPFlagged
-					end,
-					set = function(info, value)
-						Spy.db.profile.ShowOnlyPvPFlagged = value
-					end,
-				},	]]--
-				ShowKoSButton = {
-					name = L["ShowKoSButton"],
-					desc = L["ShowKoSButtonDescription"],
-					type = "toggle",
-					order = 10,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.ShowKoSButton
-					end,
-					set = function(info, value)
-						Spy.db.profile.ShowKoSButton = value
-					end,
-				},
-			},
-		},
-		DisplayOptions = {
-			name = L["DisplayOptions"],
-			desc = L["DisplayOptions"],
+		SpyGroup = {
+			name = L["TPageSpy"],
+			desc = L["TPageSpy"],
 			type = "group",
 			order = 2,
+			childGroups = "tab",
 			args = {
-				intro = {
-					name = L["DisplayOptionsDescription"],
-					type = "description",
+				Zones = {
+					name = L["TTabZones"],
+					desc = L["TTabZones"],
+					type = "group",
 					order = 1,
-					fontSize = "medium",
+					args = {
+						EnabledInBattlegrounds = {
+							name = L["EnabledInBattlegrounds"],
+							desc = L["EnabledInBattlegroundsDescription"],
+							type = "toggle",
+							order = 1,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.EnabledInBattlegrounds
+							end,
+							set = function(info, value)
+								Spy.db.profile.EnabledInBattlegrounds = value
+								Spy:ZoneChangedEvent()
+							end,
+						},
+						EnabledInArenas = {
+							name = L["EnabledInArenas"],
+							desc = L["EnabledInArenasDescription"],
+							type = "toggle",
+							order = 2,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.EnabledInArenas
+							end,
+							set = function(info, value)
+								Spy.db.profile.EnabledInArenas = value
+								Spy:ZoneChangedEvent()
+							end,
+						},
+						EnabledInSanctuaries = {
+							name = L["EnabledInSanctuaries"],
+							desc = L["EnabledInSanctuariesDescription"],
+							type = "toggle",
+							order = 3,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.EnabledInSanctuaries
+							end,
+							set = function(info, value)
+								Spy.db.profile.EnabledInSanctuaries = value
+								Spy:ZoneChangedEvent()
+							end,
+						},
+						DisableWhenPVPUnflagged = {
+							name = L["DisableWhenPVPUnflagged"],
+							desc = L["DisableWhenPVPUnflaggedDescription"],
+							type = "toggle",
+							order = 4,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.DisableWhenPVPUnflagged
+							end,
+							set = function(info, value)
+								Spy.db.profile.DisableWhenPVPUnflagged = value
+								Spy:ZoneChangedEvent()
+							end,
+						},
+						DisabledInZones = {
+							name = L["DisabledInZones"],
+							desc = L["DisabledInZonesDescription"],
+							type = "multiselect",
+							order = 5,
+							get = function(info, key) 
+								return Spy.db.profile.FilteredZones[key] 
+							end,
+							set = function(info, key, value) 
+								Spy.db.profile.FilteredZones[key] = value 
+							end,
+							values = {
+								["Booty Bay"] = L["Booty Bay"],
+								["Everlook"] = L["Everlook"],
+								["Gadgetzan"] = L["Gadgetzan"],
+								["Ratchet"] = L["Ratchet"],
+								["The Salty Sailor Tavern"] = L["The Salty Sailor Tavern"],
+								["Cenarion Hold"] = L["Cenarion Hold"],
+								["Shattrath City"] = L["Shattrath City"],
+								["Area 52"] = L["Area 52"],
+		--						["Dalaran"] = L["Dalaran"],
+		--						["Bogpaddle"] = L["Bogpaddle"],
+		--						["The Vindicaar"] = L["The Vindicaar"],
+		--						["Krasus' Landing"] = L["Krasus' Landing"],
+		--						["The Violet Gate"] = L["The Violet Gate"],
+		--						["Magni's Encampment"] = L["Magni's Encampment"],
+		--						["Chamber of Heart"] = L["Chamber of Heart"],
+		--						["Hall of Ancient Paths"] = L["Hall of Ancient Paths"],
+		--						["Sanctum of the Sages"] = L["Sanctum of the Sages"],
+		--						["Rustbolt"] = L["Rustbolt"],
+		--						["Oribos"] = L["Oribos"],
+		--						["Valdrakken"] = L["Valdrakken"],
+		--						["The Roasted Ram"] = L["The Roasted Ram"],
+		--						["Dornogal"] = L["Dornogal"],						
+		--						["Stonelight Rest"] = L["Stonelight Rest"],
+		--						["Delver's Headquarters"] = L["Delver's Headquarters"],
+							},
+						},
+						ShowOnDetection = {
+							name = L["ShowOnDetection"],
+							desc = L["ShowOnDetectionDescription"],
+							type = "toggle",
+							order = 6,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.ShowOnDetection
+							end,
+							set = function(info, value)
+								Spy.db.profile.ShowOnDetection = value
+							end,
+						},
+						HideSpy = {
+							name = L["HideSpy"],
+							desc = L["HideSpyDescription"],
+							type = "toggle",
+							order = 7,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.HideSpy
+							end,
+							set = function(info, value)
+								Spy.db.profile.HideSpy = value
+								if Spy.db.profile.HideSpy and Spy:GetNearbyListSize() == 0 then
+									Spy.MainWindow:Hide()
+								end
+							end,
+						},
+						ShowKoSButton = {
+							name = L["ShowKoSButton"],
+							desc = L["ShowKoSButtonDescription"],
+							type = "toggle",
+							order = 8,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.ShowKoSButton
+							end,
+							set = function(info, value)
+								Spy.db.profile.ShowKoSButton = value
+							end,
+						},
+					},
 				},
-				ShowNearbyList = {
-					name = L["ShowNearbyList"],
-					desc = L["ShowNearbyListDescription"],
-					type = "toggle",
+				TheList = {
+					name = L["TTabList"],
+					desc = L["TTabList"],
+					type = "group",
 					order = 2,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.ShowNearbyList
-					end,
-					set = function(info, value)
-						Spy.db.profile.ShowNearbyList = value
-					end,
-				},
-				PrioritiseKoS = {
-					name = L["PrioritiseKoS"],
-					desc = L["PrioritiseKoSDescription"],
-					type = "toggle",
-					order = 3,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.PrioritiseKoS
-					end,
-					set = function(info, value)
-						Spy.db.profile.PrioritiseKoS = value
-					end,
-				},
-				Alpha = {
-					name = L["Alpha"],
-					desc = L["AlphaDescription"],
-					type = "range",
-					order = 4,
---					width = "double",
-					min = 0, max = 1, step = 0.01,
-					isPercent = true,
-					get = function()
-						return Spy.db.profile.MainWindow.Alpha end,
-					set = function(info, value)
-						Spy.db.profile.MainWindow.Alpha = value
-						Spy:UpdateMainWindow()
-
-					end,
-				},
-				AlphaBG = {
-					name = L["AlphaBG"],
-					desc = L["AlphaBGDescription"],
-					type = "range",
-					order = 5,
---					width = "double",
-					min = 0, max = 1, step = 0.01,
-					isPercent = true,
-					get = function()
-						return Spy.db.profile.MainWindow.AlphaBG end,
-					set = function(info, value)
-						Spy.db.profile.MainWindow.AlphaBG = value
-						Spy:UpdateMainWindow()
-					end,
-				},
-				Lock = {
-					name = L["LockSpy"],
-					desc = L["LockSpyDescription"],
-					type = "toggle",
-					order = 6,
-					width = 1.6,
-					get = function(info) 
-						return Spy.db.profile.Locked
-					end,
-					set = function(info, value)
-						Spy.db.profile.Locked = value
-						Spy:LockWindows(value)
-						Spy:RefreshCurrentList()
-					end,
-				},
-				ClampToScreen = {
-					name = L["ClampToScreen"],
-					desc = L["ClampToScreenDescription"],
-					type = "toggle",
-					order = 7,
---					width = "double",
-					get = function(info) 
-						return Spy.db.profile.ClampToScreen
-					end,
-					set = function(info, value)
-						Spy.db.profile.ClampToScreen = value
-						Spy:ClampToScreen(value)
-					end,
-				},
-				InvertSpy = {
-					name = L["InvertSpy"],
-					desc = L["InvertSpyDescription"],
-					type = "toggle",
-					order = 8,
-					get = function(info)
-						return Spy.db.profile.InvertSpy
-					end,
-					set = function(info, value)
-						Spy.db.profile.InvertSpy = value
-					end,
-				},
-				[L["Reload"]] = {
-					name = L["Reload"],
-					desc = L["ReloadDescription"],
-					type = 'execute',
-					order = 9,
-					width = .6,
-					func = function()
-						C_UI.Reload()
-					end
-				},
-				ResizeSpy = {
-					name = L["ResizeSpy"],
-					desc = L["ResizeSpyDescription"],
-					type = "toggle",
-					order = 10,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.ResizeSpy
-					end,
-					set = function(info, value)
-						Spy.db.profile.ResizeSpy = value
-						if value then Spy:RefreshCurrentList() end
-					end,
-				},
-				ResizeSpyLimit = {  
-					type = "range",
-					order = 11,
-					name = L["ResizeSpyLimit"],
-					desc = L["ResizeSpyLimitDescription"],
-					min = 1, max = 15, step = 1,
-					get = function() return Spy.db.profile.ResizeSpyLimit end,
-					set = function(info, value)
-						Spy.db.profile.ResizeSpyLimit = value
-						if value then 
-							Spy:ResizeMainWindow()
-							Spy:RefreshCurrentList() 
-						end	
-					end,
-				},
-				DisplayListData = {
-					name = L["DisplayListData"],
-					type = 'select',
-					order = 12,
-					values = {
-						["1NameLevelClass"] = L["Name"].." / "..L["Level"].." / "..L["Class"],
-						["2NameLevelGuild"] = L["Name"].." / "..L["Level"].." / "..L["Guild"],
-						["3NameLevelOnly"] = L["Name"].." / "..L["Level"],
---						["4NamePvPRank"] = L["Name"].." / "..L["Rank"], -- Classic
-						["5NameGuild"] = L["Name"].." / "..L["Guild"],
-						["6NameOnly"] = L["Name"],
+					args = {
+						ShowNearbyList = {
+							name = L["ShowNearbyList"],
+							desc = L["ShowNearbyListDescription"],
+							type = "toggle",
+							order = 1,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.ShowNearbyList
+							end,
+							set = function(info, value)
+								Spy.db.profile.ShowNearbyList = value
+							end,
+						},
+						PrioritiseKoS = {
+							name = L["PrioritiseKoS"],
+							desc = L["PrioritiseKoSDescription"],
+							type = "toggle",
+							order = 2,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.PrioritiseKoS
+							end,
+							set = function(info, value)
+								Spy.db.profile.PrioritiseKoS = value
+							end,
+						},
+						ResizeSpy = {
+							name = L["ResizeSpy"],
+							desc = L["ResizeSpyDescription"],
+							type = "toggle",
+							order = 3,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.ResizeSpy
+							end,
+							set = function(info, value)
+								Spy.db.profile.ResizeSpy = value
+								if value then Spy:RefreshCurrentList() end
+							end,
+						},
+						ResizeSpyLimit = {  
+							type = "range",
+							order = 4,
+							name = L["ResizeSpyLimit"],
+							desc = L["ResizeSpyLimitDescription"],
+							min = 1, max = 15, step = 1,
+							get = function() return Spy.db.profile.ResizeSpyLimit end,
+							set = function(info, value)
+								Spy.db.profile.ResizeSpyLimit = value
+								if value then 
+									Spy:ResizeMainWindow()
+									Spy:RefreshCurrentList() 
+								end	
+							end,
+						},
+						DisplayListData = {
+							name = L["DisplayListData"],
+							type = 'select',
+							order = 5,
+							values = {
+								["1NameLevelClass"] = L["Name"].." / "..L["Level"].." / "..L["Class"],
+								["2NameLevelGuild"] = L["Name"].." / "..L["Level"].." / "..L["Guild"],
+								["3NameLevelOnly"] = L["Name"].." / "..L["Level"],
+		--						["4NamePvPRank"] = L["Name"].." / "..L["Rank"], -- Classic
+								["5NameGuild"] = L["Name"].." / "..L["Guild"],
+								["6NameOnly"] = L["Name"],
+							},
+							get = function()
+								return Spy.db.profile.DisplayListData
+							end,
+							set = function(info, value)
+								Spy.db.profile.DisplayListData = value
+								Spy:RefreshCurrentList() 
+							end,
+						},
+						DisplayLastSeen = {
+							name = L["TooltipDisplayLastSeen"],
+							desc = L["TooltipDisplayLastSeenDescription"],
+							type = "toggle",
+							order = 6,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.DisplayLastSeen
+							end,
+							set = function(info, value)
+								Spy.db.profile.DisplayLastSeen = value
+							end,
+						},
+						DisplayKOSReason = {
+							name = L["TooltipDisplayKOSReason"],
+							desc = L["TooltipDisplayKOSReasonDescription"],
+							type = "toggle",
+							order = 7,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.DisplayKOSReason
+							end,
+							set = function(info, value)
+								Spy.db.profile.DisplayKOSReason = value
+							end,
+						},
+						DisplayWinLossStatistics = {
+							name = L["TooltipDisplayWinLoss"],
+							desc = L["TooltipDisplayWinLossDescription"],
+							type = "toggle",
+							order = 8,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.DisplayWinLossStatistics
+							end,
+							set = function(info, value)
+								Spy.db.profile.DisplayWinLossStatistics = value
+							end,
+						},
+						DisplayTooltipNearSpyWindow = {
+							name = L["DisplayTooltipNearSpyWindow"],
+							desc = L["DisplayTooltipNearSpyWindowDescription"],
+							type = "toggle",
+							order = 9,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.DisplayTooltipNearSpyWindow
+							end,
+							set = function(info, value)
+								Spy.db.profile.DisplayTooltipNearSpyWindow = value
+							end,
+						},
+						SelectTooltipAnchor = {
+							type = "select",
+							order = 10,
+							name = L["SelectTooltipAnchor"],
+							desc = L["SelectTooltipAnchorDescription"],
+							values = { 
+								["ANCHOR_CURSOR"] = L["ANCHOR_CURSOR"],
+								["ANCHOR_TOP"] = L["ANCHOR_TOP"],
+								["ANCHOR_BOTTOM"] = L["ANCHOR_BOTTOM"],
+								["ANCHOR_LEFT"] = L["ANCHOR_LEFT"],
+								["ANCHOR_RIGHT"] = L["ANCHOR_RIGHT"], 
+							},
+							get = function()
+								return Spy.db.profile.TooltipAnchor
+							end,
+							set = function(info, value)
+								Spy.db.profile.TooltipAnchor = value
+							end,
+						},
 					},
-					get = function()
-						return Spy.db.profile.DisplayListData
-					end,
-					set = function(info, value)
-						Spy.db.profile.DisplayListData = value
-						Spy:RefreshCurrentList() 
-					end,
-				},
-				SelectFont = {
-					type = "select",
-					order = 13,
-					name = L["SelectFont"],
-					desc = L["SelectFontDescription"],
-					values = fonts,
-					get = function()
-						for info, value in next, fonts do
-							if value == Spy.db.profile.Font then
-								return info
-							end
-						end
-					end,
-					set = function(_, value)
-						Spy.db.profile.Font = fonts[value]
-						if value then
-							Spy:UpdateBarTextures()
-						end
-					end,
-				},
-				RowHeight = {
-					type = "range",
-					order = 14,
-					name = L["RowHeight"], 
-					desc = L["RowHeightDescription"], 
-					min = 8, max = 20, step = 1,
-					get = function()
-						return Spy.db.profile.MainWindow.RowHeight
-					end,
-					set = function(info, value)
-						Spy.db.profile.MainWindow.RowHeight = value
-						if value then
-							Spy:BarsChanged()
-						end
-					end,
-				},
-				BarTexture = {
-					type = "select",
-					order = 15,
-					name = L["Texture"],
-					desc = L["TextureDescription"],	
-					dialogControl = "LSM30_Statusbar",
-					width = "double",
-					values = SM:HashTable("statusbar"),
-					get = function()
-						return Spy.db.profile.BarTexture
-					end,
-					set = function(_, key)
-						Spy.db.profile.BarTexture = key
-						Spy:UpdateBarTextures()
-					end,
-				},
-				DisplayTooltipNearSpyWindow = {
-					name = L["DisplayTooltipNearSpyWindow"],
-					desc = L["DisplayTooltipNearSpyWindowDescription"],
-					type = "toggle",
-					order = 16,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.DisplayTooltipNearSpyWindow
-					end,
-					set = function(info, value)
-						Spy.db.profile.DisplayTooltipNearSpyWindow = value
-					end,
-				},	
-				SelectTooltipAnchor = {
-					type = "select",
-					order = 17,
-					name = L["SelectTooltipAnchor"],
-					desc = L["SelectTooltipAnchorDescription"],
-					values = { 
-						["ANCHOR_CURSOR"] = L["ANCHOR_CURSOR"],
-						["ANCHOR_TOP"] = L["ANCHOR_TOP"],
-						["ANCHOR_BOTTOM"] = L["ANCHOR_BOTTOM"],
-						["ANCHOR_LEFT"] = L["ANCHOR_LEFT"],
-						["ANCHOR_RIGHT"] = L["ANCHOR_RIGHT"], 
-					},
-					get = function()
-						return Spy.db.profile.TooltipAnchor
-					end,
-					set = function(info, value)
-						Spy.db.profile.TooltipAnchor = value
-					end,
-				},
-				DisplayWinLossStatistics = {
-					name = L["TooltipDisplayWinLoss"],
-					desc = L["TooltipDisplayWinLossDescription"],
-					type = "toggle",
-					order = 18,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.DisplayWinLossStatistics
-					end,
-					set = function(info, value)
-						Spy.db.profile.DisplayWinLossStatistics = value
-					end,
-				},
-				DisplayKOSReason = {
-					name = L["TooltipDisplayKOSReason"],
-					desc = L["TooltipDisplayKOSReasonDescription"],
-					type = "toggle",
-					order = 19,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.DisplayKOSReason
-					end,
-					set = function(info, value)
-						Spy.db.profile.DisplayKOSReason = value
-					end,
-				},
-				DisplayLastSeen = {
-					name = L["TooltipDisplayLastSeen"],
-					desc = L["TooltipDisplayLastSeenDescription"],
-					type = "toggle",
-					order = 20,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.DisplayLastSeen
-					end,
-					set = function(info, value)
-						Spy.db.profile.DisplayLastSeen = value
-					end,
 				},
 			},
 		},
-		TargetPicker = {
-			name = L["TargetPicker"],
-			desc = L["TargetPicker"],
-			type = "group",
-			order = 2.5,
-			args = {
-				intro = {
-					name = L["TargetPickerDescription"],
-					type = "description",
-					order = 1,
-					fontSize = "medium",
-				},
-				healersHeader = {
-					name = L["THealers"],
-					type = "header",
-					order = 10,
-				},
-				MarkHealers = {
-					name = L["MarkHealers"],
-					desc = L["MarkHealersDescription"],
-					type = "toggle",
-					order = 11,
-					width = "full",
-					get = function() return Spy.db.profile.MarkHealers end,
-					set = function(_, value)
-						Spy.db.profile.MarkHealers = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				HealerDetectBy = {
-					name = L["HealerDetectBy"],
-					desc = L["HealerDetectByDescription"],
-					type = "select",
-					order = 12,
-					values = {
-						["class"] = L["HealerDetectByClass"],
-						["heal"] = L["HealerDetectByHeal"],
-					},
-					get = function() return Spy.db.profile.HealerDetectBy end,
-					set = function(_, value)
-						Spy.db.profile.HealerDetectBy = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				HealerMinHeal = {
-					name = L["HealerMinHeal"],
-					desc = L["HealerMinHealDescription"],
-					type = "range",
-					order = 12.5,
-					min = 0, max = 3000, step = 50,
-					disabled = function() return Spy.db.profile.HealerDetectBy ~= "heal" end,
-					get = function() return Spy.db.profile.HealerMinHeal end,
-					set = function(_, value) Spy.db.profile.HealerMinHeal = value end,
-				},
-				HealerMarkerStyle = {
-					name = L["HealerMarkerStyle"],
-					desc = L["HealerMarkerStyleDescription"],
-					type = "select",
-					order = 13,
-					values = {
-						["cross"] = L["HealerMarkerCross"],
-						["asterisk"] = L["HealerMarkerAsterisk"],
-						["dot"] = L["HealerMarkerDot"],
-					},
-					get = function() return Spy.db.profile.HealerMarkerStyle end,
-					set = function(_, value)
-						Spy.db.profile.HealerMarkerStyle = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				HealerMarkerSide = {
-					name = L["HealerMarkerSide"],
-					desc = L["HealerMarkerSideDescription"],
-					type = "select",
-					order = 14,
-					values = {
-						["right"] = L["HealerMarkerRight"],
-						["left"] = L["HealerMarkerLeft"],
-					},
-					get = function() return Spy.db.profile.HealerMarkerSide end,
-					set = function(_, value)
-						Spy.db.profile.HealerMarkerSide = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				HealerMarkerColor = {
-					name = L["HealerMarkerColor"],
-					type = "color",
-					order = 15,
-					hasAlpha = false,
-					get = function()
-						local c = Spy.db.profile.Colors["Spy"]["Healer Marker"]
-						return c.r, c.g, c.b
-					end,
-					set = function(_, r, g, b)
-						local c = Spy.db.profile.Colors["Spy"]["Healer Marker"]
-						c.r, c.g, c.b = r, g, b
-						Spy:RefreshCurrentList()
-					end,
-				},
-				SortHealersToTop = {
-					name = L["SortHealersToTop"],
-					desc = L["SortHealersToTopDescription"],
-					type = "toggle",
-					order = 16,
-					width = "full",
-					get = function() return Spy.db.profile.SortHealersToTop end,
-					set = function(_, value)
-						Spy.db.profile.SortHealersToTop = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				HealerGreenEdge = {
-					name = L["HealerGreenEdge"],
-					desc = L["HealerGreenEdgeDescription"],
-					type = "toggle",
-					order = 17,
-					get = function() return Spy.db.profile.HealerGreenEdge end,
-					set = function(_, value)
-						Spy.db.profile.HealerGreenEdge = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				HealerEdgeColor = {
-					name = L["HealerEdgeColor"],
-					type = "color",
-					order = 18,
-					hasAlpha = true,
-					get = function()
-						local c = Spy.db.profile.Colors["Spy"]["Healer Edge"]
-						return c.r, c.g, c.b, c.a
-					end,
-					set = function(_, r, g, b, a)
-						local c = Spy.db.profile.Colors["Spy"]["Healer Edge"]
-						c.r, c.g, c.b, c.a = r, g, b, a
-						Spy:RefreshCurrentList()
-					end,
-				},
-				DimNonHealers = {
-					name = L["DimNonHealers"],
-					desc = L["DimNonHealersDescription"],
-					type = "toggle",
-					order = 19,
-					width = "full",
-					get = function() return Spy.db.profile.DimNonHealers end,
-					set = function(_, value)
-						Spy.db.profile.DimNonHealers = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				UseZoneLevelFloor = {
-					name = L["UseZoneLevelFloor"],
-					desc = L["UseZoneLevelFloorDescription"],
-					type = "toggle",
-					order = 19.9,
-					width = "full",
-					get = function() return Spy.db.profile.UseZoneLevelFloor end,
-					set = function(_, value)
-						Spy.db.profile.UseZoneLevelFloor = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				massHeader = {
-					name = L["TMassFights"],
-					type = "header",
-					order = 19.5,
-				},
-				massDesc = {
-					name = L["MassFightsDescription"],
-					type = "description",
-					order = 19.51,
-				},
-				HealerOnlyFilter = {
-					name = L["HealerOnlyFilter"],
-					desc = L["HealerOnlyFilterDescription"],
-					type = "toggle",
-					order = 19.6,
-					width = "full",
-					get = function() return Spy.db.profile.HealerOnlyFilter end,
-					set = function(_, value)
-						Spy.db.profile.HealerOnlyFilter = value
-						Spy:UpdateWindowTitle()
-						Spy:RefreshCurrentList()
-					end,
-				},
-				KillPriorityOrder = {
-					name = L["KillPriorityOrder"],
-					desc = L["KillPriorityOrderDescription"],
-					type = "toggle",
-					order = 19.7,
-					width = "full",
-					get = function() return Spy.db.profile.KillPriorityOrder end,
-					set = function(_, value)
-						Spy.db.profile.KillPriorityOrder = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				ShowAggregateHeader = {
-					name = L["ShowAggregateHeader"],
-					desc = L["ShowAggregateHeaderDescription"],
-					type = "toggle",
-					order = 19.8,
-					width = "full",
-					get = function() return Spy.db.profile.ShowAggregateHeader end,
-					set = function(_, value)
-						Spy.db.profile.ShowAggregateHeader = value
-						Spy:UpdateActiveCount()
-					end,
-				},
-				cooldownHeader = {
-					name = L["TCooldowns"],
-					type = "header",
-					order = 20,
-				},
-				TrackCooldowns = {
-					name = L["TrackCooldowns"],
-					desc = L["TrackCooldownsDescription"],
-					type = "toggle",
-					order = 21,
-					width = "full",
-					get = function() return Spy.db.profile.TrackCooldowns end,
-					set = function(_, value)
-						Spy.db.profile.TrackCooldowns = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				AnnounceCooldowns = {
-					name = L["AnnounceCooldowns"],
-					desc = L["AnnounceCooldownsDescription"],
-					type = "toggle",
-					order = 22,
-					width = "full",
-					disabled = function() return not Spy.db.profile.TrackCooldowns end,
-					get = function() return Spy.db.profile.AnnounceCooldowns end,
-					set = function(_, value) Spy.db.profile.AnnounceCooldowns = value end,
-				},
-				CooldownColor = {
-					name = L["CooldownColor"],
-					type = "color",
-					order = 23,
-					hasAlpha = false,
-					disabled = function() return not Spy.db.profile.TrackCooldowns end,
-					get = function()
-						local c = Spy.db.profile.Colors["Spy"]["Cooldown"]
-						return c.r, c.g, c.b
-					end,
-					set = function(_, r, g, b)
-						local c = Spy.db.profile.Colors["Spy"]["Cooldown"]
-						c.r, c.g, c.b = r, g, b
-						Spy:RefreshCurrentList()
-					end,
-				},
-				KOSGuildAlertCooldown = {
-					name = L["KOSGuildAlertCooldown"],
-					desc = L["KOSGuildAlertCooldownDescription"],
-					type = "range",
-					order = 24,
-					min = 0, max = 120, step = 5,
-					get = function() return Spy.db.profile.KOSGuildAlertCooldown end,
-					set = function(_, value) Spy.db.profile.KOSGuildAlertCooldown = value end,
-				},
-				lookHeader = {
-					name = L["TLook"],
-					type = "header",
-					order = 30,
-				},
-				LookPreset = {
-					name = L["LookPreset"],
-					desc = L["LookPresetDescription"],
-					type = "select",
-					order = 31,
-					values = {
-						["classbars"] = L["LookClassBars"],
-						["flat"] = L["LookFlat"],
-						["compact"] = L["LookCompact"],
-					},
-					get = function() return Spy.db.profile.LookPreset end,
-					set = function(_, value)
-						Spy:ApplyLookPreset(value)
-					end,
-				},
-				ClassColoredNames = {
-					name = L["ClassColoredNames"],
-					desc = L["ClassColoredNamesDescription"],
-					type = "toggle",
-					order = 32,
-					width = "full",
-					get = function() return Spy.db.profile.ClassColoredNames end,
-					set = function(_, value)
-						Spy.db.profile.ClassColoredNames = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				BarOpacity = {
-					name = L["BarOpacity"],
-					desc = L["BarOpacityDescription"],
-					type = "range",
-					order = 33,
-					min = 0, max = 1, step = 0.05,
-					isPercent = true,
-					get = function() return Spy.db.profile.BarOpacity end,
-					set = function(_, value)
-						Spy.db.profile.BarOpacity = value
-						Spy:RefreshCurrentList()
-					end,
-				},
-				windowHeader = {
-					name = L["TWindow"],
-					type = "header",
-					order = 50,
-				},
-				LockPosition = {
-					name = L["LockPosition"],
-					desc = L["LockPositionDescription"],
-					type = "toggle",
-					order = 51,
-					get = function() return Spy.db.profile.LockPosition end,
-					set = function(_, value)
-						Spy.db.profile.LockPosition = value
-						Spy:ApplyWindowLocks()
-					end,
-				},
-				LockSize = {
-					name = L["LockSize"],
-					desc = L["LockSizeDescription"],
-					type = "toggle",
-					order = 52,
-					get = function() return Spy.db.profile.LockSize end,
-					set = function(_, value)
-						Spy.db.profile.LockSize = value
-						Spy:ApplyWindowLocks()
-					end,
-				},
-				ShowBackground = {
-					name = L["ShowBackground"],
-					desc = L["ShowBackgroundDescription"],
-					type = "toggle",
-					order = 53,
-					get = function() return Spy.db.profile.ShowBackground end,
-					set = function(_, value)
-						Spy.db.profile.ShowBackground = value
-						Spy:ApplyWindowStyle()
-					end,
-				},
-				BackgroundOpacity = {
-					name = L["BackgroundOpacity"],
-					desc = L["BackgroundOpacityDescription"],
-					type = "range",
-					order = 54,
-					min = 0, max = 1, step = 0.05,
-					isPercent = true,
-					get = function() return Spy.db.profile.BackgroundOpacity end,
-					set = function(_, value)
-						Spy.db.profile.BackgroundOpacity = value
-						Spy:ApplyWindowStyle()
-					end,
-				},
-				TitleBarStyle = {
-					name = L["TitleBarStyle"],
-					desc = L["TitleBarStyleDescription"],
-					type = "select",
-					order = 54.3,
-					values = {
-						["classic"] = L["TitleBarClassic"],
-						["solid"] = L["TitleBarSolid"],
-					},
-					get = function() return Spy.db.profile.TitleBarStyle end,
-					set = function(_, value)
-						Spy.db.profile.TitleBarStyle = value
-						Spy:ApplyWindowStyle()
-					end,
-				},
-				TitleBarColor = {
-					name = L["TitleBarColor"],
-					desc = L["TitleBarColorDescription"],
-					type = "color",
-					order = 54.6,
-					hasAlpha = false,
-					disabled = function() return Spy.db.profile.TitleBarStyle ~= "solid" end,
-					get = function()
-						local c = Spy.db.profile.Colors["Spy"]["Title Bar"]
-						return c.r, c.g, c.b
-					end,
-					set = function(_, r, g, b)
-						local c = Spy.db.profile.Colors["Spy"]["Title Bar"]
-						c.r, c.g, c.b = r, g, b
-						Spy:ApplyWindowStyle()
-					end,
-				},
-				TitleBarOpacity = {
-					name = L["TitleBarOpacity"],
-					desc = L["TitleBarOpacityDescription"],
-					type = "range",
-					order = 54.9,
-					min = 0, max = 1, step = 0.05,
-					isPercent = true,
-					disabled = function() return Spy.db.profile.TitleBarStyle ~= "solid" end,
-					get = function() return Spy.db.profile.TitleBarOpacity end,
-					set = function(_, value)
-						Spy.db.profile.TitleBarOpacity = value
-						Spy:ApplyWindowStyle()
-					end,
-				},
-				ShowBorder = {
-					name = L["ShowBorder"],
-					desc = L["ShowBorderDescription"],
-					type = "toggle",
-					order = 55,
-					get = function() return Spy.db.profile.ShowBorder end,
-					set = function(_, value)
-						Spy.db.profile.ShowBorder = value
-						Spy:ApplyWindowStyle()
-					end,
-				},
-				WindowBorderColor = {
-					name = L["WindowBorderColor"],
-					type = "color",
-					order = 56,
-					hasAlpha = true,
-					get = function()
-						local c = Spy.db.profile.Colors["Spy"]["Window Border"]
-						return c.r, c.g, c.b, c.a
-					end,
-					set = function(_, r, g, b, a)
-						local c = Spy.db.profile.Colors["Spy"]["Window Border"]
-						c.r, c.g, c.b, c.a = r, g, b, a
-						Spy:ApplyWindowStyle()
-					end,
-				},
-				WindowScale = {
-					name = L["WindowScale"],
-					desc = L["WindowScaleDescription"],
-					type = "range",
-					order = 57,
-					min = 0.5, max = 2, step = 0.05,
-					isPercent = true,
-					get = function() return Spy.db.profile.WindowScale end,
-					set = function(_, value)
-						Spy.db.profile.WindowScale = value
-						Spy:ApplyWindowStyle()
-					end,
-				},
-				KoSEdgeColor = {
-					name = L["KoSEdgeColor"],
-					desc = L["KoSEdgeColorDescription"],
-					type = "color",
-					order = 58,
-					hasAlpha = true,
-					get = function()
-						local c = Spy.db.profile.Colors["Spy"]["KoS Edge"]
-						return c.r, c.g, c.b, c.a
-					end,
-					set = function(_, r, g, b, a)
-						local c = Spy.db.profile.Colors["Spy"]["KoS Edge"]
-						c.r, c.g, c.b, c.a = r, g, b, a
-						Spy:RefreshCurrentList()
-					end,
-				},
-			},
-		},
-		Arrow = {
-			name = L["TArrow"],
-			desc = L["TArrow"],
-			type = "group",
-			order = 2.7,
-			args = {
-				intro = {
-					name = L["ArrowEnabledDescription"],
-					type = "description",
-					order = 1,
-					fontSize = "medium",
-				},
-				ArrowEnabled = {
-					name = L["ArrowEnabled"],
-					desc = L["ArrowEnabledDescription"],
-					type = "toggle",
-					order = 2,
-					width = "full",
-					get = function() return Spy.db.profile.ArrowEnabled end,
-					set = function(_, v) Spy.db.profile.ArrowEnabled = v Spy:ApplyArrowSettings() end,
-				},
-				ArrowStyle = {
-					name = L["ArrowStyle"],
-					desc = L["ArrowStyleDescription"],
-					type = "select",
-					order = 3,
-					values = {
-						["titlebar"] = L["ArrowStyleTitlebar"],
-						["dock"] = L["ArrowStyleDock"],
-						["floating"] = L["ArrowStyleFloating"],
-					},
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowStyle end,
-					set = function(_, v) Spy.db.profile.ArrowStyle = v Spy:ApplyArrowSettings() end,
-				},
-				ArrowUseNameplates = {
-					name = L["ArrowUseNameplates"],
-					desc = L["ArrowUseNameplatesDescription"],
-					type = "toggle",
-					order = 16.15,
-					width = "full",
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowUseNameplates end,
-					set = function(_, v) Spy.db.profile.ArrowUseNameplates = v end,
-				},
-				ArrowFieldOfView = {
-					name = L["ArrowFieldOfView"],
-					desc = L["ArrowFieldOfViewDescription"],
-					type = "range",
-					order = 16.16,
-					min = 60, max = 140, step = 5,
-					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowUseNameplates) end,
-					get = function() return Spy.db.profile.ArrowFieldOfView end,
-					set = function(_, v) Spy.db.profile.ArrowFieldOfView = v end,
-				},
-				ArrowClickModifier = {
-					name = L["ArrowClickModifier"],
-					desc = L["ArrowClickModifierDescription"],
-					type = "select",
-					order = 4,
-					values = { ["none"] = L["ArrowClickPlain"], ["alt"] = L["ArrowClickAlt"] },
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowClickModifier end,
-					set = function(_, v) Spy.db.profile.ArrowClickModifier = v end,
-				},
-				ArrowSize = {
-					name = L["ArrowSize"],
-					type = "range",
-					order = 5,
-					min = 12, max = 48, step = 2,
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowSize end,
-					set = function(_, v) Spy.db.profile.ArrowSize = v Spy:ApplyArrowSettings() end,
-				},
-				ArrowColor = {
-					name = L["ArrowColor"],
-					type = "color",
-					order = 6,
-					hasAlpha = false,
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow"] return c.r, c.g, c.b end,
-					set = function(_, r, g, b)
-						local c = Spy.db.profile.Colors["Spy"]["Arrow"]
-						c.r, c.g, c.b = r, g, b
-						Spy:UpdateArrow()
-					end,
-				},
-				ArrowColorByAge = {
-					name = L["ArrowColorByAge"],
-					desc = L["ArrowColorByAgeDescription"],
-					type = "toggle",
-					order = 7,
-					width = "full",
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowColorByAge end,
-					set = function(_, v) Spy.db.profile.ArrowColorByAge = v Spy:UpdateArrow() end,
-				},
-				ArrowStaleColor = {
-					name = L["ArrowStaleColor"],
-					type = "color",
-					order = 8,
-					hasAlpha = false,
-					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowColorByAge) end,
-					get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"] return c.r, c.g, c.b end,
-					set = function(_, r, g, b)
-						local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"]
-						c.r, c.g, c.b = r, g, b
-						Spy:UpdateArrow()
-					end,
-				},
-				ArrowTimeout = {
-					name = L["ArrowTimeout"],
-					desc = L["ArrowTimeoutDescription"],
-					type = "range",
-					order = 9,
-					min = 0, max = 300, step = 10,
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowTimeout end,
-					set = function(_, v) Spy.db.profile.ArrowTimeout = v end,
-				},
-				ArrowDistanceUnit = {
-					name = L["ArrowDistanceUnit"],
-					type = "select",
-					order = 10,
-					values = { ["yards"] = L["ArrowYards"], ["meters"] = L["ArrowMeters"] },
-					disabled = function() return not Spy.db.profile.ArrowEnabled end,
-					get = function() return Spy.db.profile.ArrowDistanceUnit end,
-					set = function(_, v) Spy.db.profile.ArrowDistanceUnit = v Spy:UpdateArrow() end,
-				},
-				ArrowFloatLocked = {
-					name = L["ArrowFloatLocked"],
-					desc = L["ArrowFloatLockedDescription"],
-					type = "toggle",
-					order = 11,
-					width = "full",
-					disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle == "floating") end,
-					get = function() return Spy.db.profile.ArrowFloatLocked end,
-					set = function(_, v) Spy.db.profile.ArrowFloatLocked = v end,
-				},
-				TomTomOnAltClick = {
-					name = L["TomTomOnAltClick"],
-					desc = L["TomTomOnAltClickDescription"],
-					type = "toggle",
-					order = 12,
-					width = "full",
-					get = function() return Spy.db.profile.TomTomOnAltClick end,
-					set = function(_, value)
-						Spy.db.profile.TomTomOnAltClick = value
-						if not value then Spy:ClearTomTomWaypoint() end
-					end,
-				},
-			},
-		},
-		Glow = {
-			name = L["TGlow"],
-			desc = L["TGlow"],
-			type = "group",
-			order = 2.8,
-			args = {
-				intro = {
-					name = L["GlowIntro"],
-					type = "description",
-					order = 1,
-					fontSize = "medium",
-				},
-				GlowEnabled = {
-					name = L["GlowEnabled"],
-					desc = L["GlowEnabledDescription"],
-					type = "toggle",
-					order = 2,
-					width = "full",
-					get = function() return Spy.db.profile.GlowEnabled end,
-					set = function(_, v) Spy.db.profile.GlowEnabled = v Spy:ApplyGlowSettings() end,
-				},
-				driver = {
-					name = function()
-						local d = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or "?"
-						return format(L["GlowDriver"], d)
-					end,
-					type = "description",
-					order = 3,
-				},
-				preview = {
-					name = L["GlowPreview"],
-					desc = L["GlowPreviewDescription"],
-					type = "execute",
-					order = 4,
-					func = function() Spy:ToggleGlowPreview() end,
-				},
-				sizeHeader = {
-					name = L["GlowSizeHeader"],
-					type = "header",
-					order = 10,
-				},
-				GlowWidth = {
-					name = L["GlowWidth"],
-					type = "range",
-					order = 11,
-					min = 40, max = 300, step = 2,
-					disabled = function() return not Spy.db.profile.GlowEnabled end,
-					get = function() return Spy.db.profile.GlowWidth end,
-					set = function(_, v) Spy.db.profile.GlowWidth = v Spy:ApplyGlowSettings() end,
-				},
-				GlowHeight = {
-					name = L["GlowHeight"],
-					type = "range",
-					order = 12,
-					min = 20, max = 160, step = 2,
-					disabled = function() return not Spy.db.profile.GlowEnabled end,
-					get = function() return Spy.db.profile.GlowHeight end,
-					set = function(_, v) Spy.db.profile.GlowHeight = v Spy:ApplyGlowSettings() end,
-				},
-				GlowOffsetX = {
-					name = L["GlowOffsetX"],
-					desc = L["GlowOffsetDescription"],
-					type = "range",
-					order = 13,
-					min = -100, max = 100, step = 1,
-					disabled = function() return not Spy.db.profile.GlowEnabled end,
-					get = function() return Spy.db.profile.GlowOffsetX end,
-					set = function(_, v)
-						Spy.db.profile.GlowOffsetX = v
-						Spy.Glow.plate = nil	-- force a re-anchor on the next tick
-						Spy:ApplyGlowSettings()
-					end,
-				},
-				GlowOffsetY = {
-					name = L["GlowOffsetY"],
-					desc = L["GlowOffsetDescription"],
-					type = "range",
-					order = 14,
-					min = -100, max = 100, step = 1,
-					disabled = function() return not Spy.db.profile.GlowEnabled end,
-					get = function() return Spy.db.profile.GlowOffsetY end,
-					set = function(_, v)
-						Spy.db.profile.GlowOffsetY = v
-						Spy.Glow.plate = nil
-						Spy:ApplyGlowSettings()
-					end,
-				},
-				lookHeader = {
-					name = L["GlowLookHeader"],
-					type = "header",
-					order = 20,
-				},
-				GlowColor = {
-					name = L["GlowColor"],
-					type = "color",
-					order = 21,
-					hasAlpha = false,
-					disabled = function()
-						local p = Spy.db.profile
-						return not p.GlowEnabled or p.GlowUseClassColor
-					end,
-					get = function() local c = Spy.db.profile.Colors["Spy"]["Glow"] return c.r, c.g, c.b end,
-					set = function(_, r, g, b)
-						local c = Spy.db.profile.Colors["Spy"]["Glow"]
-						c.r, c.g, c.b = r, g, b
-						Spy:ApplyGlowSettings()
-					end,
-				},
-				GlowUseClassColor = {
-					name = L["GlowUseClassColor"],
-					desc = L["GlowUseClassColorDescription"],
-					type = "toggle",
-					order = 22,
-					disabled = function() return not Spy.db.profile.GlowEnabled end,
-					get = function() return Spy.db.profile.GlowUseClassColor end,
-					set = function(_, v) Spy.db.profile.GlowUseClassColor = v Spy:ApplyGlowSettings() end,
-				},
-				GlowAlpha = {
-					name = L["GlowAlpha"],
-					type = "range",
-					order = 23,
-					min = 0.1, max = 1, step = 0.05, isPercent = true,
-					disabled = function() return not Spy.db.profile.GlowEnabled end,
-					get = function() return Spy.db.profile.GlowAlpha end,
-					set = function(_, v) Spy.db.profile.GlowAlpha = v Spy:ApplyGlowSettings() end,
-				},
-				GlowAdditive = {
-					name = L["GlowAdditive"],
-					desc = L["GlowAdditiveDescription"],
-					type = "toggle",
-					order = 24,
-					width = "full",
-					disabled = function() return not Spy.db.profile.GlowEnabled end,
-					get = function() return Spy.db.profile.GlowAdditive end,
-					set = function(_, v) Spy.db.profile.GlowAdditive = v Spy:ApplyGlowSettings() end,
-				},
-				GlowPulse = {
-					name = L["GlowPulse"],
-					desc = L["GlowPulseDescription"],
-					type = "toggle",
-					order = 25,
-					width = "full",
-					disabled = function() return not Spy.db.profile.GlowEnabled end,
-					get = function() return Spy.db.profile.GlowPulse end,
-					set = function(_, v) Spy.db.profile.GlowPulse = v Spy:ApplyGlowSettings() end,
-				},
-				GlowPulseSpeed = {
-					name = L["GlowPulseSpeed"],
-					desc = L["GlowPulseSpeedDescription"],
-					type = "range",
-					order = 26,
-					min = 0.2, max = 2, step = 0.05,
-					disabled = function()
-						local p = Spy.db.profile
-						return not (p.GlowEnabled and p.GlowPulse)
-					end,
-					get = function() return Spy.db.profile.GlowPulseSpeed end,
-					set = function(_, v) Spy.db.profile.GlowPulseSpeed = v Spy:ApplyGlowSettings() end,
-				},
-				GlowPulseDepth = {
-					name = L["GlowPulseDepth"],
-					desc = L["GlowPulseDepthDescription"],
-					type = "range",
-					order = 27,
-					min = 0, max = 0.9, step = 0.05, isPercent = true,
-					disabled = function()
-						local p = Spy.db.profile
-						return not (p.GlowEnabled and p.GlowPulse)
-					end,
-					get = function() return Spy.db.profile.GlowPulseDepth end,
-					set = function(_, v) Spy.db.profile.GlowPulseDepth = v Spy:ApplyGlowSettings() end,
-				},
-			},
-		},
-		Diagnostics = {
-			name = L["TDebug"],
-			desc = L["TDebug"],
-			type = "group",
-			order = 7,
-			args = {
-				intro = {
-					name = L["DebugModeDescription"],
-					type = "description",
-					order = 1,
-					fontSize = "medium",
-				},
-				DebugMode = {
-					name = L["DebugMode"],
-					desc = L["DebugModeDescription"],
-					type = "toggle",
-					order = 2,
-					width = "full",
-					get = function() return Spy.db.profile.DebugMode end,
-					set = function(_, v)
-						Spy.db.profile.DebugMode = v
-						if v then Spy:CaptureDebugEnvironment() end
-					end,
-				},
-				DebugDump = {
-					name = L["DebugDumpButton"],
-					desc = L["DebugDumpButtonDescription"],
-					type = "execute",
-					order = 3,
-					func = function() Spy:ShowDebugDump() end,
-				},
-				DebugStatus = {
-					name = L["DebugStatusButton"],
-					desc = L["DebugStatusButtonDescription"],
-					type = "execute",
-					order = 4,
-					func = function() Spy:DebugStatus() end,
-				},
-				DebugReset = {
-					name = L["DebugResetButton"],
-					type = "execute",
-					order = 5,
-					func = function() Spy:ResetDebug() Spy:Print(L["DebugWasReset"]) end,
-				},
-			},
-		},
-		AlertOptions = {
-			name = L["AlertOptions"],
-			desc = L["AlertOptions"],
+		Targeting = {
+			name = L["TPageTargeting"],
+			desc = L["TPageTargeting"],
 			type = "group",
 			order = 3,
+			childGroups = "tab",
 			args = {
-				intro = {
-					name = L["AlertOptionsDescription"],
-					type = "description",
-					order = 1,
-					fontSize = "medium",
-				},
-				EnableSound = {
-					name = L["EnableSound"],
-					desc = L["EnableSoundDescription"],
-					type = "toggle",
-					order = 2,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.EnableSound
-					end,
-					set = function(info, value)
-						Spy.db.profile.EnableSound = value
-					end,
-				},
-				SoundChannel = {
-					name = L["SoundChannel"],
-					type = 'select',
-					order = 3,
-					values = {
-						["Master"] = L["Master"],
-						["SFX"] = L["SFX"],
-						["Music"] = L["Music"],
-						["Ambience"] = L["Ambience"],
-					},					
-					get = function()
-						return Spy.db.profile.SoundChannel
-					end,
-					set = function(info, value)
-						Spy.db.profile.SoundChannel = value 
-					end,
-				},
-				OnlySoundKoS = {
-					name = L["OnlySoundKoS"],
-					desc = L["OnlySoundKoSDescription"],
-					type = "toggle",
-					order = 4,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.OnlySoundKoS
-					end,
-					set = function(info, value)
-						Spy.db.profile.OnlySoundKoS = value
-					end,
-				},
-				StopAlertsOnTaxi = {
-					name = L["StopAlertsOnTaxi"],
-					desc = L["StopAlertsOnTaxiDescription"],
-					type = "toggle",
-					order = 5,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.StopAlertsOnTaxi
-					end,
-					set = function(info, value)
-						Spy.db.profile.StopAlertsOnTaxi = value
-					end,
-				},
-				Announce = {
-					name = L["Announce"],
+				Healers = {
+					name = L["TTabHealers"],
+					desc = L["TTabHealers"],
 					type = "group",
-					order = 6,
-					inline = true,
+					order = 1,
 					args = {
-						None = {
-							name = L["None"],
-							desc = L["NoneDescription"],
+						MarkHealers = {
+							name = L["MarkHealers"],
+							desc = L["MarkHealersDescription"],
 							type = "toggle",
 							order = 1,
-							get = function(info)
-								return Spy.db.profile.Announce == "None"
-							end,
-							set = function(info, value)
-								Spy.db.profile.Announce = "None"
+							width = "full",
+							get = function() return Spy.db.profile.MarkHealers end,
+							set = function(_, value)
+								Spy.db.profile.MarkHealers = value
+								Spy:RefreshCurrentList()
 							end,
 						},
-						Self = {
-							name = L["Self"],
-							desc = L["SelfDescription"],
+						HealerDetectBy = {
+							name = L["HealerDetectBy"],
+							desc = L["HealerDetectByDescription"],
+							type = "select",
+							order = 2,
+							values = {
+								["class"] = L["HealerDetectByClass"],
+								["heal"] = L["HealerDetectByHeal"],
+							},
+							get = function() return Spy.db.profile.HealerDetectBy end,
+							set = function(_, value)
+								Spy.db.profile.HealerDetectBy = value
+								Spy:RefreshCurrentList()
+							end,
+						},
+						HealerMinHeal = {
+							name = L["HealerMinHeal"],
+							desc = L["HealerMinHealDescription"],
+							type = "range",
+							order = 3,
+							min = 0, max = 3000, step = 50,
+							disabled = function() return Spy.db.profile.HealerDetectBy ~= "heal" end,
+							get = function() return Spy.db.profile.HealerMinHeal end,
+							set = function(_, value) Spy.db.profile.HealerMinHeal = value end,
+						},
+						HealerMarkerStyle = {
+							name = L["HealerMarkerStyle"],
+							desc = L["HealerMarkerStyleDescription"],
+							type = "select",
+							order = 4,
+							values = {
+								["cross"] = L["HealerMarkerCross"],
+								["asterisk"] = L["HealerMarkerAsterisk"],
+								["dot"] = L["HealerMarkerDot"],
+							},
+							get = function() return Spy.db.profile.HealerMarkerStyle end,
+							set = function(_, value)
+								Spy.db.profile.HealerMarkerStyle = value
+								Spy:RefreshCurrentList()
+							end,
+						},
+						HealerMarkerSide = {
+							name = L["HealerMarkerSide"],
+							desc = L["HealerMarkerSideDescription"],
+							type = "select",
+							order = 5,
+							values = {
+								["right"] = L["HealerMarkerRight"],
+								["left"] = L["HealerMarkerLeft"],
+							},
+							get = function() return Spy.db.profile.HealerMarkerSide end,
+							set = function(_, value)
+								Spy.db.profile.HealerMarkerSide = value
+								Spy:RefreshCurrentList()
+							end,
+						},
+						HealerMarkerColor = {
+							name = L["HealerMarkerColor"],
+							type = "color",
+							order = 6,
+							hasAlpha = false,
+							get = function()
+								local c = Spy.db.profile.Colors["Spy"]["Healer Marker"]
+								return c.r, c.g, c.b
+							end,
+							set = function(_, r, g, b)
+								local c = Spy.db.profile.Colors["Spy"]["Healer Marker"]
+								c.r, c.g, c.b = r, g, b
+								Spy:RefreshCurrentList()
+							end,
+						},
+						SortHealersToTop = {
+							name = L["SortHealersToTop"],
+							desc = L["SortHealersToTopDescription"],
+							type = "toggle",
+							order = 7,
+							width = "full",
+							get = function() return Spy.db.profile.SortHealersToTop end,
+							set = function(_, value)
+								Spy.db.profile.SortHealersToTop = value
+								Spy:RefreshCurrentList()
+							end,
+						},
+						HealerGreenEdge = {
+							name = L["HealerGreenEdge"],
+							desc = L["HealerGreenEdgeDescription"],
+							type = "toggle",
+							order = 8,
+							get = function() return Spy.db.profile.HealerGreenEdge end,
+							set = function(_, value)
+								Spy.db.profile.HealerGreenEdge = value
+								Spy:RefreshCurrentList()
+							end,
+						},
+						HealerEdgeColor = {
+							name = L["HealerEdgeColor"],
+							type = "color",
+							order = 9,
+							hasAlpha = true,
+							get = function()
+								local c = Spy.db.profile.Colors["Spy"]["Healer Edge"]
+								return c.r, c.g, c.b, c.a
+							end,
+							set = function(_, r, g, b, a)
+								local c = Spy.db.profile.Colors["Spy"]["Healer Edge"]
+								c.r, c.g, c.b, c.a = r, g, b, a
+								Spy:RefreshCurrentList()
+							end,
+						},
+						DimNonHealers = {
+							name = L["DimNonHealers"],
+							desc = L["DimNonHealersDescription"],
+							type = "toggle",
+							order = 10,
+							width = "full",
+							get = function() return Spy.db.profile.DimNonHealers end,
+							set = function(_, value)
+								Spy.db.profile.DimNonHealers = value
+								Spy:RefreshCurrentList()
+							end,
+						},
+					},
+				},
+				BigFights = {
+					name = L["TTabBigFights"],
+					desc = L["TTabBigFights"],
+					type = "group",
+					order = 2,
+					args = {
+						massDesc = {
+							name = L["MassFightsDescription"],
+							type = "description",
+							order = 1,
+						},
+						HealerOnlyFilter = {
+							name = L["HealerOnlyFilter"],
+							desc = L["HealerOnlyFilterDescription"],
 							type = "toggle",
 							order = 2,
-							get = function(info)
-								return Spy.db.profile.Announce == "Self"
-							end,
-							set = function(info, value)
-								Spy.db.profile.Announce = "Self"
+							width = "full",
+							get = function() return Spy.db.profile.HealerOnlyFilter end,
+							set = function(_, value)
+								Spy.db.profile.HealerOnlyFilter = value
+								Spy:UpdateWindowTitle()
+								Spy:RefreshCurrentList()
 							end,
 						},
-						Party = {
-							name = L["Party"],
-							desc = L["PartyDescription"],
+						KillPriorityOrder = {
+							name = L["KillPriorityOrder"],
+							desc = L["KillPriorityOrderDescription"],
 							type = "toggle",
 							order = 3,
-							get = function(info)
-								return Spy.db.profile.Announce == "Party"
-							end,
-							set = function(info, value)
-								Spy.db.profile.Announce = "Party"
+							width = "full",
+							get = function() return Spy.db.profile.KillPriorityOrder end,
+							set = function(_, value)
+								Spy.db.profile.KillPriorityOrder = value
+								Spy:RefreshCurrentList()
 							end,
 						},
-						Guild = {
-							name = L["Guild"],
-							desc = L["GuildDescription"],
+						ShowAggregateHeader = {
+							name = L["ShowAggregateHeader"],
+							desc = L["ShowAggregateHeaderDescription"],
 							type = "toggle",
 							order = 4,
-							get = function(info)
-								return Spy.db.profile.Announce == "Guild"
-							end,
-							set = function(info, value)
-								Spy.db.profile.Announce = "Guild"
+							width = "full",
+							get = function() return Spy.db.profile.ShowAggregateHeader end,
+							set = function(_, value)
+								Spy.db.profile.ShowAggregateHeader = value
+								Spy:UpdateActiveCount()
 							end,
 						},
-						Raid = {
-							name = L["Raid"],
-							desc = L["RaidDescription"],
+						UseZoneLevelFloor = {
+							name = L["UseZoneLevelFloor"],
+							desc = L["UseZoneLevelFloorDescription"],
 							type = "toggle",
 							order = 5,
-							get = function(info)
-								return Spy.db.profile.Announce == "Raid"
-							end,
-							set = function(info, value)
-								Spy.db.profile.Announce = "Raid"
+							width = "full",
+							get = function() return Spy.db.profile.UseZoneLevelFloor end,
+							set = function(_, value)
+								Spy.db.profile.UseZoneLevelFloor = value
+								Spy:RefreshCurrentList()
 							end,
 						},
 					},
 				},
-				OnlyAnnounceKoS = {
-					name = L["OnlyAnnounceKoS"],
-					desc = L["OnlyAnnounceKoSDescription"],
-					type = "toggle",
-					order = 7,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.OnlyAnnounceKoS
-					end,
-					set = function(info, value)
-						Spy.db.profile.OnlyAnnounceKoS = value
-					end,
-				},
-				DisplayWarnings = {
-					name = L["DisplayWarnings"],
-					type = 'select',
-					order = 8,
-					values = {
-						["Default"] = L["Default"],
-						["ErrorFrame"] = L["ErrorFrame"],
-						["Moveable"] = L["Moveable"],
+				Cooldowns = {
+					name = L["TTabCooldowns"],
+					desc = L["TTabCooldowns"],
+					type = "group",
+					order = 3,
+					args = {
+						TrackCooldowns = {
+							name = L["TrackCooldowns"],
+							desc = L["TrackCooldownsDescription"],
+							type = "toggle",
+							order = 1,
+							width = "full",
+							get = function() return Spy.db.profile.TrackCooldowns end,
+							set = function(_, value)
+								Spy.db.profile.TrackCooldowns = value
+								Spy:RefreshCurrentList()
+							end,
+						},
+						AnnounceCooldowns = {
+							name = L["AnnounceCooldowns"],
+							desc = L["AnnounceCooldownsDescription"],
+							type = "toggle",
+							order = 2,
+							width = "full",
+							disabled = function() return not Spy.db.profile.TrackCooldowns end,
+							get = function() return Spy.db.profile.AnnounceCooldowns end,
+							set = function(_, value) Spy.db.profile.AnnounceCooldowns = value end,
+						},
+						CooldownColor = {
+							name = L["CooldownColor"],
+							type = "color",
+							order = 3,
+							hasAlpha = false,
+							disabled = function() return not Spy.db.profile.TrackCooldowns end,
+							get = function()
+								local c = Spy.db.profile.Colors["Spy"]["Cooldown"]
+								return c.r, c.g, c.b
+							end,
+							set = function(_, r, g, b)
+								local c = Spy.db.profile.Colors["Spy"]["Cooldown"]
+								c.r, c.g, c.b = r, g, b
+								Spy:RefreshCurrentList()
+							end,
+						},
+						KOSGuildAlertCooldown = {
+							name = L["KOSGuildAlertCooldown"],
+							desc = L["KOSGuildAlertCooldownDescription"],
+							type = "range",
+							order = 4,
+							min = 0, max = 120, step = 5,
+							get = function() return Spy.db.profile.KOSGuildAlertCooldown end,
+							set = function(_, value) Spy.db.profile.KOSGuildAlertCooldown = value end,
+						},
 					},
-					get = function()
-						return Spy.db.profile.DisplayWarnings
-					end,
-					set = function(info, value)
-						Spy.db.profile.DisplayWarnings = value
-						Spy:UpdateAlertWindow()
-					end,
-				},
-				WarnOnStealth = {
-					name = L["WarnOnStealth"],
-					desc = L["WarnOnStealthDescription"],
-					type = "toggle",
-					order = 9,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.WarnOnStealth
-					end,
-					set = function(info, value)
-						Spy.db.profile.WarnOnStealth = value
-					end,
-				},
-				WarnOnKOS = {
-					name = L["WarnOnKOS"],
-					desc = L["WarnOnKOSDescription"],
-					type = "toggle",
-					order = 10,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.WarnOnKOS
-					end,
-					set = function(info, value)
-						Spy.db.profile.WarnOnKOS = value
-					end,
-				},
-				WarnOnKOSGuild = {
-					name = L["WarnOnKOSGuild"],
-					desc = L["WarnOnKOSGuildDescription"],
-					type = "toggle",
-					order = 11,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.WarnOnKOSGuild
-					end,
-					set = function(info, value)
-						Spy.db.profile.WarnOnKOSGuild = value
-					end,
-				},
-				WarnOnRace = {
-					name = L["WarnOnRace"],
-					desc = L["WarnOnRaceDescription"],
-					type = "toggle",
-					order = 12,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.WarnOnRace
-					end,
-					set = function(info, value)
-						Spy.db.profile.WarnOnRace = value
-					end,
-				},
-				SelectWarnRace = {
-					type = "select",
-					order = 13,
-					name = L["SelectWarnRace"],
-					desc = L["SelectWarnRaceDescription"],
-					get = function()
-						return Spy.db.profile.SelectWarnRace
-					end,
-					set = function(info, value)
-						Spy.db.profile.SelectWarnRace = value
-					end,
-					values = function()
-						local raceOptions = {}
-						local races = {
-							Alliance = {
-								["None"] = L["None"],
-								["Human"] = L["Human"],
-								["Dwarf"] = L["Dwarf"],
-								["Night Elf"] = L["Night Elf"],
-								["Gnome"] = L["Gnome"],
-								["Draenei"] = L["Draenei"],
---								["Worgen"] = L["Worgen"],
---								["Pandaren"] = L["Pandaren"],
---								["Lightforged Draenei"] = L["Lightforged Draenei"],
---								["Void Elf"] = L["Void Elf"],
---								["Dark Iron Dwarf"] = L["Dark Iron Dwarf"],
---								["Kul Tiran"] = L["Kul Tiran"],
---								["Mechagnome"] = L["Mechagnome"],
---								["Dracthyr"] = L["Dracthyr"],
---								["Earthen"] = L["Earthen"],
-							},
-							Horde = {
-								["None"] = L["None"],
-								["Orc"] = L["Orc"],
-								["Tauren"] = L["Tauren"],
-								["Troll"] = L["Troll"],
-								["Undead"] = L["Undead"],
-								["Blood Elf"] = L["Blood Elf"],
---								["Goblin"] = L["Goblin"],
---								["Pandaren"] = L["Pandaren"],
---								["Highmountain Tauren"] = L["Highmountain Tauren"],
---								["Nightborne"] = L["Nightborne"],
---								["Mag'har Orc"] = L["Mag'har Orc"],
---								["Zandalari Troll"] = L["Zandalari Troll"],
---								["Vulpera"] = L["Vulpera"],
---								["Dracthyr"] = L["Dracthyr"],
---								["Earthen"] = L["Earthen"],
-							},
-						}
-						if Spy.EnemyFactionName == "Alliance" then
-							raceOptions = races.Alliance
-						end	
-						if Spy.EnemyFactionName == "Horde" then
-							raceOptions = races.Horde
-						end	
-						return raceOptions
-					end,
-				},
-				WarnRaceNote = {
-					order = 14,
-					type = "description",
-					name = L["WarnRaceNote"],
 				},
 			},
 		},
-		MapOptions = {
-			name = L["MapOptions"],
-			desc = L["MapOptions"],
+		Finding = {
+			name = L["TPageFinding"],
+			desc = L["TPageFinding"],
+			type = "group",
+			order = 4,
+			childGroups = "tab",
+			args = {
+				ArrowTab = {
+					name = L["TTabArrow"],
+					desc = L["TTabArrow"],
+					type = "group",
+					order = 1,
+					args = {
+						intro = {
+							name = L["ArrowEnabledDescription"],
+							type = "description",
+							order = 1,
+							fontSize = "medium",
+						},
+						ArrowEnabled = {
+							name = L["ArrowEnabled"],
+							desc = L["ArrowEnabledDescription"],
+							type = "toggle",
+							order = 2,
+							width = "full",
+							get = function() return Spy.db.profile.ArrowEnabled end,
+							set = function(_, v) Spy.db.profile.ArrowEnabled = v Spy:ApplyArrowSettings() end,
+						},
+						ArrowStyle = {
+							name = L["ArrowStyle"],
+							desc = L["ArrowStyleDescription"],
+							type = "select",
+							order = 3,
+							values = {
+								["titlebar"] = L["ArrowStyleTitlebar"],
+								["dock"] = L["ArrowStyleDock"],
+								["floating"] = L["ArrowStyleFloating"],
+							},
+							disabled = function() return not Spy.db.profile.ArrowEnabled end,
+							get = function() return Spy.db.profile.ArrowStyle end,
+							set = function(_, v) Spy.db.profile.ArrowStyle = v Spy:ApplyArrowSettings() end,
+						},
+						ArrowUseNameplates = {
+							name = L["ArrowUseNameplates"],
+							desc = L["ArrowUseNameplatesDescription"],
+							type = "toggle",
+							order = 4,
+							width = "full",
+							disabled = function() return not Spy.db.profile.ArrowEnabled end,
+							get = function() return Spy.db.profile.ArrowUseNameplates end,
+							set = function(_, v) Spy.db.profile.ArrowUseNameplates = v end,
+						},
+						ArrowFieldOfView = {
+							name = L["ArrowFieldOfView"],
+							desc = L["ArrowFieldOfViewDescription"],
+							type = "range",
+							order = 5,
+							min = 60, max = 140, step = 5,
+							disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowUseNameplates) end,
+							get = function() return Spy.db.profile.ArrowFieldOfView end,
+							set = function(_, v) Spy.db.profile.ArrowFieldOfView = v end,
+						},
+						ArrowClickModifier = {
+							name = L["ArrowClickModifier"],
+							desc = L["ArrowClickModifierDescription"],
+							type = "select",
+							order = 6,
+							values = { ["none"] = L["ArrowClickPlain"], ["alt"] = L["ArrowClickAlt"] },
+							disabled = function() return not Spy.db.profile.ArrowEnabled end,
+							get = function() return Spy.db.profile.ArrowClickModifier end,
+							set = function(_, v) Spy.db.profile.ArrowClickModifier = v end,
+						},
+						ArrowSize = {
+							name = L["ArrowSize"],
+							type = "range",
+							order = 7,
+							min = 12, max = 48, step = 2,
+							disabled = function() return not Spy.db.profile.ArrowEnabled end,
+							get = function() return Spy.db.profile.ArrowSize end,
+							set = function(_, v) Spy.db.profile.ArrowSize = v Spy:ApplyArrowSettings() end,
+						},
+						ArrowColor = {
+							name = L["ArrowColor"],
+							type = "color",
+							order = 8,
+							hasAlpha = false,
+							disabled = function() return not Spy.db.profile.ArrowEnabled end,
+							get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow"] return c.r, c.g, c.b end,
+							set = function(_, r, g, b)
+								local c = Spy.db.profile.Colors["Spy"]["Arrow"]
+								c.r, c.g, c.b = r, g, b
+								Spy:UpdateArrow()
+							end,
+						},
+						ArrowColorByAge = {
+							name = L["ArrowColorByAge"],
+							desc = L["ArrowColorByAgeDescription"],
+							type = "toggle",
+							order = 9,
+							width = "full",
+							disabled = function() return not Spy.db.profile.ArrowEnabled end,
+							get = function() return Spy.db.profile.ArrowColorByAge end,
+							set = function(_, v) Spy.db.profile.ArrowColorByAge = v Spy:UpdateArrow() end,
+						},
+						ArrowStaleColor = {
+							name = L["ArrowStaleColor"],
+							type = "color",
+							order = 10,
+							hasAlpha = false,
+							disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowColorByAge) end,
+							get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"] return c.r, c.g, c.b end,
+							set = function(_, r, g, b)
+								local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"]
+								c.r, c.g, c.b = r, g, b
+								Spy:UpdateArrow()
+							end,
+						},
+						ArrowTimeout = {
+							name = L["ArrowTimeout"],
+							desc = L["ArrowTimeoutDescription"],
+							type = "range",
+							order = 11,
+							min = 0, max = 300, step = 10,
+							disabled = function() return not Spy.db.profile.ArrowEnabled end,
+							get = function() return Spy.db.profile.ArrowTimeout end,
+							set = function(_, v) Spy.db.profile.ArrowTimeout = v end,
+						},
+						ArrowDistanceUnit = {
+							name = L["ArrowDistanceUnit"],
+							type = "select",
+							order = 12,
+							values = { ["yards"] = L["ArrowYards"], ["meters"] = L["ArrowMeters"] },
+							disabled = function() return not Spy.db.profile.ArrowEnabled end,
+							get = function() return Spy.db.profile.ArrowDistanceUnit end,
+							set = function(_, v) Spy.db.profile.ArrowDistanceUnit = v Spy:UpdateArrow() end,
+						},
+						ArrowFloatLocked = {
+							name = L["ArrowFloatLocked"],
+							desc = L["ArrowFloatLockedDescription"],
+							type = "toggle",
+							order = 13,
+							width = "full",
+							disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle == "floating") end,
+							get = function() return Spy.db.profile.ArrowFloatLocked end,
+							set = function(_, v) Spy.db.profile.ArrowFloatLocked = v end,
+						},
+						TomTomOnAltClick = {
+							name = L["TomTomOnAltClick"],
+							desc = L["TomTomOnAltClickDescription"],
+							type = "toggle",
+							order = 14,
+							width = "full",
+							get = function() return Spy.db.profile.TomTomOnAltClick end,
+							set = function(_, value)
+								Spy.db.profile.TomTomOnAltClick = value
+								if not value then Spy:ClearTomTomWaypoint() end
+							end,
+						},
+					},
+				},
+				GlowTab = {
+					name = L["TTabGlow"],
+					desc = L["TTabGlow"],
+					type = "group",
+					order = 2,
+					args = {
+						intro = {
+							name = L["GlowIntro"],
+							type = "description",
+							order = 1,
+							fontSize = "medium",
+						},
+						GlowEnabled = {
+							name = L["GlowEnabled"],
+							desc = L["GlowEnabledDescription"],
+							type = "toggle",
+							order = 2,
+							width = "full",
+							get = function() return Spy.db.profile.GlowEnabled end,
+							set = function(_, v) Spy.db.profile.GlowEnabled = v Spy:ApplyGlowSettings() end,
+						},
+						driver = {
+							name = function()
+								local d = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or "?"
+								return format(L["GlowDriver"], d)
+							end,
+							type = "description",
+							order = 3,
+						},
+						preview = {
+							name = L["GlowPreview"],
+							desc = L["GlowPreviewDescription"],
+							type = "execute",
+							order = 4,
+							func = function() Spy:ToggleGlowPreview() end,
+						},
+						sizeHeader = {
+							name = L["GlowSizeHeader"],
+							type = "header",
+							order = 5,
+						},
+						GlowWidth = {
+							name = L["GlowWidth"],
+							type = "range",
+							order = 6,
+							min = 40, max = 300, step = 2,
+							disabled = function() return not Spy.db.profile.GlowEnabled end,
+							get = function() return Spy.db.profile.GlowWidth end,
+							set = function(_, v) Spy.db.profile.GlowWidth = v Spy:ApplyGlowSettings() end,
+						},
+						GlowHeight = {
+							name = L["GlowHeight"],
+							type = "range",
+							order = 7,
+							min = 20, max = 160, step = 2,
+							disabled = function() return not Spy.db.profile.GlowEnabled end,
+							get = function() return Spy.db.profile.GlowHeight end,
+							set = function(_, v) Spy.db.profile.GlowHeight = v Spy:ApplyGlowSettings() end,
+						},
+						GlowOffsetX = {
+							name = L["GlowOffsetX"],
+							desc = L["GlowOffsetDescription"],
+							type = "range",
+							order = 8,
+							min = -100, max = 100, step = 1,
+							disabled = function() return not Spy.db.profile.GlowEnabled end,
+							get = function() return Spy.db.profile.GlowOffsetX end,
+							set = function(_, v)
+								Spy.db.profile.GlowOffsetX = v
+								Spy.Glow.plate = nil	-- force a re-anchor on the next tick
+								Spy:ApplyGlowSettings()
+							end,
+						},
+						GlowOffsetY = {
+							name = L["GlowOffsetY"],
+							desc = L["GlowOffsetDescription"],
+							type = "range",
+							order = 9,
+							min = -100, max = 100, step = 1,
+							disabled = function() return not Spy.db.profile.GlowEnabled end,
+							get = function() return Spy.db.profile.GlowOffsetY end,
+							set = function(_, v)
+								Spy.db.profile.GlowOffsetY = v
+								Spy.Glow.plate = nil
+								Spy:ApplyGlowSettings()
+							end,
+						},
+						lookHeader = {
+							name = L["GlowLookHeader"],
+							type = "header",
+							order = 10,
+						},
+						GlowColor = {
+							name = L["GlowColor"],
+							type = "color",
+							order = 11,
+							hasAlpha = false,
+							disabled = function()
+								local p = Spy.db.profile
+								return not p.GlowEnabled or p.GlowUseClassColor
+							end,
+							get = function() local c = Spy.db.profile.Colors["Spy"]["Glow"] return c.r, c.g, c.b end,
+							set = function(_, r, g, b)
+								local c = Spy.db.profile.Colors["Spy"]["Glow"]
+								c.r, c.g, c.b = r, g, b
+								Spy:ApplyGlowSettings()
+							end,
+						},
+						GlowUseClassColor = {
+							name = L["GlowUseClassColor"],
+							desc = L["GlowUseClassColorDescription"],
+							type = "toggle",
+							order = 12,
+							disabled = function() return not Spy.db.profile.GlowEnabled end,
+							get = function() return Spy.db.profile.GlowUseClassColor end,
+							set = function(_, v) Spy.db.profile.GlowUseClassColor = v Spy:ApplyGlowSettings() end,
+						},
+						GlowAlpha = {
+							name = L["GlowAlpha"],
+							type = "range",
+							order = 13,
+							min = 0.1, max = 1, step = 0.05, isPercent = true,
+							disabled = function() return not Spy.db.profile.GlowEnabled end,
+							get = function() return Spy.db.profile.GlowAlpha end,
+							set = function(_, v) Spy.db.profile.GlowAlpha = v Spy:ApplyGlowSettings() end,
+						},
+						GlowAdditive = {
+							name = L["GlowAdditive"],
+							desc = L["GlowAdditiveDescription"],
+							type = "toggle",
+							order = 14,
+							width = "full",
+							disabled = function() return not Spy.db.profile.GlowEnabled end,
+							get = function() return Spy.db.profile.GlowAdditive end,
+							set = function(_, v) Spy.db.profile.GlowAdditive = v Spy:ApplyGlowSettings() end,
+						},
+						GlowPulse = {
+							name = L["GlowPulse"],
+							desc = L["GlowPulseDescription"],
+							type = "toggle",
+							order = 15,
+							width = "full",
+							disabled = function() return not Spy.db.profile.GlowEnabled end,
+							get = function() return Spy.db.profile.GlowPulse end,
+							set = function(_, v) Spy.db.profile.GlowPulse = v Spy:ApplyGlowSettings() end,
+						},
+						GlowPulseSpeed = {
+							name = L["GlowPulseSpeed"],
+							desc = L["GlowPulseSpeedDescription"],
+							type = "range",
+							order = 16,
+							min = 0.2, max = 2, step = 0.05,
+							disabled = function()
+								local p = Spy.db.profile
+								return not (p.GlowEnabled and p.GlowPulse)
+							end,
+							get = function() return Spy.db.profile.GlowPulseSpeed end,
+							set = function(_, v) Spy.db.profile.GlowPulseSpeed = v Spy:ApplyGlowSettings() end,
+						},
+						GlowPulseDepth = {
+							name = L["GlowPulseDepth"],
+							desc = L["GlowPulseDepthDescription"],
+							type = "range",
+							order = 17,
+							min = 0, max = 0.9, step = 0.05, isPercent = true,
+							disabled = function()
+								local p = Spy.db.profile
+								return not (p.GlowEnabled and p.GlowPulse)
+							end,
+							get = function() return Spy.db.profile.GlowPulseDepth end,
+							set = function(_, v) Spy.db.profile.GlowPulseDepth = v Spy:ApplyGlowSettings() end,
+						},
+					},
+				},
+				MapTab = {
+					name = L["TTabMap"],
+					desc = L["TTabMap"],
+					type = "group",
+					order = 3,
+					args = {
+						MinimapDetection = {
+							name = L["MinimapDetection"],
+							desc = L["MinimapDetectionDescription"],
+							type = "toggle",
+							order = 1,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.MinimapDetection
+							end,
+							set = function(info, value)
+								Spy.db.profile.MinimapDetection = value
+							end,
+						},
+						MinimapNote = {
+							order = 2,
+							type = "description",
+							name = L["MinimapNote"],
+						},
+						MinimapDetails = {
+							name = L["MinimapDetails"],
+							desc = L["MinimapDetailsDescription"],
+							type = "toggle",
+							order = 3,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.MinimapDetails
+							end,
+							set = function(info, value)
+								Spy.db.profile.MinimapDetails = value
+							end,
+						},
+						DisplayOnMap = {
+							name = L["DisplayOnMap"],
+							desc = L["DisplayOnMapDescription"],
+							type = "toggle",
+							order = 4,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.DisplayOnMap
+							end,
+							set = function(info, value)
+								Spy.db.profile.DisplayOnMap = value
+							end,
+						},
+						SwitchToZone = {
+							name = L["SwitchToZone"],
+							desc = L["SwitchToZoneDescription"],
+							type = "toggle",
+							order = 5,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.SwitchToZone
+							end,
+							set = function(info, value)
+								Spy.db.profile.SwitchToZone = value
+							end,
+						},
+						MapDisplayLimit = {
+							name = L["MapDisplayLimit"],
+							type = "group",
+							order = 6,
+							inline = true,
+							args = {
+								SameZone = {
+									name = L["LimitSameZone"],
+									desc = L["LimitSameZoneDescription"],
+									type = "toggle",
+									order = 1,
+									width = "full",
+									get = function(info)
+										return Spy.db.profile.MapDisplayLimit == "SameZone"
+									end,
+									set = function(info, value)
+										Spy.db.profile.MapDisplayLimit = "SameZone"
+									end,
+								},
+								SameContinent = {
+									name = L["LimitSameContinent"],
+									desc = L["LimitSameContinentDescription"],
+									type = "toggle",
+									order = 2,
+									width = "full",
+									get = function(info)
+										return Spy.db.profile.MapDisplayLimit == "SameContinent"
+									end,
+									set = function(info, value)
+										Spy.db.profile.MapDisplayLimit = "SameContinent"
+									end,
+								},
+								None = {
+									name = L["LimitNone"],
+									desc = L["LimitNoneDescription"],
+									type = "toggle",
+									order = 3,
+									width = "full",
+									get = function(info)
+										return Spy.db.profile.MapDisplayLimit == "None"
+									end,
+									set = function(info, value)
+										Spy.db.profile.MapDisplayLimit = "None"
+									end,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+		Look = {
+			name = L["TPageLook"],
+			desc = L["TPageLook"],
 			type = "group",
 			order = 5,
+			childGroups = "tab",
 			args = {
-				intro = {
-					name = L["MapOptionsDescription"],
-					type = "description",
-					order = 1,
-					fontSize = "medium",
-				},
-				MinimapDetection = {
-					name = L["MinimapDetection"],
-					desc = L["MinimapDetectionDescription"],
-					type = "toggle",
-					order = 2,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.MinimapDetection
-					end,
-					set = function(info, value)
-						Spy.db.profile.MinimapDetection = value
-					end,
-				},
-				MinimapNote = {
-					order = 3,
-					type = "description",
-					name = L["MinimapNote"],
-				},				
-				MinimapDetails = {
-					name = L["MinimapDetails"],
-					desc = L["MinimapDetailsDescription"],
-					type = "toggle",
-					order = 4,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.MinimapDetails
-					end,
-					set = function(info, value)
-						Spy.db.profile.MinimapDetails = value
-					end,
-				},
-				DisplayOnMap = {
-					name = L["DisplayOnMap"],
-					desc = L["DisplayOnMapDescription"],
-					type = "toggle",
-					order = 5,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.DisplayOnMap
-					end,
-					set = function(info, value)
-						Spy.db.profile.DisplayOnMap = value
-					end,
-				},
-				SwitchToZone = {
-					name = L["SwitchToZone"],
-					desc = L["SwitchToZoneDescription"],
-					type = "toggle",
-					order = 6,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.SwitchToZone
-					end,
-					set = function(info, value)
-						Spy.db.profile.SwitchToZone = value
-					end,
-				},				
-				MapDisplayLimit = {
-					name = L["MapDisplayLimit"],
+				Rows = {
+					name = L["TTabRows"],
+					desc = L["TTabRows"],
 					type = "group",
-					order = 7,
-					inline = true,
+					order = 1,
 					args = {
-						SameZone = {
-							name = L["LimitSameZone"],
-							desc = L["LimitSameZoneDescription"],
-							type = "toggle",
+						LookPreset = {
+							name = L["LookPreset"],
+							desc = L["LookPresetDescription"],
+							type = "select",
 							order = 1,
-							width = "full",
-							get = function(info)
-								return Spy.db.profile.MapDisplayLimit == "SameZone"
-							end,
-							set = function(info, value)
-								Spy.db.profile.MapDisplayLimit = "SameZone"
+							values = {
+								["classbars"] = L["LookClassBars"],
+								["flat"] = L["LookFlat"],
+								["compact"] = L["LookCompact"],
+							},
+							get = function() return Spy.db.profile.LookPreset end,
+							set = function(_, value)
+								Spy:ApplyLookPreset(value)
 							end,
 						},
-						SameContinent = {
-							name = L["LimitSameContinent"],
-							desc = L["LimitSameContinentDescription"],
+						ClassColoredNames = {
+							name = L["ClassColoredNames"],
+							desc = L["ClassColoredNamesDescription"],
 							type = "toggle",
 							order = 2,
 							width = "full",
-							get = function(info)
-								return Spy.db.profile.MapDisplayLimit == "SameContinent"
-							end,
-							set = function(info, value)
-								Spy.db.profile.MapDisplayLimit = "SameContinent"
+							get = function() return Spy.db.profile.ClassColoredNames end,
+							set = function(_, value)
+								Spy.db.profile.ClassColoredNames = value
+								Spy:RefreshCurrentList()
 							end,
 						},
-						None = {
-							name = L["LimitNone"],
-							desc = L["LimitNoneDescription"],
-							type = "toggle",
+						SelectFont = {
+							type = "select",
 							order = 3,
-							width = "full",
-							get = function(info)
-								return Spy.db.profile.MapDisplayLimit == "None"
+							name = L["SelectFont"],
+							desc = L["SelectFontDescription"],
+							values = fonts,
+							get = function()
+								for info, value in next, fonts do
+									if value == Spy.db.profile.Font then
+										return info
+									end
+								end
+							end,
+							set = function(_, value)
+								Spy.db.profile.Font = fonts[value]
+								if value then
+									Spy:UpdateBarTextures()
+								end
+							end,
+						},
+						RowHeight = {
+							type = "range",
+							order = 4,
+							name = L["RowHeight"], 
+							desc = L["RowHeightDescription"], 
+							min = 8, max = 20, step = 1,
+							get = function()
+								return Spy.db.profile.MainWindow.RowHeight
 							end,
 							set = function(info, value)
-								Spy.db.profile.MapDisplayLimit = "None"
+								Spy.db.profile.MainWindow.RowHeight = value
+								if value then
+									Spy:BarsChanged()
+								end
+							end,
+						},
+						BarTexture = {
+							type = "select",
+							order = 5,
+							name = L["Texture"],
+							desc = L["TextureDescription"],	
+							dialogControl = "LSM30_Statusbar",
+							width = "double",
+							values = SM:HashTable("statusbar"),
+							get = function()
+								return Spy.db.profile.BarTexture
+							end,
+							set = function(_, key)
+								Spy.db.profile.BarTexture = key
+								Spy:UpdateBarTextures()
+							end,
+						},
+						BarOpacity = {
+							name = L["BarOpacity"],
+							desc = L["BarOpacityDescription"],
+							type = "range",
+							order = 6,
+							min = 0, max = 1, step = 0.05,
+							isPercent = true,
+							get = function() return Spy.db.profile.BarOpacity end,
+							set = function(_, value)
+								Spy.db.profile.BarOpacity = value
+								Spy:RefreshCurrentList()
+							end,
+						},
+						KoSEdgeColor = {
+							name = L["KoSEdgeColor"],
+							desc = L["KoSEdgeColorDescription"],
+							type = "color",
+							order = 7,
+							hasAlpha = true,
+							get = function()
+								local c = Spy.db.profile.Colors["Spy"]["KoS Edge"]
+								return c.r, c.g, c.b, c.a
+							end,
+							set = function(_, r, g, b, a)
+								local c = Spy.db.profile.Colors["Spy"]["KoS Edge"]
+								c.r, c.g, c.b, c.a = r, g, b, a
+								Spy:RefreshCurrentList()
+							end,
+						},
+					},
+				},
+				WindowTab = {
+					name = L["TTabWindow"],
+					desc = L["TTabWindow"],
+					type = "group",
+					order = 2,
+					args = {
+						LockPosition = {
+							name = L["LockPosition"],
+							desc = L["LockPositionDescription"],
+							type = "toggle",
+							order = 1,
+							get = function() return Spy.db.profile.LockPosition end,
+							set = function(_, value)
+								Spy.db.profile.LockPosition = value
+								Spy:ApplyWindowLocks()
+							end,
+						},
+						LockSize = {
+							name = L["LockSize"],
+							desc = L["LockSizeDescription"],
+							type = "toggle",
+							order = 2,
+							get = function() return Spy.db.profile.LockSize end,
+							set = function(_, value)
+								Spy.db.profile.LockSize = value
+								Spy:ApplyWindowLocks()
+							end,
+						},
+						Lock = {
+							name = L["LockSpy"],
+							desc = L["LockSpyDescription"],
+							type = "toggle",
+							order = 3,
+							width = 1.6,
+							get = function(info) 
+								return Spy.db.profile.Locked
+							end,
+							set = function(info, value)
+								Spy.db.profile.Locked = value
+								Spy:LockWindows(value)
+								Spy:RefreshCurrentList()
+							end,
+						},
+						ClampToScreen = {
+							name = L["ClampToScreen"],
+							desc = L["ClampToScreenDescription"],
+							type = "toggle",
+							order = 4,
+		--					width = "double",
+							get = function(info) 
+								return Spy.db.profile.ClampToScreen
+							end,
+							set = function(info, value)
+								Spy.db.profile.ClampToScreen = value
+								Spy:ClampToScreen(value)
+							end,
+						},
+						InvertSpy = {
+							name = L["InvertSpy"],
+							desc = L["InvertSpyDescription"],
+							type = "toggle",
+							order = 5,
+							get = function(info)
+								return Spy.db.profile.InvertSpy
+							end,
+							set = function(info, value)
+								Spy.db.profile.InvertSpy = value
+							end,
+						},
+						WindowScale = {
+							name = L["WindowScale"],
+							desc = L["WindowScaleDescription"],
+							type = "range",
+							order = 6,
+							min = 0.5, max = 2, step = 0.05,
+							isPercent = true,
+							get = function() return Spy.db.profile.WindowScale end,
+							set = function(_, value)
+								Spy.db.profile.WindowScale = value
+								Spy:ApplyWindowStyle()
+							end,
+						},
+						ShowBackground = {
+							name = L["ShowBackground"],
+							desc = L["ShowBackgroundDescription"],
+							type = "toggle",
+							order = 7,
+							get = function() return Spy.db.profile.ShowBackground end,
+							set = function(_, value)
+								Spy.db.profile.ShowBackground = value
+								Spy:ApplyWindowStyle()
+							end,
+						},
+						BackgroundOpacity = {
+							name = L["BackgroundOpacity"],
+							desc = L["BackgroundOpacityDescription"],
+							type = "range",
+							order = 8,
+							min = 0, max = 1, step = 0.05,
+							isPercent = true,
+							get = function() return Spy.db.profile.BackgroundOpacity end,
+							set = function(_, value)
+								Spy.db.profile.BackgroundOpacity = value
+								Spy:ApplyWindowStyle()
+							end,
+						},
+						Alpha = {
+							name = L["Alpha"],
+							desc = L["AlphaDescription"],
+							type = "range",
+							order = 9,
+		--					width = "double",
+							min = 0, max = 1, step = 0.01,
+							isPercent = true,
+							get = function()
+								return Spy.db.profile.MainWindow.Alpha end,
+							set = function(info, value)
+								Spy.db.profile.MainWindow.Alpha = value
+								Spy:UpdateMainWindow()
+
+							end,
+						},
+						AlphaBG = {
+							name = L["AlphaBG"],
+							desc = L["AlphaBGDescription"],
+							type = "range",
+							order = 10,
+		--					width = "double",
+							min = 0, max = 1, step = 0.01,
+							isPercent = true,
+							get = function()
+								return Spy.db.profile.MainWindow.AlphaBG end,
+							set = function(info, value)
+								Spy.db.profile.MainWindow.AlphaBG = value
+								Spy:UpdateMainWindow()
+							end,
+						},
+						TitleBarStyle = {
+							name = L["TitleBarStyle"],
+							desc = L["TitleBarStyleDescription"],
+							type = "select",
+							order = 11,
+							values = {
+								["classic"] = L["TitleBarClassic"],
+								["solid"] = L["TitleBarSolid"],
+							},
+							get = function() return Spy.db.profile.TitleBarStyle end,
+							set = function(_, value)
+								Spy.db.profile.TitleBarStyle = value
+								Spy:ApplyWindowStyle()
+							end,
+						},
+						TitleBarColor = {
+							name = L["TitleBarColor"],
+							desc = L["TitleBarColorDescription"],
+							type = "color",
+							order = 12,
+							hasAlpha = false,
+							disabled = function() return Spy.db.profile.TitleBarStyle ~= "solid" end,
+							get = function()
+								local c = Spy.db.profile.Colors["Spy"]["Title Bar"]
+								return c.r, c.g, c.b
+							end,
+							set = function(_, r, g, b)
+								local c = Spy.db.profile.Colors["Spy"]["Title Bar"]
+								c.r, c.g, c.b = r, g, b
+								Spy:ApplyWindowStyle()
+							end,
+						},
+						TitleBarOpacity = {
+							name = L["TitleBarOpacity"],
+							desc = L["TitleBarOpacityDescription"],
+							type = "range",
+							order = 13,
+							min = 0, max = 1, step = 0.05,
+							isPercent = true,
+							disabled = function() return Spy.db.profile.TitleBarStyle ~= "solid" end,
+							get = function() return Spy.db.profile.TitleBarOpacity end,
+							set = function(_, value)
+								Spy.db.profile.TitleBarOpacity = value
+								Spy:ApplyWindowStyle()
+							end,
+						},
+						ShowBorder = {
+							name = L["ShowBorder"],
+							desc = L["ShowBorderDescription"],
+							type = "toggle",
+							order = 14,
+							get = function() return Spy.db.profile.ShowBorder end,
+							set = function(_, value)
+								Spy.db.profile.ShowBorder = value
+								Spy:ApplyWindowStyle()
+							end,
+						},
+						WindowBorderColor = {
+							name = L["WindowBorderColor"],
+							type = "color",
+							order = 15,
+							hasAlpha = true,
+							get = function()
+								local c = Spy.db.profile.Colors["Spy"]["Window Border"]
+								return c.r, c.g, c.b, c.a
+							end,
+							set = function(_, r, g, b, a)
+								local c = Spy.db.profile.Colors["Spy"]["Window Border"]
+								c.r, c.g, c.b, c.a = r, g, b, a
+								Spy:ApplyWindowStyle()
 							end,
 						},
 					},
 				},
 			},
 		},
-		DataOptions = {
-			name = L["DataOptions"],
-			desc = L["DataOptions"],
+		Alerts = {
+			name = L["TPageAlerts"],
+			desc = L["TPageAlerts"],
 			type = "group",
 			order = 6,
+			childGroups = "tab",
 			args = {
-				intro = {
-					name = L["ListOptionsDescription"],
-					type = "description",
+				Sound = {
+					name = L["TTabSound"],
+					desc = L["TTabSound"],
+					type = "group",
 					order = 1,
-					fontSize = "medium",
+					args = {
+						EnableSound = {
+							name = L["EnableSound"],
+							desc = L["EnableSoundDescription"],
+							type = "toggle",
+							order = 1,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.EnableSound
+							end,
+							set = function(info, value)
+								Spy.db.profile.EnableSound = value
+							end,
+						},
+						SoundChannel = {
+							name = L["SoundChannel"],
+							type = 'select',
+							order = 2,
+							values = {
+								["Master"] = L["Master"],
+								["SFX"] = L["SFX"],
+								["Music"] = L["Music"],
+								["Ambience"] = L["Ambience"],
+							},					
+							get = function()
+								return Spy.db.profile.SoundChannel
+							end,
+							set = function(info, value)
+								Spy.db.profile.SoundChannel = value 
+							end,
+						},
+						OnlySoundKoS = {
+							name = L["OnlySoundKoS"],
+							desc = L["OnlySoundKoSDescription"],
+							type = "toggle",
+							order = 3,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.OnlySoundKoS
+							end,
+							set = function(info, value)
+								Spy.db.profile.OnlySoundKoS = value
+							end,
+						},
+						StopAlertsOnTaxi = {
+							name = L["StopAlertsOnTaxi"],
+							desc = L["StopAlertsOnTaxiDescription"],
+							type = "toggle",
+							order = 4,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.StopAlertsOnTaxi
+							end,
+							set = function(info, value)
+								Spy.db.profile.StopAlertsOnTaxi = value
+							end,
+						},
+					},
 				},
-				RemoveUndetected = {
-					name = L["RemoveUndetected"],
+				Warnings = {
+					name = L["TTabWarnings"],
+					desc = L["TTabWarnings"],
 					type = "group",
 					order = 2,
-					inline = true,
 					args = {
-						OneMinute = {
-							name = L["1Min"],
-							desc = L["1MinDescription"],
-							type = "toggle",
+						Announce = {
+							name = L["Announce"],
+							type = "group",
 							order = 1,
-							get = function(info)
-								return Spy.db.profile.RemoveUndetected == "OneMinute"
-							end,
-							set = function(info, value)
-								Spy.db.profile.RemoveUndetected = "OneMinute"
-								Spy:UpdateTimeoutSettings()
-							end,
+							inline = true,
+							args = {
+								None = {
+									name = L["None"],
+									desc = L["NoneDescription"],
+									type = "toggle",
+									order = 1,
+									get = function(info)
+										return Spy.db.profile.Announce == "None"
+									end,
+									set = function(info, value)
+										Spy.db.profile.Announce = "None"
+									end,
+								},
+								Self = {
+									name = L["Self"],
+									desc = L["SelfDescription"],
+									type = "toggle",
+									order = 2,
+									get = function(info)
+										return Spy.db.profile.Announce == "Self"
+									end,
+									set = function(info, value)
+										Spy.db.profile.Announce = "Self"
+									end,
+								},
+								Party = {
+									name = L["Party"],
+									desc = L["PartyDescription"],
+									type = "toggle",
+									order = 3,
+									get = function(info)
+										return Spy.db.profile.Announce == "Party"
+									end,
+									set = function(info, value)
+										Spy.db.profile.Announce = "Party"
+									end,
+								},
+								Guild = {
+									name = L["Guild"],
+									desc = L["GuildDescription"],
+									type = "toggle",
+									order = 4,
+									get = function(info)
+										return Spy.db.profile.Announce == "Guild"
+									end,
+									set = function(info, value)
+										Spy.db.profile.Announce = "Guild"
+									end,
+								},
+								Raid = {
+									name = L["Raid"],
+									desc = L["RaidDescription"],
+									type = "toggle",
+									order = 5,
+									get = function(info)
+										return Spy.db.profile.Announce == "Raid"
+									end,
+									set = function(info, value)
+										Spy.db.profile.Announce = "Raid"
+									end,
+								},
+							},
 						},
-						TwoMinutes = {
-							name = L["2Min"],
-							desc = L["2MinDescription"],
+						OnlyAnnounceKoS = {
+							name = L["OnlyAnnounceKoS"],
+							desc = L["OnlyAnnounceKoSDescription"],
 							type = "toggle",
 							order = 2,
+							width = "full",
 							get = function(info)
-								return Spy.db.profile.RemoveUndetected == "TwoMinutes"
+								return Spy.db.profile.OnlyAnnounceKoS
 							end,
 							set = function(info, value)
-								Spy.db.profile.RemoveUndetected = "TwoMinutes"
-								Spy:UpdateTimeoutSettings()
+								Spy.db.profile.OnlyAnnounceKoS = value
 							end,
 						},
-						FiveMinutes = {
-							name = L["5Min"],
-							desc = L["5MinDescription"],
-							type = "toggle",
+						DisplayWarnings = {
+							name = L["DisplayWarnings"],
+							type = 'select',
 							order = 3,
-							get = function(info)
-								return Spy.db.profile.RemoveUndetected == "FiveMinutes"
+							values = {
+								["Default"] = L["Default"],
+								["ErrorFrame"] = L["ErrorFrame"],
+								["Moveable"] = L["Moveable"],
+							},
+							get = function()
+								return Spy.db.profile.DisplayWarnings
 							end,
 							set = function(info, value)
-								Spy.db.profile.RemoveUndetected = "FiveMinutes"
-								Spy:UpdateTimeoutSettings()
+								Spy.db.profile.DisplayWarnings = value
+								Spy:UpdateAlertWindow()
 							end,
 						},
-						TenMinutes = {
-							name = L["10Min"],
-							desc = L["10MinDescription"],
+						WarnOnStealth = {
+							name = L["WarnOnStealth"],
+							desc = L["WarnOnStealthDescription"],
 							type = "toggle",
 							order = 4,
+							width = "full",
 							get = function(info)
-								return Spy.db.profile.RemoveUndetected == "TenMinutes"
+								return Spy.db.profile.WarnOnStealth
 							end,
 							set = function(info, value)
-								Spy.db.profile.RemoveUndetected = "TenMinutes"
-								Spy:UpdateTimeoutSettings()
+								Spy.db.profile.WarnOnStealth = value
 							end,
 						},
-						FifteenMinutes = {
-							name = L["15Min"],
-							desc = L["15MinDescription"],
+						WarnOnKOS = {
+							name = L["WarnOnKOS"],
+							desc = L["WarnOnKOSDescription"],
 							type = "toggle",
 							order = 5,
+							width = "full",
 							get = function(info)
-								return Spy.db.profile.RemoveUndetected == "FifteenMinutes"
+								return Spy.db.profile.WarnOnKOS
 							end,
 							set = function(info, value)
-								Spy.db.profile.RemoveUndetected = "FifteenMinutes"
-								Spy:UpdateTimeoutSettings()
+								Spy.db.profile.WarnOnKOS = value
 							end,
 						},
-						Never = {
-							name = L["Never"],
-							desc = L["NeverDescription"],
+						WarnOnKOSGuild = {
+							name = L["WarnOnKOSGuild"],
+							desc = L["WarnOnKOSGuildDescription"],
 							type = "toggle",
 							order = 6,
+							width = "full",
 							get = function(info)
-								return Spy.db.profile.RemoveUndetected == "Never"
+								return Spy.db.profile.WarnOnKOSGuild
 							end,
 							set = function(info, value)
-								Spy.db.profile.RemoveUndetected = "Never"
-								Spy:UpdateTimeoutSettings()
+								Spy.db.profile.WarnOnKOSGuild = value
 							end,
+						},
+						WarnOnRace = {
+							name = L["WarnOnRace"],
+							desc = L["WarnOnRaceDescription"],
+							type = "toggle",
+							order = 7,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.WarnOnRace
+							end,
+							set = function(info, value)
+								Spy.db.profile.WarnOnRace = value
+							end,
+						},
+						SelectWarnRace = {
+							type = "select",
+							order = 8,
+							name = L["SelectWarnRace"],
+							desc = L["SelectWarnRaceDescription"],
+							get = function()
+								return Spy.db.profile.SelectWarnRace
+							end,
+							set = function(info, value)
+								Spy.db.profile.SelectWarnRace = value
+							end,
+							values = function()
+								local raceOptions = {}
+								local races = {
+									Alliance = {
+										["None"] = L["None"],
+										["Human"] = L["Human"],
+										["Dwarf"] = L["Dwarf"],
+										["Night Elf"] = L["Night Elf"],
+										["Gnome"] = L["Gnome"],
+										["Draenei"] = L["Draenei"],
+		--								["Worgen"] = L["Worgen"],
+		--								["Pandaren"] = L["Pandaren"],
+		--								["Lightforged Draenei"] = L["Lightforged Draenei"],
+		--								["Void Elf"] = L["Void Elf"],
+		--								["Dark Iron Dwarf"] = L["Dark Iron Dwarf"],
+		--								["Kul Tiran"] = L["Kul Tiran"],
+		--								["Mechagnome"] = L["Mechagnome"],
+		--								["Dracthyr"] = L["Dracthyr"],
+		--								["Earthen"] = L["Earthen"],
+									},
+									Horde = {
+										["None"] = L["None"],
+										["Orc"] = L["Orc"],
+										["Tauren"] = L["Tauren"],
+										["Troll"] = L["Troll"],
+										["Undead"] = L["Undead"],
+										["Blood Elf"] = L["Blood Elf"],
+		--								["Goblin"] = L["Goblin"],
+		--								["Pandaren"] = L["Pandaren"],
+		--								["Highmountain Tauren"] = L["Highmountain Tauren"],
+		--								["Nightborne"] = L["Nightborne"],
+		--								["Mag'har Orc"] = L["Mag'har Orc"],
+		--								["Zandalari Troll"] = L["Zandalari Troll"],
+		--								["Vulpera"] = L["Vulpera"],
+		--								["Dracthyr"] = L["Dracthyr"],
+		--								["Earthen"] = L["Earthen"],
+									},
+								}
+								if Spy.EnemyFactionName == "Alliance" then
+									raceOptions = races.Alliance
+								end	
+								if Spy.EnemyFactionName == "Horde" then
+									raceOptions = races.Horde
+								end	
+								return raceOptions
+							end,
+						},
+						WarnRaceNote = {
+							order = 9,
+							type = "description",
+							name = L["WarnRaceNote"],
 						},
 					},
-				},
-				PurgeData = {
-					name = L["PurgeData"],
-					type = "group",
-					order = 7,
-					inline = true,
-					args = {
-						OneDay = {
-							name = L["OneDay"],
-							desc = L["OneDayDescription"],
-							type = "toggle",
-							order = 1,
-							get = function(info)
-								return Spy.db.profile.PurgeData == "OneDay"
-							end,
-							set = function(info, value)
-								Spy.db.profile.PurgeData = "OneDay"
-							end,
-						},
-						FiveDays = {
-							name = L["FiveDays"],
-							desc = L["FiveDaysDescription"],
-							type = "toggle",
-							order = 2,
-							get = function(info)
-								return Spy.db.profile.PurgeData == "FiveDays"
-							end,
-							set = function(info, value)
-								Spy.db.profile.PurgeData = "FiveDays"
-							end,
-						},
-						TenDays = {
-							name = L["TenDays"],
-							desc = L["TenDaysDescription"],
-							type = "toggle",
-							order = 3,
-							get = function(info)
-								return Spy.db.profile.PurgeData == "TenDays"
-							end,
-							set = function(info, value)
-								Spy.db.profile.PurgeData = "TenDays"
-							end,
-						},
-						ThirtyDays = {
-							name = L["ThirtyDays"],
-							desc = L["ThirtyDaysDescription"],
-							type = "toggle",
-							order = 4,
-							get = function(info)
-								return Spy.db.profile.PurgeData == "ThirtyDays"
-							end,
-							set = function(info, value)
-								Spy.db.profile.PurgeData = "ThirtyDays"
-							end,
-						},
-						SixtyDays = {
-							name = L["SixtyDays"],
-							desc = L["SixtyDaysDescription"],
-							type = "toggle",
-							order = 5,
-							get = function(info)
-								return Spy.db.profile.PurgeData == "SixtyDays"
-							end,
-							set = function(info, value)
-								Spy.db.profile.PurgeData = "SixtyDays"
-							end,
-						},
-						NinetyDays = {
-							name = L["NinetyDays"],
-							desc = L["NinetyDaysDescription"],
-							type = "toggle",
-							order = 6,
-							get = function(info)
-								return Spy.db.profile.PurgeData == "NinetyDays"
-							end,
-							set = function(info, value)
-								Spy.db.profile.PurgeData = "NinetyDays"
-							end,
-						},
-					},
-				},
-				PurgeKoS = {
-					name = L["PurgeKoS"],
-					desc = L["PurgeKoSDescription"],
-					type = "toggle",
-					order = 8,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.PurgeKoS
-					end,
-					set = function(info, value)
-						Spy.db.profile.PurgeKoS = value
-					end,
-				},
-				PurgeWinLossData = {
-					name = L["PurgeWinLossData"],
-					desc = L["PurgeWinLossDataDescription"],
-					type = "toggle",
-					order = 9,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.PurgeWinLossData
-					end,
-					set = function(info, value)
-						Spy.db.profile.PurgeWinLossData = value
-					end,
-				},
-				ShareData = {
-					name = L["ShareData"],
-					desc = L["ShareDataDescription"],
-					type = "toggle",
-					order = 10,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.ShareData
-					end,
-					set = function(info, value)
-						Spy.db.profile.ShareData = value
-					end,
-				},
-				UseData = {
-					name = L["UseData"],
-					desc = L["UseDataDescription"],
-					type = "toggle",
-					order = 11,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.UseData
-					end,
-					set = function(info, value)
-						Spy.db.profile.UseData = value
-					end,
-				},
-				ShareKOSBetweenCharacters = {
-					name = L["ShareKOSBetweenCharacters"],
-					desc = L["ShareKOSBetweenCharactersDescription"],
-					type = "toggle",
-					order = 12,
-					width = "full",
-					get = function(info)
-						return Spy.db.profile.ShareKOSBetweenCharacters
-					end,
-					set = function(info, value)
-						Spy.db.profile.ShareKOSBetweenCharacters = value
-						if value then
-							Spy:RegenerateKOSCentralList()
-						end
-					end,
 				},
 			},
 		},
-	},
+		Data = {
+			name = L["TPageData"],
+			desc = L["TPageData"],
+			type = "group",
+			order = 7,
+			childGroups = "tab",
+			args = {
+				Storage = {
+					name = L["TTabStorage"],
+					desc = L["TTabStorage"],
+					type = "group",
+					order = 1,
+					args = {
+						RemoveUndetected = {
+							name = L["RemoveUndetected"],
+							type = "group",
+							order = 1,
+							inline = true,
+							args = {
+								OneMinute = {
+									name = L["1Min"],
+									desc = L["1MinDescription"],
+									type = "toggle",
+									order = 1,
+									get = function(info)
+										return Spy.db.profile.RemoveUndetected == "OneMinute"
+									end,
+									set = function(info, value)
+										Spy.db.profile.RemoveUndetected = "OneMinute"
+										Spy:UpdateTimeoutSettings()
+									end,
+								},
+								TwoMinutes = {
+									name = L["2Min"],
+									desc = L["2MinDescription"],
+									type = "toggle",
+									order = 2,
+									get = function(info)
+										return Spy.db.profile.RemoveUndetected == "TwoMinutes"
+									end,
+									set = function(info, value)
+										Spy.db.profile.RemoveUndetected = "TwoMinutes"
+										Spy:UpdateTimeoutSettings()
+									end,
+								},
+								FiveMinutes = {
+									name = L["5Min"],
+									desc = L["5MinDescription"],
+									type = "toggle",
+									order = 3,
+									get = function(info)
+										return Spy.db.profile.RemoveUndetected == "FiveMinutes"
+									end,
+									set = function(info, value)
+										Spy.db.profile.RemoveUndetected = "FiveMinutes"
+										Spy:UpdateTimeoutSettings()
+									end,
+								},
+								TenMinutes = {
+									name = L["10Min"],
+									desc = L["10MinDescription"],
+									type = "toggle",
+									order = 4,
+									get = function(info)
+										return Spy.db.profile.RemoveUndetected == "TenMinutes"
+									end,
+									set = function(info, value)
+										Spy.db.profile.RemoveUndetected = "TenMinutes"
+										Spy:UpdateTimeoutSettings()
+									end,
+								},
+								FifteenMinutes = {
+									name = L["15Min"],
+									desc = L["15MinDescription"],
+									type = "toggle",
+									order = 5,
+									get = function(info)
+										return Spy.db.profile.RemoveUndetected == "FifteenMinutes"
+									end,
+									set = function(info, value)
+										Spy.db.profile.RemoveUndetected = "FifteenMinutes"
+										Spy:UpdateTimeoutSettings()
+									end,
+								},
+								Never = {
+									name = L["Never"],
+									desc = L["NeverDescription"],
+									type = "toggle",
+									order = 6,
+									get = function(info)
+										return Spy.db.profile.RemoveUndetected == "Never"
+									end,
+									set = function(info, value)
+										Spy.db.profile.RemoveUndetected = "Never"
+										Spy:UpdateTimeoutSettings()
+									end,
+								},
+							},
+						},
+						PurgeData = {
+							name = L["PurgeData"],
+							type = "group",
+							order = 2,
+							inline = true,
+							args = {
+								OneDay = {
+									name = L["OneDay"],
+									desc = L["OneDayDescription"],
+									type = "toggle",
+									order = 1,
+									get = function(info)
+										return Spy.db.profile.PurgeData == "OneDay"
+									end,
+									set = function(info, value)
+										Spy.db.profile.PurgeData = "OneDay"
+									end,
+								},
+								FiveDays = {
+									name = L["FiveDays"],
+									desc = L["FiveDaysDescription"],
+									type = "toggle",
+									order = 2,
+									get = function(info)
+										return Spy.db.profile.PurgeData == "FiveDays"
+									end,
+									set = function(info, value)
+										Spy.db.profile.PurgeData = "FiveDays"
+									end,
+								},
+								TenDays = {
+									name = L["TenDays"],
+									desc = L["TenDaysDescription"],
+									type = "toggle",
+									order = 3,
+									get = function(info)
+										return Spy.db.profile.PurgeData == "TenDays"
+									end,
+									set = function(info, value)
+										Spy.db.profile.PurgeData = "TenDays"
+									end,
+								},
+								ThirtyDays = {
+									name = L["ThirtyDays"],
+									desc = L["ThirtyDaysDescription"],
+									type = "toggle",
+									order = 4,
+									get = function(info)
+										return Spy.db.profile.PurgeData == "ThirtyDays"
+									end,
+									set = function(info, value)
+										Spy.db.profile.PurgeData = "ThirtyDays"
+									end,
+								},
+								SixtyDays = {
+									name = L["SixtyDays"],
+									desc = L["SixtyDaysDescription"],
+									type = "toggle",
+									order = 5,
+									get = function(info)
+										return Spy.db.profile.PurgeData == "SixtyDays"
+									end,
+									set = function(info, value)
+										Spy.db.profile.PurgeData = "SixtyDays"
+									end,
+								},
+								NinetyDays = {
+									name = L["NinetyDays"],
+									desc = L["NinetyDaysDescription"],
+									type = "toggle",
+									order = 6,
+									get = function(info)
+										return Spy.db.profile.PurgeData == "NinetyDays"
+									end,
+									set = function(info, value)
+										Spy.db.profile.PurgeData = "NinetyDays"
+									end,
+								},
+							},
+						},
+						PurgeKoS = {
+							name = L["PurgeKoS"],
+							desc = L["PurgeKoSDescription"],
+							type = "toggle",
+							order = 3,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.PurgeKoS
+							end,
+							set = function(info, value)
+								Spy.db.profile.PurgeKoS = value
+							end,
+						},
+						PurgeWinLossData = {
+							name = L["PurgeWinLossData"],
+							desc = L["PurgeWinLossDataDescription"],
+							type = "toggle",
+							order = 4,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.PurgeWinLossData
+							end,
+							set = function(info, value)
+								Spy.db.profile.PurgeWinLossData = value
+							end,
+						},
+					},
+				},
+				Sharing = {
+					name = L["TTabSharing"],
+					desc = L["TTabSharing"],
+					type = "group",
+					order = 2,
+					args = {
+						ShareData = {
+							name = L["ShareData"],
+							desc = L["ShareDataDescription"],
+							type = "toggle",
+							order = 1,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.ShareData
+							end,
+							set = function(info, value)
+								Spy.db.profile.ShareData = value
+							end,
+						},
+						UseData = {
+							name = L["UseData"],
+							desc = L["UseDataDescription"],
+							type = "toggle",
+							order = 2,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.UseData
+							end,
+							set = function(info, value)
+								Spy.db.profile.UseData = value
+							end,
+						},
+						ShareKOSBetweenCharacters = {
+							name = L["ShareKOSBetweenCharacters"],
+							desc = L["ShareKOSBetweenCharactersDescription"],
+							type = "toggle",
+							order = 3,
+							width = "full",
+							get = function(info)
+								return Spy.db.profile.ShareKOSBetweenCharacters
+							end,
+							set = function(info, value)
+								Spy.db.profile.ShareKOSBetweenCharacters = value
+								if value then
+									Spy:RegenerateKOSCentralList()
+								end
+							end,
+						},
+					},
+				},
+				DiagnosticsTab = {
+					name = L["TTabDiagnostics"],
+					desc = L["TTabDiagnostics"],
+					type = "group",
+					order = 3,
+					args = {
+						intro = {
+							name = L["DebugModeDescription"],
+							type = "description",
+							order = 1,
+							fontSize = "medium",
+						},
+						DebugMode = {
+							name = L["DebugMode"],
+							desc = L["DebugModeDescription"],
+							type = "toggle",
+							order = 2,
+							width = "full",
+							get = function() return Spy.db.profile.DebugMode end,
+							set = function(_, v)
+								Spy.db.profile.DebugMode = v
+								if v then Spy:CaptureDebugEnvironment() end
+							end,
+						},
+						DebugDump = {
+							name = L["DebugDumpButton"],
+							desc = L["DebugDumpButtonDescription"],
+							type = "execute",
+							order = 3,
+							func = function() Spy:ShowDebugDump() end,
+						},
+						DebugStatus = {
+							name = L["DebugStatusButton"],
+							desc = L["DebugStatusButtonDescription"],
+							type = "execute",
+							order = 4,
+							func = function() Spy:DebugStatus() end,
+						},
+						DebugReset = {
+							name = L["DebugResetButton"],
+							type = "execute",
+							order = 5,
+							func = function() Spy:ResetDebug() Spy:Print(L["DebugWasReset"]) end,
+						},
+					},
+				},
+			},
+		},
+},
 }
 
 Spy.optionsSlash = {
@@ -2687,16 +2695,17 @@ function Spy:SetupOptions()
  	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Spy", Spy.options)
 	LibStub("AceConfig-3.0"):RegisterOptionsTable("Spy Commands", Spy.optionsSlash, "spy")
 
+	-- One Blizzard sub-panel per page. The second level lives in tabs inside
+	-- each page rather than as more entries here, which is the whole point of
+	-- the layout: seven rows in the sidebar instead of ten.
 	local ACD3 = LibStub("AceConfigDialog-3.0")
-	self.optionsFrames.Spy = ACD3:AddToBlizOptions("Spy", L["Spy Option"], nil, "General")
+	self.optionsFrames.Spy = ACD3:AddToBlizOptions("Spy", L["Spy Option"], nil, "SpyGroup")
 	self.optionsFrames.About = ACD3:AddToBlizOptions("Spy", L["About"], L["Spy Option"], "About")
-	self.optionsFrames.DisplayOptions = ACD3:AddToBlizOptions("Spy", L["DisplayOptions"], L["Spy Option"], "DisplayOptions")
-	self.optionsFrames.TargetPicker = ACD3:AddToBlizOptions("Spy", L["TargetPicker"], L["Spy Option"], "TargetPicker")
-	self.optionsFrames.Arrow = ACD3:AddToBlizOptions("Spy", L["TArrow"], L["Spy Option"], "Arrow")
-	self.optionsFrames.AlertOptions = ACD3:AddToBlizOptions("Spy", L["AlertOptions"], L["Spy Option"], "AlertOptions")
-	self.optionsFrames.MapOptions = ACD3:AddToBlizOptions("Spy", L["MapOptions"], L["Spy Option"], "MapOptions")
-	self.optionsFrames.DataOptions = ACD3:AddToBlizOptions("Spy", L["DataOptions"], L["Spy Option"], "DataOptions")
-	self.optionsFrames.Diagnostics = ACD3:AddToBlizOptions("Spy", L["TDebug"], L["Spy Option"], "Diagnostics")
+	self.optionsFrames.Targeting = ACD3:AddToBlizOptions("Spy", L["TPageTargeting"], L["Spy Option"], "Targeting")
+	self.optionsFrames.Finding = ACD3:AddToBlizOptions("Spy", L["TPageFinding"], L["Spy Option"], "Finding")
+	self.optionsFrames.Look = ACD3:AddToBlizOptions("Spy", L["TPageLook"], L["Spy Option"], "Look")
+	self.optionsFrames.Alerts = ACD3:AddToBlizOptions("Spy", L["TPageAlerts"], L["Spy Option"], "Alerts")
+	self.optionsFrames.Data = ACD3:AddToBlizOptions("Spy", L["TPageData"], L["Spy Option"], "Data")
 
 	self:RegisterModuleOptions("Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), L["Profiles"])
 	Spy.options.args.Profiles.order = -2

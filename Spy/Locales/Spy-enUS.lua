@@ -697,3 +697,36 @@ Spy_IgnoreList = {
 	["Mystic Birdhat"]=true, ["Cousin Slowhands"]=true,	
 	["Azerite for the Alliance"]=true, ["Azerite for the Horde"]=true,
 };
+------------------------------------------------------------------------------
+-- Options panel pages and tabs.
+--
+-- Seven rows in the sidebar, and the second level runs across the top of each
+-- page as tabs. Tab labels are drawn at a fixed width and clip rather than
+-- wrap, so these are deliberately short and no page carries more than three.
+------------------------------------------------------------------------------
+L["TPageSpy"] = "Spy"
+L["TTabZones"] = "Where it runs"
+L["TTabList"] = "The list"
+
+L["TPageTargeting"] = "Targeting"
+L["TTabHealers"] = "Healers"
+L["TTabBigFights"] = "Big fights"
+L["TTabCooldowns"] = "Cooldowns"
+
+L["TPageFinding"] = "Finding them"
+L["TTabArrow"] = "Arrow"
+L["TTabGlow"] = "Glow"
+L["TTabMap"] = "Map"
+
+L["TPageLook"] = "Look"
+L["TTabRows"] = "Rows & text"
+L["TTabWindow"] = "Window"
+
+L["TPageAlerts"] = "Alerts"
+L["TTabSound"] = "Sound"
+L["TTabWarnings"] = "Warnings"
+
+L["TPageData"] = "Data"
+L["TTabStorage"] = "Storage"
+L["TTabSharing"] = "Sharing"
+L["TTabDiagnostics"] = "Diagnostics"
