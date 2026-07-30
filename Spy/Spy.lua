@@ -553,6 +553,47 @@ Spy.options = {
 								Spy:RefreshCurrentList()
 							end,
 						},
+						listHeader = {
+							name = L["HealerSpellListHeader"],
+							type = "header",
+							order = 20,
+						},
+						healerListIntro = {
+							name = L["HealerSpellListIntro"],
+							type = "description",
+							order = 21,
+							fontSize = "medium",
+						},
+						HealerSpellList = {
+							name = L["HealerSpellList"],
+							desc = L["HealerSpellListDescription"],
+							type = "input",
+							multiline = 10,
+							width = "full",
+							order = 22,
+							disabled = function() return Spy.db.profile.StrictHealerDetection == false end,
+							get = function() return Spy.db.profile.HealerSpellListText end,
+							set = function(_, v)
+								Spy.db.profile.HealerSpellListText = v
+								Spy.db.profile.HealerSpellListSeeded = true
+								Spy:BuildHealerSpellNames()
+								Spy:RefreshCurrentList()
+							end,
+						},
+						healerListStatus = {
+							name = function()
+								return format(L["HealerSpellListStatus"], Spy.HealerSpellCount or 0)
+							end,
+							type = "description",
+							order = 23,
+						},
+						healerListReset = {
+							name = L["HealerSpellListReset"],
+							desc = L["HealerSpellListResetDescription"],
+							type = "execute",
+							order = 24,
+							func = function() Spy:ResetHealerSpellList() Spy:RefreshCurrentList() end,
+						},
 					},
 				},
 				BigFights = {
@@ -669,6 +710,44 @@ Spy.options = {
 							min = 0, max = 120, step = 5,
 							get = function() return Spy.db.profile.KOSGuildAlertCooldown end,
 							set = function(_, value) Spy.db.profile.KOSGuildAlertCooldown = value end,
+						},
+						extraHeader = {
+							name = L["ExtraCooldownsHeader"],
+							type = "header",
+							order = 10,
+						},
+						extraIntro = {
+							name = L["ExtraCooldownsIntro"],
+							type = "description",
+							order = 11,
+							fontSize = "medium",
+						},
+						ExtraCooldownsText = {
+							name = L["ExtraCooldownsList"],
+							desc = L["ExtraCooldownsListDescription"],
+							type = "input",
+							multiline = 8,
+							width = "full",
+							order = 12,
+							disabled = function() return not Spy.db.profile.TrackCooldowns end,
+							get = function() return Spy.db.profile.ExtraCooldownsText end,
+							set = function(_, v)
+								Spy.db.profile.ExtraCooldownsText = v
+								Spy:BuildCooldownLookup()
+							end,
+						},
+						extraStatus = {
+							name = function()
+								local total = 0
+								for _ in pairs(Spy.CooldownLookup or {}) do total = total + 1 end
+								if (Spy.CooldownListUnresolved or 0) > 0 then
+									return format(L["ExtraCooldownsStatusWithWarning"], total,
+										Spy.CooldownListUnresolved)
+								end
+								return format(L["ExtraCooldownsStatus"], total)
+							end,
+							type = "description",
+							order = 13,
 						},
 					},
 				},
@@ -1042,6 +1121,25 @@ Spy.options = {
 					type = "group",
 					order = 2,
 					args = {
+						themeHeader = {
+							name = L["LookThemeHeader"],
+							type = "header",
+							order = 0,
+						},
+						LookTheme = {
+							name = L["LookTheme"],
+							desc = L["LookThemeDescription"],
+							type = "select",
+							order = 0.5,
+							width = "double",
+							values = function()
+								local t = {}
+								for key, theme in pairs(Spy.LookThemes) do t[key] = theme.name end
+								return t
+							end,
+							get = function() return Spy.db.profile.LookTheme end,
+							set = function(_, v) Spy:ApplyLookTheme(v) end,
+						},
 						LockPosition = {
 							name = L["LockPosition"],
 							desc = L["LockPositionDescription"],
@@ -2123,6 +2221,7 @@ local Default_Profile = {
 		-- ===== Target-picker enhancements =====
 		-- Rows / look
 		LookPreset="classbars",		-- classbars | flat | compact
+		LookTheme="classic",		-- which colour bundle WindowTab's Theme picker last applied
 		ClassColoredNames=false,	-- colour the name text by class (flat look)
 		BarOpacity=1,				-- class-bar fill opacity (0 hides the fill)
 		-- Healer detection & marking
@@ -2131,6 +2230,8 @@ local Default_Profile = {
 		HealerMinHeal=400,			-- a single heal this big confirms a healer outright
 		HealerMinHeals=2,			-- or this many whitelisted heals, for smaller ones
 		StrictHealerDetection=true,	-- only real healing spells count, not anything that heals
+		HealerSpellListText="",		-- seeded from the built-in whitelist the first time it's needed
+		HealerSpellListSeeded=false,
 		HealerMarkerStyle="cross",	-- cross | asterisk | dot
 		HealerMarkerSide="right",	-- right | left
 		SortHealersToTop=true,
@@ -2139,14 +2240,14 @@ local Default_Profile = {
 		-- Mass-fight controls: in a city raid the list can take 600 detections a
 		-- minute through 15 rows, so these cut it down to what's worth attacking.
 		UseZoneLevelFloor=true,		-- clamp guessed levels to the zone's entry level
-		TomTomOnAltClick=true,
+		TomTomOnAltClick=true,		-- alt-click a row to point TomTom at their last position
 		-- See enemies sooner. Both ship well below their maximum and both are just
 		-- CVar writes, so there is nothing here the client can refuse.
 		NameplateDistanceMode="max",	-- max | custom | off
 		NameplateDistanceValue=60,		-- used when the mode is custom
 		MaxNameplateDistanceShowsEnemies=true,
 		ViewDistanceMode="max",			-- max | custom | off
-		ViewDistanceValue=777,			-- used when the mode is custom		-- alt-click a row to point TomTom at their last position
+		ViewDistanceValue=777,			-- used when the mode is custom
 		DebugMode=false,
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
 		KillPriorityOrder=false,	-- order by target value instead of recency
@@ -2163,6 +2264,7 @@ local Default_Profile = {
 		-- Enemy defensive cooldowns + alert throttling
 		TrackCooldowns=true,
 		AnnounceCooldowns=false,
+		ExtraCooldownsText="",		-- user-added spells to watch for, on top of the built-in list
 		KOSGuildAlertCooldown=20,	-- seconds between alerts for the same KoS guild
 		ClampToScreen=true,
 		Font="Friz Quadrata TT",
@@ -2415,6 +2517,10 @@ function Spy:CheckDatabase()
 	if p.HealerMinHeal == nil then p.HealerMinHeal = Default_Profile.profile.HealerMinHeal end
 	if p.HealerMinHeals == nil then p.HealerMinHeals = Default_Profile.profile.HealerMinHeals end
 	if p.StrictHealerDetection == nil then p.StrictHealerDetection = Default_Profile.profile.StrictHealerDetection end
+	if p.HealerSpellListText == nil then p.HealerSpellListText = Default_Profile.profile.HealerSpellListText end
+	if p.HealerSpellListSeeded == nil then p.HealerSpellListSeeded = Default_Profile.profile.HealerSpellListSeeded end
+	if p.ExtraCooldownsText == nil then p.ExtraCooldownsText = Default_Profile.profile.ExtraCooldownsText end
+	if p.LookTheme == nil then p.LookTheme = Default_Profile.profile.LookTheme end
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
 	for _, k in ipairs({"NameplateDistanceMode","NameplateDistanceValue",
@@ -2561,9 +2667,11 @@ function Spy:ShowConfig()
 end
 
 function Spy:OnEnable(first)
-	-- Resolve the healer spell whitelist to localised names. Done here rather than
-	-- at file scope because GetSpellInfo is not reliable until the addon is enabled.
+	-- Resolve the healer spell whitelist to localised names, and merge any
+	-- user-added cooldowns into the runtime lookup. Done here rather than at
+	-- file scope because GetSpellInfo is not reliable until the addon is enabled.
 	Spy:BuildHealerSpellNames()
+	Spy:BuildCooldownLookup()
 	Spy.timeid = Spy:ScheduleRepeatingTimer("ManageExpirations", 10, true)
 	Spy:RegisterEvent("ZONE_CHANGED", "ZoneChangedEvent")
 	Spy:RegisterEvent("ZONE_CHANGED_INDOORS", "ZoneChangedEvent")
@@ -2998,10 +3106,80 @@ Spy.TrackedCooldowns = {
 	[19752] = { name = "Divine Intervention", cd = 3600, short = "DI" },
 }
 
+-- The base table above is a fixed list, and asking for it to grow every time
+-- someone wants one more spell watched is how it would end up either bloated
+-- with rarely-wanted entries or permanently missing somebody's. Extra entries
+-- live in a separate profile text list instead and are merged into this lookup
+-- at runtime - the table actually read by UnitSpellcastEvent never mutates the
+-- base list, so a bad user entry can't corrupt the built-in one.
+Spy.CooldownLookup = {}
+Spy.CooldownListAdded = 0
+Spy.CooldownListUnresolved = 0
+
+-- The cooldown length cannot be observed for an enemy the way it can for our
+-- own bars - there is no "how long until their trinket is back up" API - so a
+-- watched spell needs a duration from somewhere. GetSpellBaseCooldown reads the
+-- spell's own static template data, which works for ANY spell id regardless of
+-- whether we know it, unlike the runtime cooldown APIs which only answer for
+-- spells in our own spellbook.
+local function resolveCooldownSeconds(id)
+	if GetSpellBaseCooldown then
+		local ok, ms = pcall(GetSpellBaseCooldown, id)
+		if ok and type(ms) == "number" and ms > 0 then
+			return math.floor(ms / 1000 + 0.5)
+		end
+	end
+	if C_Spell and C_Spell.GetSpellCooldown then
+		local ok, info = pcall(C_Spell.GetSpellCooldown, id)
+		if ok and type(info) == "table" and type(info.duration) == "number" and info.duration > 0 then
+			return math.floor(info.duration + 0.5)
+		end
+	end
+	return nil
+end
+
+-- A line is a bare spell id, or a spell link - shift-click a spell into the box
+-- while it has keyboard focus to insert one, same as the healer list. Unlike the
+-- healer list, a plain typed name is not enough here: UnitSpellcastEvent matches
+-- by the numeric id UNIT_SPELLCAST_SUCCEEDED reports, so an entry with no
+-- resolvable id can never fire and is reported back as unresolved instead of
+-- silently doing nothing.
+function Spy:BuildCooldownLookup()
+	wipe(Spy.CooldownLookup)
+	for id, info in pairs(Spy.TrackedCooldowns) do
+		Spy.CooldownLookup[id] = info
+	end
+	local p = Spy.db and Spy.db.profile
+	if not p then return end
+	local added, unresolved = 0, 0
+	for line in (p.ExtraCooldownsText or ""):gmatch("[^\n]+") do
+		local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
+		if trimmed ~= "" and trimmed:sub(1, 2) ~= "--" then
+			local id = tonumber(trimmed:match("spell:(%d+)")) or tonumber(trimmed:match("^(%d+)$"))
+			if id then
+				if not Spy.CooldownLookup[id] then
+					local ok, name = pcall(GetSpellInfo, id)
+					name = (ok and type(name) == "string" and name ~= "") and name or ("Spell "..id)
+					local cd = resolveCooldownSeconds(id) or 120
+					Spy.CooldownLookup[id] = {
+						name = name, cd = cd,
+						short = (#name <= 6) and name or name:sub(1, 6),
+					}
+				end
+				added = added + 1
+			else
+				unresolved = unresolved + 1
+			end
+		end
+	end
+	Spy.CooldownListAdded = added
+	Spy.CooldownListUnresolved = unresolved
+end
+
 function Spy:UnitSpellcastEvent(_, unit, _, spellId)
 	if not Spy.db.profile.TrackCooldowns then return end
 	if not unit or not spellId then return end
-	local info = Spy.TrackedCooldowns[spellId]
+	local info = Spy.CooldownLookup[spellId]
 	if not info then return end
 	-- only care about hostile players
 	if not UnitExists(unit) or not UnitIsPlayer(unit) then return end
@@ -3164,9 +3342,11 @@ end
 -- on the list. Bandages matter in particular: First Aid can be used on another
 -- player, so it beats the source-is-not-the-target rule.
 --
--- Held as spell IDs and resolved to the client's own localised names at load, so
--- this works in every locale rather than only in English. One id per spell is
--- enough - all ranks of a spell share a name.
+-- Shipped as spell IDs, resolved to the client's own localised names, and used
+-- to seed a single editable list the first time it's needed - not baked in as
+-- read-only, because "did you get them all" has no permanent answer: a client
+-- patch can add a spell, or the researched list can simply be wrong for someone.
+-- One id per spell is enough - all ranks of a spell share a name.
 -- ============================================================
 local Spy_HealerSpellIDs = {
 	-- Priest
@@ -3199,21 +3379,74 @@ local Spy_HealerSpellIDs = {
 	974,	-- Earth Shield
 }
 
--- name -> true, built from the ids above once the spell data is available.
-Spy.HealerSpellNames = {}
+-- Text form of the defaults above, one spell name per line - built once
+-- GetSpellInfo can actually answer, and cached rather than recomputed, since
+-- resolving 24 ids is wasted work on every reparse.
+local defaultHealerListTextCache = nil
 
-function Spy:BuildHealerSpellNames()
-	if not GetSpellInfo then return 0 end
-	local n = 0
+local function defaultHealerListText()
+	if defaultHealerListTextCache then return defaultHealerListTextCache end
+	if not GetSpellInfo then return "" end
+	local names = {}
 	for _, id in ipairs(Spy_HealerSpellIDs) do
 		local ok, name = pcall(GetSpellInfo, id)
 		if ok and type(name) == "string" and name ~= "" then
+			names[#names + 1] = name
+		end
+	end
+	table.sort(names)
+	defaultHealerListTextCache = table.concat(names, "\n")
+	return defaultHealerListTextCache
+end
+
+-- A line in the editable list is a plain spell name (what the seeded defaults
+-- look like), a bare spell id, or a full spell link. Shift-clicking a spell or
+-- spellbook entry into the box while it has keyboard focus inserts a link
+-- automatically - the easiest way to add one Spy does not already know about,
+-- since there is no in-game way to type an exact spell name from memory and be
+-- sure it matches.
+local function parseSpellListLine(line)
+	line = line:gsub("^%s+", ""):gsub("%s+$", "")
+	if line == "" or line:sub(1, 2) == "--" then return nil end
+	local bracketed = line:match("%[([^%]]+)%]")
+	if bracketed then return bracketed end
+	local id = tonumber(line)
+	if id and GetSpellInfo then
+		local ok, name = pcall(GetSpellInfo, id)
+		if ok and type(name) == "string" and name ~= "" then return name end
+	end
+	return line
+end
+
+-- name -> true, rebuilt from the profile's text list whenever it changes.
+Spy.HealerSpellNames = {}
+Spy.HealerSpellCount = 0
+
+function Spy:BuildHealerSpellNames()
+	local p = Spy.db and Spy.db.profile
+	if not p then return 0 end
+	if not p.HealerSpellListSeeded then
+		p.HealerSpellListText = defaultHealerListText()
+		p.HealerSpellListSeeded = true
+	end
+	wipe(Spy.HealerSpellNames)
+	local n = 0
+	for line in (p.HealerSpellListText or ""):gmatch("[^\n]+") do
+		local name = parseSpellListLine(line)
+		if name and not Spy.HealerSpellNames[name] then
 			Spy.HealerSpellNames[name] = true
 			n = n + 1
 		end
 	end
 	Spy.HealerSpellCount = n
 	return n
+end
+
+-- Restores the researched TBC list, discarding any edits.
+function Spy:ResetHealerSpellList()
+	Spy.db.profile.HealerSpellListText = defaultHealerListText()
+	Spy.db.profile.HealerSpellListSeeded = true
+	Spy:BuildHealerSpellNames()
 end
 
 -- Only these four classes can actually heal another player as a role. Used as a
@@ -3226,8 +3459,9 @@ local Spy_HealerCapableClasses = {
 -- True when this heal is evidence of a healer rather than incidental healing.
 function Spy:IsHealerEvidence(spellName, class)
 	if Spy.db.profile.StrictHealerDetection ~= false then
-		-- If the whitelist could not be built (missing spell data at load) fall
-		-- back to the old exclusion list rather than detecting nobody at all.
+		-- If the whitelist is empty - never built, or the user cleared it on
+		-- purpose - fall back to the old exclusion list rather than detecting
+		-- nobody at all.
 		if (Spy.HealerSpellCount or 0) > 0 then
 			if not Spy.HealerSpellNames[spellName] then return false end
 			if class and not Spy_HealerCapableClasses[class] then return false end

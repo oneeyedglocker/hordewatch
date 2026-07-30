@@ -647,10 +647,10 @@ L["TTabList"] = "The list"
 
 L["TPageTargeting"] = "Targeting"
 L["TTabHealers"] = "Healers"
-L["TTabBigFights"] = "Big fights"
+L["TTabBigFights"] = "WPvP & Raids"
 L["TTabCooldowns"] = "Cooldowns"
 
-L["TPageFinding"] = "Finding them"
+L["TPageFinding"] = "Radar"
 L["TTabMap"] = "Map"
 
 L["TPageLook"] = "Look"
@@ -696,3 +696,31 @@ L["DistanceModeMax"] = "Maximum (never lower it)"
 L["DistanceModeCustom"] = "Set my own value"
 L["DistanceModeOff"] = "Leave it alone"
 L["DistanceCeilings"] = "Highest your client accepts: nameplates %s yards, view distance %s."
+
+------------------------------------------------------------------------------
+-- Healer spell list - editable
+------------------------------------------------------------------------------
+L["HealerSpellListHeader"] = "Healing spells"
+L["HealerSpellListIntro"] = "This is the exact list Spy checks - not a blacklist of things to ignore, a whitelist of real healing spells. If someone is being wrongly marked or missed, this is where to fix it: delete a line to stop counting that spell, or add one it doesn't already know. Type a spell name, a spell id, or shift-click a spell/spellbook entry into the box to insert it automatically. Researched for TBC's four healing classes and believed complete, but a client patch or a spec Spy didn't anticipate can always be the exception - this box is the fix, not a workaround."
+L["HealerSpellList"] = "Whitelisted healing spells"
+L["HealerSpellListDescription"] = "One spell per line. Blank lines and lines starting with -- are ignored."
+L["HealerSpellListStatus"] = "%d spells recognised right now."
+L["HealerSpellListReset"] = "Reset to the researched TBC list"
+L["HealerSpellListResetDescription"] = "Discards every edit and restores the 24 spells Spy shipped with."
+
+------------------------------------------------------------------------------
+-- Cooldown watch list - editable
+------------------------------------------------------------------------------
+L["ExtraCooldownsHeader"] = "Watch additional spells"
+L["ExtraCooldownsIntro"] = "The ten cooldowns above are tracked by default. To watch more, add them here - one per line, a spell id or a shift-clicked spell link, since Spy has to recognise the exact spell UNIT_SPELLCAST_SUCCEEDED reports and a plain name alone can't be matched to that. The cooldown length is read from the spell's own data automatically; you do not need to know or type it."
+L["ExtraCooldownsList"] = "Extra spells to watch"
+L["ExtraCooldownsListDescription"] = "One spell id or spell link per line."
+L["ExtraCooldownsStatus"] = "%d spells being watched in total."
+L["ExtraCooldownsStatusWithWarning"] = "%d spells being watched in total. |cffff8000%d lines could not be understood|r - they need a spell id or a shift-clicked link, not just a name."
+
+------------------------------------------------------------------------------
+-- Look themes
+------------------------------------------------------------------------------
+L["LookThemeHeader"] = "Theme"
+L["LookTheme"] = "Colour theme"
+L["LookThemeDescription"] = "One click sets the title bar, border, healer marker and cooldown text colours together. Switches the title bar to the solid style so the colour is visible immediately. Every colour it touches can still be fine-tuned afterwards from its own picker below - picking a theme is a starting point, not a lock."

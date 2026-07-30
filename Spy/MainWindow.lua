@@ -1075,6 +1075,88 @@ function Spy:ApplyLookPreset(preset)
 	Spy:RefreshCurrentList()
 end
 
+-- ============================================================
+-- Look themes: one-click colour bundles, distinct from LookPreset above.
+-- LookPreset changes ROW LAYOUT (bar opacity, row height, class colours);
+-- a theme changes the WINDOW'S palette (title bar, border, healer marker,
+-- cooldown text) without touching layout. The two are independent and can be
+-- combined freely - a theme applied on top of any preset keeps that preset's
+-- row layout, and vice versa.
+--
+-- KoS Edge is deliberately left out of every theme: red-for-danger is a signal
+-- the eye should never have to relearn per theme, so it stays constant and is
+-- only ever changed from its own colour picker.
+-- ============================================================
+Spy.LookThemes = {
+	classic = {
+		name = "Classic Gold",
+		["Title Bar"] = { r = 13/255, g = 11/255, b = 10/255, a = 1 },
+		["Window Border"] = { r = 1, g = 1, b = 1, a = 1 },
+		["Healer Marker"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
+		["Healer Edge"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
+		["Cooldown"] = { r = 1, g = 0.82, b = 0, a = 1 },
+	},
+	midnight = {
+		name = "Midnight",
+		["Title Bar"] = { r = 8/255, g = 10/255, b = 22/255, a = 1 },
+		["Window Border"] = { r = 0.35, g = 0.55, b = 1, a = 1 },
+		["Healer Marker"] = { r = 0.40, g = 0.85, b = 1, a = 1 },
+		["Healer Edge"] = { r = 0.40, g = 0.85, b = 1, a = 1 },
+		["Cooldown"] = { r = 0.65, g = 0.75, b = 1, a = 1 },
+	},
+	horde = {
+		name = "Horde",
+		["Title Bar"] = { r = 18/255, g = 6/255, b = 6/255, a = 1 },
+		["Window Border"] = { r = 0.78, g = 0.09, b = 0.09, a = 1 },
+		["Healer Marker"] = { r = 0.55, g = 0.90, b = 0.35, a = 1 },
+		["Healer Edge"] = { r = 0.55, g = 0.90, b = 0.35, a = 1 },
+		["Cooldown"] = { r = 1, g = 0.55, b = 0.10, a = 1 },
+	},
+	alliance = {
+		name = "Alliance",
+		["Title Bar"] = { r = 6/255, g = 10/255, b = 22/255, a = 1 },
+		["Window Border"] = { r = 0.85, g = 0.70, b = 0.25, a = 1 },
+		["Healer Marker"] = { r = 0.55, g = 0.85, b = 1, a = 1 },
+		["Healer Edge"] = { r = 0.55, g = 0.85, b = 1, a = 1 },
+		["Cooldown"] = { r = 0.85, g = 0.70, b = 0.25, a = 1 },
+	},
+	emerald = {
+		name = "Emerald",
+		["Title Bar"] = { r = 6/255, g = 16/255, b = 10/255, a = 1 },
+		["Window Border"] = { r = 0.25, g = 0.85, b = 0.50, a = 1 },
+		["Healer Marker"] = { r = 0.35, g = 1, b = 0.60, a = 1 },
+		["Healer Edge"] = { r = 0.35, g = 1, b = 0.60, a = 1 },
+		["Cooldown"] = { r = 0.80, g = 1, b = 0.40, a = 1 },
+	},
+	mono = {
+		name = "Monochrome",
+		["Title Bar"] = { r = 10/255, g = 10/255, b = 10/255, a = 1 },
+		["Window Border"] = { r = 0.75, g = 0.75, b = 0.75, a = 1 },
+		["Healer Marker"] = { r = 0.90, g = 0.90, b = 0.90, a = 1 },
+		["Healer Edge"] = { r = 0.90, g = 0.90, b = 0.90, a = 1 },
+		["Cooldown"] = { r = 0.60, g = 0.60, b = 0.60, a = 1 },
+	},
+}
+
+function Spy:ApplyLookTheme(key)
+	local theme = Spy.LookThemes[key]
+	if not theme then return end
+	Spy.db.profile.LookTheme = key
+	local colors = Spy.db.profile.Colors["Spy"]
+	for slot, rgba in pairs(theme) do
+		if type(rgba) == "table" and colors[slot] then
+			colors[slot].r, colors[slot].g, colors[slot].b = rgba.r, rgba.g, rgba.b
+			colors[slot].a = rgba.a or colors[slot].a
+		end
+	end
+	-- A theme's title bar colour only shows with the solid style, so switching
+	-- themes is meant to be seen immediately rather than requiring a second trip
+	-- to change TitleBarStyle by hand.
+	Spy.db.profile.TitleBarStyle = "solid"
+	Spy:ApplyWindowStyle()
+	Spy:RefreshCurrentList()
+end
+
 function Spy:AutomaticallyResize()
 	local detected = Spy.ListAmountDisplayed
 	if detected > Spy.db.profile.ResizeSpyLimit then detected = Spy.db.profile.ResizeSpyLimit end
