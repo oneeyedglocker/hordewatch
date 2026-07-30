@@ -34,7 +34,7 @@ SpyDebugDB = SpyDebugDB or {}
 -- Moved into the C_AddOns namespace; the bare global is gone on current clients.
 local getAddOnMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
 
-local CAP = { errors = 60, arrow = 250, levels = 250, notes = 100, tracking = 80 }
+local CAP = { errors = 60, levels = 250, notes = 100 }
 
 local Debug = {}
 Spy.Debug = Debug
@@ -42,12 +42,11 @@ Spy.Debug = Debug
 local function db()
 	if not SpyDebugDB.started then
 		SpyDebugDB.started = date("%Y-%m-%d %H:%M:%S")
-		SpyDebugDB.errors, SpyDebugDB.arrow = {}, {}
+		SpyDebugDB.errors = {}
 		SpyDebugDB.levels, SpyDebugDB.notes = {}, {}
 		SpyDebugDB.detect = { method = {}, noPosition = 0, noMapID = 0, total = 0 }
 		SpyDebugDB.dropped = {}
 		SpyDebugDB.zones = {}
-		SpyDebugDB.tracking = {}
 	end
 	return SpyDebugDB
 end
@@ -144,12 +143,6 @@ function Spy:ProbeNameplates()
 		tokenSweep = {},
 		listed = 0,
 	}
-	if Spy.GetMeasureStrategy then
-		local how, err = Spy:GetMeasureStrategy()
-		out.measureStrategy = how or "none"
-		out.measureError = err
-	end
-	out.glowAnchorError = Spy.Glow and Spy.Glow.lastError or nil
 	if not C_NamePlate then return out end
 
 	if C_NamePlate.GetNamePlateForUnit then
@@ -194,10 +187,6 @@ function Spy:ProbeNameplates()
 					end
 				else
 					entry.baseFrame = false
-				end
-				if entry.name and Spy.GetLiveBearing then
-					local bearing = Spy:GetLiveBearing(entry.name)
-					entry.bearingDeg = bearing and math.floor(math.deg(bearing) + 0.5) or nil
 				end
 				tinsert(out.tokenSweep, entry)
 			end
@@ -333,7 +322,6 @@ end
 -- the real distance with CheckInteractDistance, and compare that against what
 -- the arrow computed from the stored sighting.
 ------------------------------------------------------------------------------
-local lastArrowSample = 0
 
 local function realRangeBand(unit)
 	-- returns a coarse "actual" distance bracket in yards
@@ -345,96 +333,6 @@ local function realRangeBand(unit)
 	return 28, nil                                              -- further than 28
 end
 
--- Tracking start/stop, so a dump distinguishes "nothing was ever tracked" from
--- "tracking worked and the arrow had nothing to show". Those look identical
--- otherwise, and we have already lost a round of testing to that ambiguity.
-function Spy:DebugTracking(what, name)
-	if not Spy:IsDebugging() then return end
-	local d = db()
-	d.tracking = d.tracking or {}
-	push(d.tracking, "tracking", {
-		when = date("%H:%M:%S"), event = what, name = name,
-		arrowEnabled = Spy.db.profile.ArrowEnabled,
-		arrowStyle = Spy.db.profile.ArrowStyle,
-		glowEnabled = Spy.db.profile.GlowEnabled,
-	})
-end
-
-function Spy:DebugArrowSample(force)
-	if not Spy:IsDebugging() then return end
-	local name = Spy.GetTrackedPlayer and Spy:GetTrackedPlayer()
-	if not name then return end
-	local now = GetTime()
-	if not force and (now - lastArrowSample) < 2 then return end
-	lastArrowSample = now
-
-	-- Record the FAILURE cases too. This used to bail out when no bearing could
-	-- be computed, which blinded the diagnostics at precisely the moment there
-	-- was something to diagnose: an arrow that shows nothing produced no samples
-	-- at all, so a dump looked identical to a session where nothing was tracked.
-	local angle, distance, age, state = Spy:GetArrowVector()
-	local liveAngle = Spy.GetLiveBearing and Spy:GetLiveBearing(name) or nil
-
-	-- is the tracked player actually in front of us right now?
-	local unit
-	if UnitExists("target") and GetUnitName("target", true) == name then unit = "target"
-	elseif UnitExists("mouseover") and GetUnitName("mouseover", true) == name then unit = "mouseover" end
-
-	local lo, hi
-	if unit then lo, hi = realRangeBand(unit) end
-
-	local playerData = SpyPerCharDB.PlayerData[name]
-	local mapID = C_Map and C_Map.GetBestMapForUnit and C_Map.GetBestMapForUnit("player")
-	local px, py
-	if mapID and C_Map.GetPlayerMapPosition then
-		local pos = C_Map.GetPlayerMapPosition(mapID, "player")
-		if pos then px, py = pos:GetXY() end
-	end
-
-	-- Why the arrow is or is not showing, which is the whole question when it
-	-- never appears. Recorded on every sample, bearing or no bearing.
-	local plateUnit, plate
-	if Spy.FindNameplateForPlayer then
-		plateUnit, plate = Spy:FindNameplateForPlayer(name)
-	end
-	local measureHow, measureErr
-	if Spy.GetMeasureStrategy then measureHow, measureErr = Spy:GetMeasureStrategy() end
-	local plateCount = 0
-	if C_NamePlate and C_NamePlate.GetNamePlates then
-		local okp, plates = pcall(C_NamePlate.GetNamePlates, C_NamePlate)
-		if okp and type(plates) == "table" then plateCount = #plates end
-	end
-
-	push(db().arrow, "arrow", {
-		when = date("%H:%M:%S"), name = name,
-		-- the answer to "why is there no arrow"
-		state = state or "nil",
-		plateFound = plateUnit or false,
-		plateName = plate and (plate:GetName() or "(anonymous)") or nil,
-		platesOnScreen = plateCount,
-		measureStrategy = measureHow or "none",
-		measureError = measureErr,
-		glowShown = (Spy.Glow and Spy.Glow.frame and Spy.Glow.frame:IsShown()) or false,
-		glowError = Spy.Glow and Spy.Glow.lastError or nil,
-		nameplatesEnabled = Spy.EnemyNameplatesEnabled and Spy:EnemyNameplatesEnabled() or nil,
-		computedDist = distance and math.floor(distance * 10) / 10,
-		computedAngle = angle and math.floor(angle * 100) / 100 or nil,
-		liveAngle = liveAngle and math.floor(liveAngle * 100) / 100 or nil,
-		fov = Spy.db.profile.ArrowFieldOfView,
-		posFromNameplate = playerData and playerData.posFromNameplate or nil,
-		facing = GetPlayerFacing() and math.floor(GetPlayerFacing() * 100) / 100,
-		age = age,
-		-- ground truth bracket, only present when they were actually in front of us
-		realMin = lo, realMax = hi, verified = unit or nil,
-		myX = px and math.floor(px * 10000) / 10000,
-		myY = py and math.floor(py * 10000) / 10000,
-		theirX = playerData and playerData.mapX and math.floor(playerData.mapX * 10000) / 10000,
-		theirY = playerData and playerData.mapY and math.floor(playerData.mapY * 10000) / 10000,
-		mapID = mapID, theirMapID = playerData and playerData.mapID,
-		zone = GetZoneText(),
-	})
-end
-
 ------------------------------------------------------------------------------
 -- notes / dump
 ------------------------------------------------------------------------------
@@ -443,7 +341,6 @@ function Spy:DebugNote(text)
 	push(d.notes, "notes", {
 		when = date("%H:%M:%S"), text = text,
 		zone = GetZoneText(), target = GetUnitName("target", true),
-		tracking = Spy.GetTrackedPlayer and Spy:GetTrackedPlayer() or nil,
 	})
 end
 
@@ -479,9 +376,6 @@ function Spy:ShowDebugDump()
 	-- to a separate command nobody knows to type. Two dumps arrived without this
 	-- block because it had to be triggered by hand.
 	if Spy.ProbeEnemyPositionAPIs then pcall(Spy.ProbeEnemyPositionAPIs, Spy) end
-	-- One final sample, forced past the rate limit, so the state at the moment of
-	-- the dump is always on the record.
-	pcall(Spy.DebugArrowSample, Spy, true)
 	local d = db()
 	local text = "SpyDebug=" .. table.concat(serialize(d))
 
@@ -539,7 +433,7 @@ end
 function Spy:DebugStatus()
 	local d = db()
 	Spy:Print(format(L["DebugStatus"],
-		tostring(Spy:IsDebugging()), #d.errors, #d.arrow, #d.levels, #d.notes, d.detect.total))
+		tostring(Spy:IsDebugging()), #d.errors, #d.levels, #d.notes, d.detect.total))
 	local dropped = 0
 	for _, n in pairs(d.dropped) do dropped = dropped + n end
 	if dropped > 0 then Spy:Print(format(L["DebugDropped"], dropped)) end
@@ -555,5 +449,4 @@ sampler:SetScript("OnUpdate", function(_, elapsed)
 	acc = acc + elapsed
 	if acc < 1 then return end
 	acc = 0
-	Spy:DebugArrowSample()
 end)

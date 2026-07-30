@@ -426,6 +426,27 @@ Spy.options = {
 								Spy:RefreshCurrentList()
 							end,
 						},
+						StrictHealerDetection = {
+							name = L["StrictHealerDetection"],
+							desc = L["StrictHealerDetectionDescription"],
+							type = "toggle",
+							order = 2.5,
+							width = "full",
+							get = function() return Spy.db.profile.StrictHealerDetection end,
+							set = function(_, v)
+								Spy.db.profile.StrictHealerDetection = v
+								Spy:RefreshCurrentList()
+							end,
+						},
+						HealerMinHeals = {
+							name = L["HealerMinHeals"],
+							desc = L["HealerMinHealsDescription"],
+							type = "range",
+							order = 2.7,
+							min = 1, max = 6, step = 1,
+							get = function() return Spy.db.profile.HealerMinHeals end,
+							set = function(_, v) Spy.db.profile.HealerMinHeals = v end,
+						},
 						HealerMinHeal = {
 							name = L["HealerMinHeal"],
 							desc = L["HealerMinHealDescription"],
@@ -660,330 +681,71 @@ Spy.options = {
 			order = 4,
 			childGroups = "tab",
 			args = {
-				ArrowTab = {
-					name = L["TTabArrow"],
-					desc = L["TTabArrow"],
+				DistanceTab = {
+					name = L["TTabDistance"],
+					desc = L["TTabDistance"],
 					type = "group",
 					order = 1,
 					args = {
 						intro = {
-							name = L["ArrowEnabledDescription"],
+							name = L["DistanceIntro"],
 							type = "description",
 							order = 1,
 							fontSize = "medium",
 						},
-						ArrowEnabled = {
-							name = L["ArrowEnabled"],
-							desc = L["ArrowEnabledDescription"],
+						MaxNameplateDistance = {
+							name = L["MaxNameplateDistance"],
+							desc = L["MaxNameplateDistanceDescription"],
 							type = "toggle",
 							order = 2,
 							width = "full",
-							get = function() return Spy.db.profile.ArrowEnabled end,
-							set = function(_, v) Spy.db.profile.ArrowEnabled = v Spy:ApplyArrowSettings() end,
+							get = function() return Spy.db.profile.MaxNameplateDistance end,
+							set = function(_, v)
+								Spy.db.profile.MaxNameplateDistance = v
+								if v then Spy:ApplyDistanceSettings(true) end
+							end,
 						},
-						ArrowStyle = {
-							name = L["ArrowStyle"],
-							desc = L["ArrowStyleDescription"],
-							type = "select",
+						MaxNameplateDistanceShowsEnemies = {
+							name = L["MaxNameplateShowEnemies"],
+							desc = L["MaxNameplateShowEnemiesDescription"],
+							type = "toggle",
 							order = 3,
-							values = {
-								["titlebar"] = L["ArrowStyleTitlebar"],
-								["dock"] = L["ArrowStyleDock"],
-								["floating"] = L["ArrowStyleFloating"],
-							},
-							disabled = function() return not Spy.db.profile.ArrowEnabled end,
-							get = function() return Spy.db.profile.ArrowStyle end,
-							set = function(_, v) Spy.db.profile.ArrowStyle = v Spy:ApplyArrowSettings() end,
+							width = "full",
+							disabled = function() return not Spy.db.profile.MaxNameplateDistance end,
+							get = function() return Spy.db.profile.MaxNameplateDistanceShowsEnemies end,
+							set = function(_, v)
+								Spy.db.profile.MaxNameplateDistanceShowsEnemies = v
+								if v then Spy:ApplyDistanceSettings(true) end
+							end,
 						},
-						ArrowUseNameplates = {
-							name = L["ArrowUseNameplates"],
-							desc = L["ArrowUseNameplatesDescription"],
+						MaxViewDistance = {
+							name = L["MaxViewDistance"],
+							desc = L["MaxViewDistanceDescription"],
 							type = "toggle",
 							order = 4,
 							width = "full",
-							disabled = function() return not Spy.db.profile.ArrowEnabled end,
-							get = function() return Spy.db.profile.ArrowUseNameplates end,
-							set = function(_, v) Spy.db.profile.ArrowUseNameplates = v end,
-						},
-						ArrowFieldOfView = {
-							name = L["ArrowFieldOfView"],
-							desc = L["ArrowFieldOfViewDescription"],
-							type = "range",
-							order = 5,
-							min = 60, max = 140, step = 5,
-							disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowUseNameplates) end,
-							get = function() return Spy.db.profile.ArrowFieldOfView end,
-							set = function(_, v) Spy.db.profile.ArrowFieldOfView = v end,
-						},
-						ArrowClickModifier = {
-							name = L["ArrowClickModifier"],
-							desc = L["ArrowClickModifierDescription"],
-							type = "select",
-							order = 6,
-							values = { ["none"] = L["ArrowClickPlain"], ["alt"] = L["ArrowClickAlt"] },
-							disabled = function() return not Spy.db.profile.ArrowEnabled end,
-							get = function() return Spy.db.profile.ArrowClickModifier end,
-							set = function(_, v) Spy.db.profile.ArrowClickModifier = v end,
-						},
-						ArrowSize = {
-							name = L["ArrowSize"],
-							type = "range",
-							order = 7,
-							min = 12, max = 48, step = 2,
-							disabled = function() return not Spy.db.profile.ArrowEnabled end,
-							get = function() return Spy.db.profile.ArrowSize end,
-							set = function(_, v) Spy.db.profile.ArrowSize = v Spy:ApplyArrowSettings() end,
-						},
-						ArrowColor = {
-							name = L["ArrowColor"],
-							type = "color",
-							order = 8,
-							hasAlpha = false,
-							disabled = function() return not Spy.db.profile.ArrowEnabled end,
-							get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow"] return c.r, c.g, c.b end,
-							set = function(_, r, g, b)
-								local c = Spy.db.profile.Colors["Spy"]["Arrow"]
-								c.r, c.g, c.b = r, g, b
-								Spy:UpdateArrow()
+							get = function() return Spy.db.profile.MaxViewDistance end,
+							set = function(_, v)
+								Spy.db.profile.MaxViewDistance = v
+								if v then Spy:ApplyDistanceSettings(true) end
 							end,
 						},
-						ArrowColorByAge = {
-							name = L["ArrowColorByAge"],
-							desc = L["ArrowColorByAgeDescription"],
-							type = "toggle",
-							order = 9,
-							width = "full",
-							disabled = function() return not Spy.db.profile.ArrowEnabled end,
-							get = function() return Spy.db.profile.ArrowColorByAge end,
-							set = function(_, v) Spy.db.profile.ArrowColorByAge = v Spy:UpdateArrow() end,
-						},
-						ArrowStaleColor = {
-							name = L["ArrowStaleColor"],
-							type = "color",
-							order = 10,
-							hasAlpha = false,
-							disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowColorByAge) end,
-							get = function() local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"] return c.r, c.g, c.b end,
-							set = function(_, r, g, b)
-								local c = Spy.db.profile.Colors["Spy"]["Arrow Stale"]
-								c.r, c.g, c.b = r, g, b
-								Spy:UpdateArrow()
-							end,
-						},
-						ArrowTimeout = {
-							name = L["ArrowTimeout"],
-							desc = L["ArrowTimeoutDescription"],
-							type = "range",
-							order = 11,
-							min = 0, max = 300, step = 10,
-							disabled = function() return not Spy.db.profile.ArrowEnabled end,
-							get = function() return Spy.db.profile.ArrowTimeout end,
-							set = function(_, v) Spy.db.profile.ArrowTimeout = v end,
-						},
-						ArrowDistanceUnit = {
-							name = L["ArrowDistanceUnit"],
-							type = "select",
-							order = 12,
-							values = { ["yards"] = L["ArrowYards"], ["meters"] = L["ArrowMeters"] },
-							disabled = function() return not Spy.db.profile.ArrowEnabled end,
-							get = function() return Spy.db.profile.ArrowDistanceUnit end,
-							set = function(_, v) Spy.db.profile.ArrowDistanceUnit = v Spy:UpdateArrow() end,
-						},
-						ArrowFloatLocked = {
-							name = L["ArrowFloatLocked"],
-							desc = L["ArrowFloatLockedDescription"],
-							type = "toggle",
-							order = 13,
-							width = "full",
-							disabled = function() return not (Spy.db.profile.ArrowEnabled and Spy.db.profile.ArrowStyle == "floating") end,
-							get = function() return Spy.db.profile.ArrowFloatLocked end,
-							set = function(_, v) Spy.db.profile.ArrowFloatLocked = v end,
-						},
-						TomTomOnAltClick = {
-							name = L["TomTomOnAltClick"],
-							desc = L["TomTomOnAltClickDescription"],
-							type = "toggle",
-							order = 14,
-							width = "full",
-							get = function() return Spy.db.profile.TomTomOnAltClick end,
-							set = function(_, value)
-								Spy.db.profile.TomTomOnAltClick = value
-								if not value then Spy:ClearTomTomWaypoint() end
-							end,
-						},
-					},
-				},
-				GlowTab = {
-					name = L["TTabGlow"],
-					desc = L["TTabGlow"],
-					type = "group",
-					order = 2,
-					args = {
-						intro = {
-							name = L["GlowIntro"],
-							type = "description",
-							order = 1,
-							fontSize = "medium",
-						},
-						GlowEnabled = {
-							name = L["GlowEnabled"],
-							desc = L["GlowEnabledDescription"],
-							type = "toggle",
-							order = 2,
-							width = "full",
-							get = function() return Spy.db.profile.GlowEnabled end,
-							set = function(_, v) Spy.db.profile.GlowEnabled = v Spy:ApplyGlowSettings() end,
-						},
-						driver = {
+						status = {
 							name = function()
-								local d = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or "?"
-								return format(L["GlowDriver"], d)
+								local plates, view = Spy:GetDistanceStatus()
+								return format(L["DistanceStatus"],
+									plates and tostring(plates) or "?",
+									view and tostring(view) or "?")
 							end,
 							type = "description",
-							order = 3,
-						},
-						preview = {
-							name = L["GlowPreview"],
-							desc = L["GlowPreviewDescription"],
-							type = "execute",
-							order = 4,
-							func = function() Spy:ToggleGlowPreview() end,
-						},
-						sizeHeader = {
-							name = L["GlowSizeHeader"],
-							type = "header",
-							order = 5,
-						},
-						GlowWidth = {
-							name = L["GlowWidth"],
-							type = "range",
-							order = 6,
-							min = 40, max = 300, step = 2,
-							disabled = function() return not Spy.db.profile.GlowEnabled end,
-							get = function() return Spy.db.profile.GlowWidth end,
-							set = function(_, v) Spy.db.profile.GlowWidth = v Spy:ApplyGlowSettings() end,
-						},
-						GlowHeight = {
-							name = L["GlowHeight"],
-							type = "range",
-							order = 7,
-							min = 20, max = 160, step = 2,
-							disabled = function() return not Spy.db.profile.GlowEnabled end,
-							get = function() return Spy.db.profile.GlowHeight end,
-							set = function(_, v) Spy.db.profile.GlowHeight = v Spy:ApplyGlowSettings() end,
-						},
-						GlowOffsetX = {
-							name = L["GlowOffsetX"],
-							desc = L["GlowOffsetDescription"],
-							type = "range",
-							order = 8,
-							min = -100, max = 100, step = 1,
-							disabled = function() return not Spy.db.profile.GlowEnabled end,
-							get = function() return Spy.db.profile.GlowOffsetX end,
-							set = function(_, v)
-								Spy.db.profile.GlowOffsetX = v
-								Spy.Glow.plate = nil	-- force a re-anchor on the next tick
-								Spy:ApplyGlowSettings()
-							end,
-						},
-						GlowOffsetY = {
-							name = L["GlowOffsetY"],
-							desc = L["GlowOffsetDescription"],
-							type = "range",
-							order = 9,
-							min = -100, max = 100, step = 1,
-							disabled = function() return not Spy.db.profile.GlowEnabled end,
-							get = function() return Spy.db.profile.GlowOffsetY end,
-							set = function(_, v)
-								Spy.db.profile.GlowOffsetY = v
-								Spy.Glow.plate = nil
-								Spy:ApplyGlowSettings()
-							end,
-						},
-						lookHeader = {
-							name = L["GlowLookHeader"],
-							type = "header",
 							order = 10,
 						},
-						GlowColor = {
-							name = L["GlowColor"],
-							type = "color",
+						apply = {
+							name = L["DistanceApplyNow"],
+							desc = L["DistanceApplyNowDescription"],
+							type = "execute",
 							order = 11,
-							hasAlpha = false,
-							disabled = function()
-								local p = Spy.db.profile
-								return not p.GlowEnabled or p.GlowUseClassColor
-							end,
-							get = function() local c = Spy.db.profile.Colors["Spy"]["Glow"] return c.r, c.g, c.b end,
-							set = function(_, r, g, b)
-								local c = Spy.db.profile.Colors["Spy"]["Glow"]
-								c.r, c.g, c.b = r, g, b
-								Spy:ApplyGlowSettings()
-							end,
-						},
-						GlowUseClassColor = {
-							name = L["GlowUseClassColor"],
-							desc = L["GlowUseClassColorDescription"],
-							type = "toggle",
-							order = 12,
-							disabled = function() return not Spy.db.profile.GlowEnabled end,
-							get = function() return Spy.db.profile.GlowUseClassColor end,
-							set = function(_, v) Spy.db.profile.GlowUseClassColor = v Spy:ApplyGlowSettings() end,
-						},
-						GlowAlpha = {
-							name = L["GlowAlpha"],
-							type = "range",
-							order = 13,
-							min = 0.1, max = 1, step = 0.05, isPercent = true,
-							disabled = function() return not Spy.db.profile.GlowEnabled end,
-							get = function() return Spy.db.profile.GlowAlpha end,
-							set = function(_, v) Spy.db.profile.GlowAlpha = v Spy:ApplyGlowSettings() end,
-						},
-						GlowAdditive = {
-							name = L["GlowAdditive"],
-							desc = L["GlowAdditiveDescription"],
-							type = "toggle",
-							order = 14,
-							width = "full",
-							disabled = function() return not Spy.db.profile.GlowEnabled end,
-							get = function() return Spy.db.profile.GlowAdditive end,
-							set = function(_, v) Spy.db.profile.GlowAdditive = v Spy:ApplyGlowSettings() end,
-						},
-						GlowPulse = {
-							name = L["GlowPulse"],
-							desc = L["GlowPulseDescription"],
-							type = "toggle",
-							order = 15,
-							width = "full",
-							disabled = function() return not Spy.db.profile.GlowEnabled end,
-							get = function() return Spy.db.profile.GlowPulse end,
-							set = function(_, v) Spy.db.profile.GlowPulse = v Spy:ApplyGlowSettings() end,
-						},
-						GlowPulseSpeed = {
-							name = L["GlowPulseSpeed"],
-							desc = L["GlowPulseSpeedDescription"],
-							type = "range",
-							order = 16,
-							min = 0.2, max = 2, step = 0.05,
-							disabled = function()
-								local p = Spy.db.profile
-								return not (p.GlowEnabled and p.GlowPulse)
-							end,
-							get = function() return Spy.db.profile.GlowPulseSpeed end,
-							set = function(_, v) Spy.db.profile.GlowPulseSpeed = v Spy:ApplyGlowSettings() end,
-						},
-						GlowPulseDepth = {
-							name = L["GlowPulseDepth"],
-							desc = L["GlowPulseDepthDescription"],
-							type = "range",
-							order = 17,
-							min = 0, max = 0.9, step = 0.05, isPercent = true,
-							disabled = function()
-								local p = Spy.db.profile
-								return not (p.GlowEnabled and p.GlowPulse)
-							end,
-							get = function() return Spy.db.profile.GlowPulseDepth end,
-							set = function(_, v) Spy.db.profile.GlowPulseDepth = v Spy:ApplyGlowSettings() end,
+							func = function() Spy:ApplyDistanceSettings(true) end,
 						},
 					},
 				},
@@ -991,7 +753,7 @@ Spy.options = {
 					name = L["TTabMap"],
 					desc = L["TTabMap"],
 					type = "group",
-					order = 3,
+					order = 2,
 					args = {
 						MinimapDetection = {
 							name = L["MinimapDetection"],
@@ -2266,9 +2028,6 @@ local Default_Profile = {
 				["Window Border"] = { r = 1, g = 1, b = 1, a = 1 },
 				["Title Bar"] = { r = 13/255, g = 11/255, b = 10/255, a = 1 },
 				["Cooldown"] = { r = 1, g = 0.82, b = 0, a = 1 },
-				["Arrow"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
-				["Arrow Stale"] = { r = 217/255, g = 161/255, b = 59/255, a = 1 },
-			["Glow"] = { r = 1, g = 0.31, b = 0.27, a = 1 },
 			},
 		},
 		MainWindow={
@@ -2320,6 +2079,8 @@ local Default_Profile = {
 		MarkHealers=true,
 		HealerDetectBy="heal",		-- heal (confirmed only, default) | class (guess by class)
 		HealerMinHeal=400,			-- a single heal this big confirms a healer outright
+		HealerMinHeals=2,			-- or this many whitelisted heals, for smaller ones
+		StrictHealerDetection=true,	-- only real healing spells count, not anything that heals
 		HealerMarkerStyle="cross",	-- cross | asterisk | dot
 		HealerMarkerSide="right",	-- right | left
 		SortHealersToTop=true,
@@ -2328,39 +2089,13 @@ local Default_Profile = {
 		-- Mass-fight controls: in a city raid the list can take 600 detections a
 		-- minute through 15 rows, so these cut it down to what's worth attacking.
 		UseZoneLevelFloor=true,		-- clamp guessed levels to the zone's entry level
-		TomTomOnAltClick=true,		-- alt-click a row to point TomTom at their last position
-		-- Native direction arrow
-		-- OFF by default. The bearing needs a nameplate's screen position, and
-		-- the client refuses to measure nameplates from addon code - see the
-		-- comment on GetLiveBearing. Left in place, off, rather than deleted,
-		-- because it costs nothing switched off and a future client may allow it.
-		ArrowRetiredMigration=true,
-		ArrowEnabled=false,
-		ArrowStyle="titlebar",		-- titlebar | dock | floating | off
-		ArrowClickModifier="none",	-- none (plain click) | alt
-		ArrowSize=24,
-		ArrowColorByAge=true,
-		ArrowStaleSeconds=30,
-		ArrowTimeout=60,
-		ArrowDistanceUnit="yards",	-- yards | meters
-		ArrowHideOffZone=true,
-		ArrowFloatLocked=false,
-		ArrowFloatPosition={},
-		ArrowUseNameplates=true,
-		ArrowFieldOfView=100,
-		-- Tracked-target nameplate glow. Hangs off the engine's base nameplate
-		-- frame, so it behaves the same under any nameplate addon or none.
-		GlowEnabled=true,
-		GlowWidth=132,
-		GlowHeight=58,
-		GlowOffsetX=0,
-		GlowOffsetY=0,
-		GlowAlpha=1,
-		GlowAdditive=true,		-- ADD reads as light, BLEND as paint
-		GlowPulse=true,
-		GlowPulseSpeed=0.55,
-		GlowPulseDepth=0.35,
-		GlowUseClassColor=false,
+		TomTomOnAltClick=true,
+		-- See enemies sooner. Both ship well below their maximum and both are just
+		-- CVar writes, so unlike the retired arrow there is nothing here the client
+		-- can refuse.
+		MaxNameplateDistance=true,
+		MaxNameplateDistanceShowsEnemies=true,
+		MaxViewDistance=true,		-- alt-click a row to point TomTom at their last position
 		DebugMode=false,
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
 		KillPriorityOrder=false,	-- order by target value instead of recency
@@ -2627,25 +2362,12 @@ function Spy:CheckDatabase()
 	if p.TitleBarStyle == nil then p.TitleBarStyle = Default_Profile.profile.TitleBarStyle end
 	if p.TitleBarOpacity == nil then p.TitleBarOpacity = Default_Profile.profile.TitleBarOpacity end
 	if p.HealerMinHeal == nil then p.HealerMinHeal = Default_Profile.profile.HealerMinHeal end
+	if p.HealerMinHeals == nil then p.HealerMinHeals = Default_Profile.profile.HealerMinHeals end
+	if p.StrictHealerDetection == nil then p.StrictHealerDetection = Default_Profile.profile.StrictHealerDetection end
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
-	for _, k in ipairs({"ArrowEnabled","ArrowStyle","ArrowClickModifier","ArrowSize","ArrowColorByAge",
-		"ArrowStaleSeconds","ArrowTimeout","ArrowDistanceUnit","ArrowHideOffZone","ArrowFloatLocked",
-		"ArrowUseNameplates","ArrowFieldOfView",
-		"GlowEnabled","GlowWidth","GlowHeight","GlowOffsetX","GlowOffsetY","GlowAlpha",
-		"GlowAdditive","GlowPulse","GlowPulseSpeed","GlowPulseDepth","GlowUseClassColor"}) do
+	for _, k in ipairs({"MaxNameplateDistance","MaxNameplateDistanceShowsEnemies","MaxViewDistance"}) do
 		if p[k] == nil then p[k] = Default_Profile.profile[k] end
-	end
-	if type(p.ArrowFloatPosition) ~= "table" then p.ArrowFloatPosition = {} end
-	if type(p.Colors["Spy"]["Glow"]) ~= "table" then
-		p.Colors["Spy"]["Glow"] = Default_Profile.profile.Colors["Spy"]["Glow"]
-	end
-	-- Existing profiles have ArrowEnabled saved as true from when the arrow was
-	-- on by default, and a changed default does not reach them. Switch it off
-	-- once, and record that we did so a deliberate re-enable is never undone.
-	if not p.ArrowRetiredMigration then
-		p.ArrowRetiredMigration = true
-		p.ArrowEnabled = false
 	end
 	if p.DebugMode == nil then p.DebugMode = Default_Profile.profile.DebugMode end
 	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end
@@ -2776,6 +2498,9 @@ function Spy:ShowConfig()
 end
 
 function Spy:OnEnable(first)
+	-- Resolve the healer spell whitelist to localised names. Done here rather than
+	-- at file scope because GetSpellInfo is not reliable until the addon is enabled.
+	Spy:BuildHealerSpellNames()
 	Spy.timeid = Spy:ScheduleRepeatingTimer("ManageExpirations", 10, true)
 	Spy:RegisterEvent("ZONE_CHANGED", "ZoneChangedEvent")
 	Spy:RegisterEvent("ZONE_CHANGED_INDOORS", "ZoneChangedEvent")
@@ -3361,6 +3086,94 @@ end
 -- passive procs, leech/lifetap effects, pet upkeep, consumables and shadow
 -- specs' party leech. Rule 1 (source ~= destination) already discards pure
 -- self-healing; this list catches the rest.
+-- ============================================================
+-- What counts as a healer
+--
+-- The rule is a WHITELIST of real healing spells, not a blacklist of things to
+-- ignore. A blacklist fails in the wrong direction: any spell nobody thought to
+-- list marks its caster a healer, which is how a warlock draining life and a
+-- draenei using Gift of the Naaru both ended up flagged. With a whitelist an
+-- unrecognised spell simply proves nothing, and the list is finite because TBC
+-- has four healing classes and a knowable set of heals.
+--
+-- Bandages, potions, food, healthstones, life leech, Judgement of Light, Leader
+-- of the Pack and every other incidental heal are excluded for free by not being
+-- on the list. Bandages matter in particular: First Aid can be used on another
+-- player, so it beats the source-is-not-the-target rule.
+--
+-- Held as spell IDs and resolved to the client's own localised names at load, so
+-- this works in every locale rather than only in English. One id per spell is
+-- enough - all ranks of a spell share a name.
+-- ============================================================
+local Spy_HealerSpellIDs = {
+	-- Priest
+	2050,	-- Lesser Heal
+	2054,	-- Heal
+	2060,	-- Greater Heal
+	2061,	-- Flash Heal
+	139,	-- Renew
+	596,	-- Prayer of Healing
+	33076,	-- Prayer of Mending
+	34861,	-- Circle of Healing
+	32546,	-- Binding Heal
+	15237,	-- Holy Nova
+	-- Paladin
+	635,	-- Holy Light
+	19750,	-- Flash of Light
+	20473,	-- Holy Shock
+	633,	-- Lay on Hands
+	-- Druid
+	5185,	-- Healing Touch
+	8936,	-- Regrowth
+	774,	-- Rejuvenation
+	33763,	-- Lifebloom
+	18562,	-- Swiftmend
+	740,	-- Tranquility
+	-- Shaman
+	331,	-- Healing Wave
+	8004,	-- Lesser Healing Wave
+	1064,	-- Chain Heal
+	974,	-- Earth Shield
+}
+
+-- name -> true, built from the ids above once the spell data is available.
+Spy.HealerSpellNames = {}
+
+function Spy:BuildHealerSpellNames()
+	if not GetSpellInfo then return 0 end
+	local n = 0
+	for _, id in ipairs(Spy_HealerSpellIDs) do
+		local ok, name = pcall(GetSpellInfo, id)
+		if ok and type(name) == "string" and name ~= "" then
+			Spy.HealerSpellNames[name] = true
+			n = n + 1
+		end
+	end
+	Spy.HealerSpellCount = n
+	return n
+end
+
+-- Only these four classes can actually heal another player as a role. Used as a
+-- second gate when the class is known - the spell alone already implies it, but
+-- a contradiction means we misidentified somebody and should not mark them.
+local Spy_HealerCapableClasses = {
+	DRUID = true, PALADIN = true, PRIEST = true, SHAMAN = true,
+}
+
+-- True when this heal is evidence of a healer rather than incidental healing.
+function Spy:IsHealerEvidence(spellName, class)
+	if Spy.db.profile.StrictHealerDetection ~= false then
+		-- If the whitelist could not be built (missing spell data at load) fall
+		-- back to the old exclusion list rather than detecting nobody at all.
+		if (Spy.HealerSpellCount or 0) > 0 then
+			if not Spy.HealerSpellNames[spellName] then return false end
+			if class and not Spy_HealerCapableClasses[class] then return false end
+			return true
+		end
+	end
+	return not Spy_NonHealerHeals[spellName]
+end
+
 local Spy_NonHealerHeals = {
 	-- warlock leech / pet
 	["Death Coil"] = true, ["Drain Life"] = true, ["Siphon Life"] = true,
@@ -3488,18 +3301,18 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 				and strsub(srcGUID, 1, 6) == "Player"
 				and strsub(dstGUID, 1, 6) == "Player"
 				and srcGUID ~= dstGUID
-				and not Spy_NonHealerHeals[arg13]
 				and bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE then
 				local amount = arg15
 				if type(amount) == "number" and amount > 0 then
 					local playerData = SpyPerCharDB.PlayerData[srcName]
-					if playerData then
+					if playerData and Spy:IsHealerEvidence(arg13, playerData.class) then
 						playerData.healTotal = (playerData.healTotal or 0) + amount
 						playerData.healCount = (playerData.healCount or 0) + 1
 						playerData.lastHeal = time()
 						-- meaningful = a big single heal, or sustained healing
 						local big = amount >= (Spy.db.profile.HealerMinHeal or 400)
-						if (big or playerData.healCount >= 3) and not playerData.isHealer then
+						local enough = playerData.healCount >= (Spy.db.profile.HealerMinHeals or 2)
+						if (big or enough) and not playerData.isHealer then
 							playerData.isHealer = true
 							if Spy.db.profile.MarkHealers then Spy:RefreshCurrentList() end
 							Spy:UpdateActiveCount()

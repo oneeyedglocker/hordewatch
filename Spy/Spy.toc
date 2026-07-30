@@ -52,8 +52,7 @@ Widgets.lua
 WindowOrder.lua
 MainWindow.lua
 List.lua
-Arrow.lua
-Glow.lua
+Distance.lua
 Debug.lua
 SpyStats.xml
 SpyData.lua
