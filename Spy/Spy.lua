@@ -693,41 +693,80 @@ Spy.options = {
 							order = 1,
 							fontSize = "medium",
 						},
-						MaxNameplateDistance = {
-							name = L["MaxNameplateDistance"],
-							desc = L["MaxNameplateDistanceDescription"],
-							type = "toggle",
+						NameplateDistanceMode = {
+							name = L["NameplateDistanceMode"],
+							desc = L["NameplateDistanceModeDescription"],
+							type = "select",
 							order = 2,
-							width = "full",
-							get = function() return Spy.db.profile.MaxNameplateDistance end,
+							values = {
+								["max"] = L["DistanceModeMax"],
+								["custom"] = L["DistanceModeCustom"],
+								["off"] = L["DistanceModeOff"],
+							},
+							get = function() return Spy.db.profile.NameplateDistanceMode end,
 							set = function(_, v)
-								Spy.db.profile.MaxNameplateDistance = v
-								if v then Spy:ApplyDistanceSettings(true) end
+								Spy.db.profile.NameplateDistanceMode = v
+								Spy:ApplyDistanceSettings(true)
+							end,
+						},
+						NameplateDistanceValue = {
+							name = L["NameplateDistanceValue"],
+							desc = L["NameplateDistanceValueDescription"],
+							type = "range",
+							order = 3,
+							min = 20, max = 100, step = 5,
+							disabled = function() return Spy.db.profile.NameplateDistanceMode ~= "custom" end,
+							get = function() return Spy.db.profile.NameplateDistanceValue end,
+							set = function(_, v)
+								Spy.db.profile.NameplateDistanceValue = v
+								Spy:ApplyDistanceSettings(false)
 							end,
 						},
 						MaxNameplateDistanceShowsEnemies = {
 							name = L["MaxNameplateShowEnemies"],
 							desc = L["MaxNameplateShowEnemiesDescription"],
 							type = "toggle",
-							order = 3,
+							order = 4,
 							width = "full",
-							disabled = function() return not Spy.db.profile.MaxNameplateDistance end,
+							disabled = function() return Spy.db.profile.NameplateDistanceMode == "off" end,
 							get = function() return Spy.db.profile.MaxNameplateDistanceShowsEnemies end,
 							set = function(_, v)
 								Spy.db.profile.MaxNameplateDistanceShowsEnemies = v
 								if v then Spy:ApplyDistanceSettings(true) end
 							end,
 						},
-						MaxViewDistance = {
-							name = L["MaxViewDistance"],
-							desc = L["MaxViewDistanceDescription"],
-							type = "toggle",
-							order = 4,
-							width = "full",
-							get = function() return Spy.db.profile.MaxViewDistance end,
+						viewHeader = {
+							name = L["DistanceViewHeader"],
+							type = "header",
+							order = 5,
+						},
+						ViewDistanceMode = {
+							name = L["ViewDistanceMode"],
+							desc = L["ViewDistanceModeDescription"],
+							type = "select",
+							order = 6,
+							values = {
+								["max"] = L["DistanceModeMax"],
+								["custom"] = L["DistanceModeCustom"],
+								["off"] = L["DistanceModeOff"],
+							},
+							get = function() return Spy.db.profile.ViewDistanceMode end,
 							set = function(_, v)
-								Spy.db.profile.MaxViewDistance = v
-								if v then Spy:ApplyDistanceSettings(true) end
+								Spy.db.profile.ViewDistanceMode = v
+								Spy:ApplyDistanceSettings(true)
+							end,
+						},
+						ViewDistanceValue = {
+							name = L["ViewDistanceValue"],
+							desc = L["ViewDistanceValueDescription"],
+							type = "range",
+							order = 7,
+							min = 100, max = 1000, step = 25,
+							disabled = function() return Spy.db.profile.ViewDistanceMode ~= "custom" end,
+							get = function() return Spy.db.profile.ViewDistanceValue end,
+							set = function(_, v)
+								Spy.db.profile.ViewDistanceValue = v
+								Spy:ApplyDistanceSettings(false)
 							end,
 						},
 						status = {
@@ -740,11 +779,22 @@ Spy.options = {
 							type = "description",
 							order = 10,
 						},
+						ceilings = {
+							name = function()
+								local np = Spy:GetNameplateCeiling()
+								local fc = Spy:GetViewCeiling()
+								return format(L["DistanceCeilings"],
+									np and tostring(np) or "?",
+									fc and tostring(fc) or "?")
+							end,
+							type = "description",
+							order = 11,
+						},
 						apply = {
 							name = L["DistanceApplyNow"],
 							desc = L["DistanceApplyNowDescription"],
 							type = "execute",
-							order = 11,
+							order = 12,
 							func = function() Spy:ApplyDistanceSettings(true) end,
 						},
 					},
@@ -2093,9 +2143,11 @@ local Default_Profile = {
 		-- See enemies sooner. Both ship well below their maximum and both are just
 		-- CVar writes, so unlike the retired arrow there is nothing here the client
 		-- can refuse.
-		MaxNameplateDistance=true,
+		NameplateDistanceMode="max",	-- max | custom | off
+		NameplateDistanceValue=60,		-- used when the mode is custom
 		MaxNameplateDistanceShowsEnemies=true,
-		MaxViewDistance=true,		-- alt-click a row to point TomTom at their last position
+		ViewDistanceMode="max",			-- max | custom | off
+		ViewDistanceValue=777,			-- used when the mode is custom		-- alt-click a row to point TomTom at their last position
 		DebugMode=false,
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
 		KillPriorityOrder=false,	-- order by target value instead of recency
@@ -2366,8 +2418,20 @@ function Spy:CheckDatabase()
 	if p.StrictHealerDetection == nil then p.StrictHealerDetection = Default_Profile.profile.StrictHealerDetection end
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
-	for _, k in ipairs({"MaxNameplateDistance","MaxNameplateDistanceShowsEnemies","MaxViewDistance"}) do
+	for _, k in ipairs({"NameplateDistanceMode","NameplateDistanceValue",
+		"MaxNameplateDistanceShowsEnemies","ViewDistanceMode","ViewDistanceValue"}) do
 		if p[k] == nil then p[k] = Default_Profile.profile[k] end
+	end
+	-- These were plain on/off toggles before the values became configurable.
+	-- Carry the old answer across rather than silently re-enabling something the
+	-- user had turned off.
+	if p.MaxNameplateDistance ~= nil then
+		if p.MaxNameplateDistance == false then p.NameplateDistanceMode = "off" end
+		p.MaxNameplateDistance = nil
+	end
+	if p.MaxViewDistance ~= nil then
+		if p.MaxViewDistance == false then p.ViewDistanceMode = "off" end
+		p.MaxViewDistance = nil
 	end
 	if p.DebugMode == nil then p.DebugMode = Default_Profile.profile.DebugMode end
 	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end

@@ -69,6 +69,44 @@ local function raiseTo(cvar, steps)
 	return best
 end
 
+-- Set a specific value, and report what the client actually took. Unlike the
+-- maximise path this WILL lower the setting: the user asked for a number, so a
+-- "never reduce" rule here would silently ignore them.
+local function setExact(cvar, value)
+	if not SetCVar or not GetCVar then return nil end
+	if getNumber(cvar) == nil then return nil end
+	pcall(SetCVar, cvar, value)
+	return getNumber(cvar)
+end
+
+-- Highest value this client accepts, discovered rather than assumed. Probed once
+-- and put back afterwards, so asking the question does not change the answer.
+local discovered = {}
+
+local function findCeiling(cvar, steps)
+	if discovered[cvar] then return discovered[cvar] end
+	local original = getNumber(cvar)
+	if original == nil then return nil end
+	local best = original
+	for _, want in ipairs(steps) do
+		pcall(SetCVar, cvar, want)
+		local got = getNumber(cvar)
+		if got and got > best then best = got end
+		if got and got >= want then break end
+	end
+	pcall(SetCVar, cvar, original)
+	discovered[cvar] = best
+	return best
+end
+
+function Spy:GetNameplateCeiling()
+	return findCeiling("nameplateMaxDistance", NAMEPLATE_STEPS)
+end
+
+function Spy:GetViewCeiling()
+	return findCeiling("farclip", FARCLIP_STEPS)
+end
+
 function Spy:GetNameplateDistance()
 	return getNumber("nameplateMaxDistance")
 end
@@ -85,16 +123,22 @@ function Spy:ApplyDistanceSettings(announce)
 	local p = Spy.db.profile
 	local plates, view
 
-	if p.MaxNameplateDistance then
+	-- "max" raises to the ceiling and never reduces; "custom" writes exactly what
+	-- was asked for; "off" leaves the CVar alone entirely.
+	if p.NameplateDistanceMode == "max" then
 		plates = raiseTo("nameplateMaxDistance", NAMEPLATE_STEPS)
-		-- Nameplates that are switched off have no distance worth setting, so
-		-- turn enemy plates on as part of the same intent.
-		if p.MaxNameplateDistanceShowsEnemies and SetCVar then
-			pcall(SetCVar, "nameplateShowEnemies", 1)
-		end
+	elseif p.NameplateDistanceMode == "custom" then
+		plates = setExact("nameplateMaxDistance", p.NameplateDistanceValue or 60)
 	end
-	if p.MaxViewDistance then
+	if p.NameplateDistanceMode ~= "off" and p.MaxNameplateDistanceShowsEnemies and SetCVar then
+		-- A nameplate distance is meaningless with enemy plates switched off.
+		pcall(SetCVar, "nameplateShowEnemies", 1)
+	end
+
+	if p.ViewDistanceMode == "max" then
 		view = raiseTo("farclip", FARCLIP_STEPS)
+	elseif p.ViewDistanceMode == "custom" then
+		view = setExact("farclip", p.ViewDistanceValue or 777)
 	end
 
 	Distance.lastNameplate = plates
