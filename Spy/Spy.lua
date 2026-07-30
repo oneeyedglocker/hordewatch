@@ -2141,8 +2141,7 @@ local Default_Profile = {
 		UseZoneLevelFloor=true,		-- clamp guessed levels to the zone's entry level
 		TomTomOnAltClick=true,
 		-- See enemies sooner. Both ship well below their maximum and both are just
-		-- CVar writes, so unlike the retired arrow there is nothing here the client
-		-- can refuse.
+		-- CVar writes, so there is nothing here the client can refuse.
 		NameplateDistanceMode="max",	-- max | custom | off
 		NameplateDistanceValue=60,		-- used when the mode is custom
 		MaxNameplateDistanceShowsEnemies=true,

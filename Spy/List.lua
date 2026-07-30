@@ -489,7 +489,7 @@ function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy,
 		playerData.time = time()
 		Spy:ApplyZoneLevelFloor(playerData)
 		-- Detection accounting. This was written and then never called, so every
-		-- dump reported zero detections while the arrow samples were filling up.
+		-- dump reported zero detections for every session.
 		if Spy.DebugDetection then
 			Spy:DebugDetection(isGuess == false and "verified" or "guess", playerData)
 		end
@@ -497,9 +497,8 @@ function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy,
 		-- Position is refreshed on EVERY detection, not just the first.
 		-- Previously this was gated on "not already in the ActiveList", so once
 		-- a player was being actively detected their coordinates froze at wherever
-		-- they were first spotted while the timestamp kept updating - which made
-		-- the direction arrow confidently point at a stale position exactly while
-		-- you were chasing them.
+		-- they were first spotted while the timestamp kept updating, so the last
+		-- known location went stale exactly while you were chasing them.
 		local isNewDetection = not Spy.ActiveList[name]
 		if isNewDetection and WorldMapFrame:IsVisible() and Spy.db.profile.SwitchToZone then
 			WorldMapFrame:SetMapID(C_Map.GetBestMapForUnit("player"))
@@ -1102,7 +1101,7 @@ function Spy:RegenerateKOSListFromCentral()
 end
 
 -- ============================================================
--- TomTom integration: point the arrow at where a player was last seen.
+-- TomTom integration: point TomTom's arrow at where a player was last seen.
 -- Spy already records mapID/mapX/mapY per player, which is exactly what
 -- TomTom:AddWaypoint wants, so a sighting can become a navigable waypoint.
 -- ============================================================

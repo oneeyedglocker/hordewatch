@@ -11,8 +11,8 @@
   between spotting a group forming and walking into it. Spy pushes each to the
   highest value the client accepts.
 
-  Unlike the direction arrow this cannot be blocked: writing a CVar is ordinary
-  addon behaviour, not a measurement of a protected frame. The values are read
+  Writing a CVar is ordinary addon behaviour, so none of this can be refused
+  the way reading a nameplate's position is. The values are read
   back after writing so what the UI reports is what the client actually took,
   never what we asked for.
 

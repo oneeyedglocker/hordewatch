@@ -7,9 +7,6 @@
     * env      - client build / locale / which APIs exist, so a WoW patch that
                  removes or changes something shows up immediately
     * errors   - Lua errors raised from Spy's own code
-    * arrow    - arrow accuracy: computed bearing+distance against ground truth
-                 taken from the real unit whenever the tracked player is
-                 actually in front of us
     * levels   - guessed level vs the real level once it becomes known, which
                  is the only way to measure how wrong the guessing is
     * detect   - detection counts by method, and how often position data is
@@ -91,7 +88,6 @@ end
 -- Decisive test: does UnitPosition actually return anything for a hostile
 -- player? It exists in this client, but is documented as working for only a
 -- very limited set of unit ids. If it ever returns coordinates for an enemy
--- that is a real enemy position and the arrow becomes exact - so probe it and
 -- record the answer instead of assuming.
 function Spy:ProbeEnemyPositionAPIs()
 	local out = { checkedAt = date("%H:%M:%S") }
@@ -128,11 +124,6 @@ function Spy:ProbeEnemyPositionAPIs()
 	return out
 end
 
--- The arrow reads the engine's base nameplate frame, not whatever a nameplate
--- addon draws on top of it. This dumps both so a bad bearing can be traced to
--- the right layer: if tokenSweep finds units but the base frames have no centre
--- or a wild scale, that is the arrow's problem; if no units turn up at all,
--- nameplates simply are not showing.
 function Spy:ProbeNameplates()
 	local out = {
 		driver = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or "unknown",
@@ -160,8 +151,8 @@ function Spy:ProbeNameplates()
 					entry.baseFrame = plate:GetName() or "(anonymous)"
 					-- Nameplates are restricted regions: the measurement APIs
 					-- can be refused outright. Record WHICH of the routes the
-					-- arrow tries actually answers, because that is the whole
-					-- question when the arrow has nothing to show.
+					-- routes answer, since that is what a nameplate-position
+					-- question comes down to.
 					local okc, cx = pcall(plate.GetCenter, plate)
 					entry.plateCenterX = okc and cx or nil
 					entry.plateMeasureError = (not okc) and tostring(cx) or nil
@@ -315,12 +306,11 @@ function Spy:DebugLevelCheck(name, actualLevel)
 end
 
 ------------------------------------------------------------------------------
--- arrow accuracy
+-- level guess accuracy
 --
 -- Ground truth is hard to come by because the client won't tell us where an
 -- enemy is. But when the tracked player IS our current target we can bracket
 -- the real distance with CheckInteractDistance, and compare that against what
--- the arrow computed from the stored sighting.
 ------------------------------------------------------------------------------
 
 local function realRangeBand(unit)
