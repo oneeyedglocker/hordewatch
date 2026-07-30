@@ -572,7 +572,14 @@ Spy.options = {
 							width = "full",
 							order = 22,
 							disabled = function() return Spy.db.profile.StrictHealerDetection == false end,
-							get = function() return Spy.db.profile.HealerSpellListText end,
+							get = function()
+								-- Seed on first read, so the box never appears empty
+								-- while 24 spells are quietly being matched.
+								if not Spy.db.profile.HealerSpellListSeeded then
+									Spy:BuildHealerSpellNames()
+								end
+								return Spy.db.profile.HealerSpellListText
+							end,
 							set = function(_, v)
 								Spy.db.profile.HealerSpellListText = v
 								Spy.db.profile.HealerSpellListSeeded = true
@@ -711,43 +718,58 @@ Spy.options = {
 							get = function() return Spy.db.profile.KOSGuildAlertCooldown end,
 							set = function(_, value) Spy.db.profile.KOSGuildAlertCooldown = value end,
 						},
-						extraHeader = {
-							name = L["ExtraCooldownsHeader"],
+						cdListHeader = {
+							name = L["CooldownListHeader"],
 							type = "header",
 							order = 10,
 						},
-						extraIntro = {
-							name = L["ExtraCooldownsIntro"],
+						cdListIntro = {
+							name = L["CooldownListIntro"],
 							type = "description",
 							order = 11,
 							fontSize = "medium",
 						},
-						ExtraCooldownsText = {
-							name = L["ExtraCooldownsList"],
-							desc = L["ExtraCooldownsListDescription"],
+						CooldownListText = {
+							name = L["CooldownList"],
+							desc = L["CooldownListDescription"],
 							type = "input",
-							multiline = 8,
+							multiline = 12,
 							width = "full",
 							order = 12,
 							disabled = function() return not Spy.db.profile.TrackCooldowns end,
-							get = function() return Spy.db.profile.ExtraCooldownsText end,
+							get = function()
+								-- Seed on first read so the box is never shown empty while
+								-- ten spells are quietly being tracked.
+								if not Spy.db.profile.CooldownListSeeded then
+									Spy:BuildCooldownLookup()
+								end
+								return Spy.db.profile.CooldownListText
+							end,
 							set = function(_, v)
-								Spy.db.profile.ExtraCooldownsText = v
+								Spy.db.profile.CooldownListText = v
+								Spy.db.profile.CooldownListSeeded = true
 								Spy:BuildCooldownLookup()
 							end,
 						},
-						extraStatus = {
+						cdListStatus = {
 							name = function()
 								local total = 0
 								for _ in pairs(Spy.CooldownLookup or {}) do total = total + 1 end
 								if (Spy.CooldownListUnresolved or 0) > 0 then
-									return format(L["ExtraCooldownsStatusWithWarning"], total,
+									return format(L["CooldownListStatusWithWarning"], total,
 										Spy.CooldownListUnresolved)
 								end
-								return format(L["ExtraCooldownsStatus"], total)
+								return format(L["CooldownListStatus"], total)
 							end,
 							type = "description",
 							order = 13,
+						},
+						cdListReset = {
+							name = L["CooldownListReset"],
+							desc = L["CooldownListResetDescription"],
+							type = "execute",
+							order = 14,
+							func = function() Spy:ResetCooldownList() end,
 						},
 					},
 				},
@@ -2264,7 +2286,8 @@ local Default_Profile = {
 		-- Enemy defensive cooldowns + alert throttling
 		TrackCooldowns=true,
 		AnnounceCooldowns=false,
-		ExtraCooldownsText="",		-- user-added spells to watch for, on top of the built-in list
+		CooldownListText="",		-- seeded from the ten researched defaults the first time it is needed
+		CooldownListSeeded=false,
 		KOSGuildAlertCooldown=20,	-- seconds between alerts for the same KoS guild
 		ClampToScreen=true,
 		Font="Friz Quadrata TT",
@@ -2519,7 +2542,15 @@ function Spy:CheckDatabase()
 	if p.StrictHealerDetection == nil then p.StrictHealerDetection = Default_Profile.profile.StrictHealerDetection end
 	if p.HealerSpellListText == nil then p.HealerSpellListText = Default_Profile.profile.HealerSpellListText end
 	if p.HealerSpellListSeeded == nil then p.HealerSpellListSeeded = Default_Profile.profile.HealerSpellListSeeded end
-	if p.ExtraCooldownsText == nil then p.ExtraCooldownsText = Default_Profile.profile.ExtraCooldownsText end
+	if p.CooldownListText == nil then p.CooldownListText = Default_Profile.profile.CooldownListText end
+	if p.CooldownListSeeded == nil then p.CooldownListSeeded = Default_Profile.profile.CooldownListSeeded end
+	-- The watch list used to be an "extras only" box sitting on top of ten hidden
+	-- built-ins. Anything already typed there is appended once the full list is
+	-- seeded, so a previously-added spell is not quietly dropped.
+	if p.ExtraCooldownsText and p.ExtraCooldownsText ~= "" then
+		p.pendingExtraCooldowns = p.ExtraCooldownsText
+	end
+	p.ExtraCooldownsText = nil
 	if p.LookTheme == nil then p.LookTheme = Default_Profile.profile.LookTheme end
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
@@ -3138,42 +3169,89 @@ local function resolveCooldownSeconds(id)
 	return nil
 end
 
--- A line is a bare spell id, or a spell link - shift-click a spell into the box
--- while it has keyboard focus to insert one, same as the healer list. Unlike the
--- healer list, a plain typed name is not enough here: UnitSpellcastEvent matches
--- by the numeric id UNIT_SPELLCAST_SUCCEEDED reports, so an entry with no
--- resolvable id can never fire and is reported back as unresolved instead of
--- silently doing nothing.
+-- Seeded text form of the defaults above: one spell id per line with the name
+-- and cooldown as a trailing comment, so the list is READABLE rather than a
+-- column of bare numbers. Only the leading number is parsed - everything after
+-- it is ignored - so the comment can be edited or dropped freely.
+local defaultCooldownListTextCache = nil
+
+local function defaultCooldownListText()
+	if defaultCooldownListTextCache then return defaultCooldownListTextCache end
+	local ids = {}
+	for id in pairs(Spy.TrackedCooldowns) do ids[#ids + 1] = id end
+	-- Sorted by cooldown length then name, so the list reads in a stable order
+	-- rather than pairs() order, which differs between sessions.
+	table.sort(ids, function(a, b)
+		local ia, ib = Spy.TrackedCooldowns[a], Spy.TrackedCooldowns[b]
+		if ia.cd ~= ib.cd then return ia.cd < ib.cd end
+		return ia.name < ib.name
+	end)
+	local lines = {}
+	for _, id in ipairs(ids) do
+		local info = Spy.TrackedCooldowns[id]
+		local mins = info.cd / 60
+		local pretty = (mins >= 1) and (format("%gm", mins)) or (format("%ds", info.cd))
+		lines[#lines + 1] = format("%d  -- %s (%s)", id, info.name, pretty)
+	end
+	defaultCooldownListTextCache = table.concat(lines, "\n")
+	return defaultCooldownListTextCache
+end
+
+-- Every watched spell comes from the profile's list - there is no hidden set
+-- running underneath it. Deleting a line genuinely stops that cooldown being
+-- tracked, which is the whole point of showing the list instead of describing
+-- it. TrackedCooldowns is now only reference data: the researched durations for
+-- the spells Spy ships with, used when the client cannot supply one.
+--
+-- A line needs a resolvable spell id, unlike the healer list which matches on
+-- name: UnitSpellcastEvent is handed the numeric id by
+-- UNIT_SPELLCAST_SUCCEEDED, so a bare name could never match. Unresolvable
+-- lines are counted and surfaced rather than silently ignored.
 function Spy:BuildCooldownLookup()
 	wipe(Spy.CooldownLookup)
-	for id, info in pairs(Spy.TrackedCooldowns) do
-		Spy.CooldownLookup[id] = info
-	end
 	local p = Spy.db and Spy.db.profile
 	if not p then return end
-	local added, unresolved = 0, 0
-	for line in (p.ExtraCooldownsText or ""):gmatch("[^\n]+") do
+	if not p.CooldownListSeeded then
+		p.CooldownListText = defaultCooldownListText()
+		p.CooldownListSeeded = true
+		-- Carry over anything the old extras-only box held (see the profile
+		-- migration), now that there is a full list to append it to.
+		if p.pendingExtraCooldowns and p.pendingExtraCooldowns ~= "" then
+			p.CooldownListText = p.CooldownListText .. "\n" .. p.pendingExtraCooldowns
+			p.pendingExtraCooldowns = nil
+		end
+	end
+	local unresolved = 0
+	for line in (p.CooldownListText or ""):gmatch("[^\n]+") do
 		local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
 		if trimmed ~= "" and trimmed:sub(1, 2) ~= "--" then
-			local id = tonumber(trimmed:match("spell:(%d+)")) or tonumber(trimmed:match("^(%d+)$"))
+			local id = tonumber(trimmed:match("spell:(%d+)")) or tonumber(trimmed:match("^(%d+)"))
 			if id then
-				if not Spy.CooldownLookup[id] then
+				local known = Spy.TrackedCooldowns[id]
+				if known then
+					Spy.CooldownLookup[id] = known
+				else
 					local ok, name = pcall(GetSpellInfo, id)
 					name = (ok and type(name) == "string" and name ~= "") and name or ("Spell "..id)
-					local cd = resolveCooldownSeconds(id) or 120
 					Spy.CooldownLookup[id] = {
-						name = name, cd = cd,
+						name = name,
+						cd = resolveCooldownSeconds(id) or 120,
 						short = (#name <= 6) and name or name:sub(1, 6),
 					}
 				end
-				added = added + 1
 			else
 				unresolved = unresolved + 1
 			end
 		end
 	end
-	Spy.CooldownListAdded = added
 	Spy.CooldownListUnresolved = unresolved
+end
+
+-- Restores the ten researched defaults, discarding any edits.
+function Spy:ResetCooldownList()
+	Spy.db.profile.CooldownListText = defaultCooldownListText()
+	Spy.db.profile.CooldownListSeeded = true
+	Spy:BuildCooldownLookup()
 end
 
 function Spy:UnitSpellcastEvent(_, unit, _, spellId)
