@@ -1,6 +1,6 @@
 # Ping — backlog
 
-_(The addon is being renamed from Spy to **Ping** — see item 2.)_
+_(Renamed from Spy to **Ping**. The rename is done — item 2 below is kept as a record of what it touched.)_
 
 Work that is agreed but not started. Newest ideas at the bottom of each section.
 
@@ -29,44 +29,33 @@ Still to do:
 
 ---
 
-## 2. Rename the addon so it can run alongside the original Spy
+## 2. Rename the addon so it can run alongside the original Spy — **DONE**
 
-Right now this **is** Spy — same folder name, same addon name, same saved variables.
-Installing it replaces the original, and the two can never be loaded at once.
+Shipped. The addon is `Ping`: own folder, `.toc`, saved variables, Lua global,
+frame names, AceLocale namespace, AceConfig registrations, `/ping` slash command,
+texture paths and AceComm prefix (`[Ping]`). Nothing is shared with Spy, so both
+can be installed and loaded together.
 
-To make them coexist, all of these have to change together:
+Two collisions the original checklist did **not** list were caught during the
+work and are worth remembering, because both would have failed silently:
 
-| Thing | Current | Notes |
-|---|---|---|
-| Folder | `Spy/` → `Ping/` | Determines the addon name WoW sees |
-| `.toc` filename | `Spy.toc` → `Ping.toc` | Must match the folder exactly |
-| SavedVariables | `SpyDB`, `SpyDebugDB` | Global — collides with real Spy |
-| SavedVariablesPerCharacter | `SpyPerCharDB` | Where KoS / win-loss / player data lives |
-| Lua global | `Spy` | Referenced throughout every file |
-| Frame names | 13 of them | `Spy_MainWindow`, `Spy_AlertWindow`, `Spy_KoSButton`, `Spy_GameTooltip`, `Spy_BarDropDownMenu`, `Spy_MapNoteList_mini`/`_world`, `Spy_DebugDumpFrame`/`Scroll`, `SpyTitleBarFrame`, `SpyResizeGripLeft`/`Right`, `SpyTempTooltip` |
-| AceLocale namespace | `"Spy"` | `AceLocale:NewLocale("Spy", …)` in every locale file |
-| AceDB / AceConfig registration | `"Spy"`, `"Spy Commands"` | Options panel identity |
-| Slash command | `/spy` → `/ping` | Needs its own |
-| Texture paths | `Interface\AddOns\Spy\Textures\…` | Follow the folder rename |
-| AceComm prefix | `Spy.Signature` = `"[Spy]"` | Two addons must not talk over the same prefix |
+- `CountFrame` — a generic global frame name in MainWindow, identical in Spy.
+- `StatsDropDownMenu` — declared in the stats XML, identical in Spy.
 
-**Watch out for:** the frame names and the AceComm prefix. Everything else fails
-loudly at load; those two fail *quietly* — colliding frames silently overwrite each
-other, and a shared comm prefix means the two addons would exchange data as if they
-were the same thing.
+Neither is Spy-prefixed, so a search for "Spy" would never have found them. Any
+future fork should audit **all** global frame names, not just the ones carrying
+the addon's name.
 
-**Name chosen: `Ping`.** This is largely a careful find-and-replace,
-verifiable the same way the config restructure was: diff the set of referenced
-globals before and after and confirm nothing was missed.
-
-**Do this before item 3** — the import only makes sense once the two are separate
-addons with separate saved variables.
+Left deliberately unchanged: the CurseForge URL in `UpgradeAvailable` still
+points at `addons/spy-tbc`, since no Ping page exists. Two upstream locale typos
+(`PREIST` in deDE, `DEATHKNIGHt` in frFR) were left alone — they predate this
+work and are dead keys nothing reads.
 
 ---
 
 ## 3. Import data from the original Spy
 
-Once renamed (item 2), a one-click import that pulls history across from a real Spy
+Now that the rename is done, a one-click import that pulls history across from a real Spy
 install, so switching does not mean starting from an empty database.
 
 What has to move, from Spy's saved variables:
@@ -103,7 +92,7 @@ Notes for whoever builds it:
 
 - AceConfig has no list-of-rows widget, so this needs a **custom AceGUI widget**
   (or a plain frame embedded via `dialogControl`). That is the bulk of the work,
-  not the data side — the data is already a parsed list and `Spy:BuildHealerSpellNames`
+  not the data side — the data is already a parsed list and `Ping:BuildHealerSpellNames`
   already handles names, ids and links.
 - Icons come from `GetSpellTexture(id)`. The current list stores NAMES, not ids, so
   either store ids alongside (better for icons) or resolve name → id at display

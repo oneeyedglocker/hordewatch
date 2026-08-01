@@ -1,5 +1,5 @@
 ﻿## Interface: 20505
-## Title: Spy
+## Title: Ping
 ## Version: 2.1.0
 ## Notes: Detects and alerts you to the presence of nearby enemy players.
 ## Notes-deDE: Detektiert und warnt Sie vor, in der Nähe befindlichen, Gegnern.
@@ -24,28 +24,28 @@
 ## X-Credits-esMX: Localization: Cruzluz
 ## X-Credits-esES: Localization: Cruzluz
 ## OptionalDeps: Ace3, LibSharedMedia-3.0, TomTom
-## SavedVariables: SpyDB, SpyDebugDB
-## SavedVariablesPerCharacter: SpyPerCharDB
+## SavedVariables: PingDB, PingDebugDB
+## SavedVariablesPerCharacter: PingPerCharDB
 
 #@no-lib-strip@
 Embeds.xml
 #@end-no-lib-strip@
 
-Spy.xml
+Ping.xml
 
-Locales\Spy-enUS.lua
-Locales\Spy-deDE.lua
-Locales\Spy-esES.lua
-Locales\Spy-esMX.lua
-Locales\Spy-frFR.lua
-Locales\Spy-itIT.lua
-Locales\Spy-koKR.lua
-Locales\Spy-ptBR.lua
-Locales\Spy-ruRU.lua
-Locales\Spy-zhTW.lua
-Locales\Spy-zhCN.lua
+Locales\Ping-enUS.lua
+Locales\Ping-deDE.lua
+Locales\Ping-esES.lua
+Locales\Ping-esMX.lua
+Locales\Ping-frFR.lua
+Locales\Ping-itIT.lua
+Locales\Ping-koKR.lua
+Locales\Ping-ptBR.lua
+Locales\Ping-ruRU.lua
+Locales\Ping-zhTW.lua
+Locales\Ping-zhCN.lua
 
-Spy.lua
+Ping.lua
 Fonts.lua
 Colors.lua
 Widgets.lua
@@ -54,5 +54,5 @@ MainWindow.lua
 List.lua
 Distance.lua
 Debug.lua
-SpyStats.xml
-SpyData.lua
+PingStats.xml
+PingData.lua

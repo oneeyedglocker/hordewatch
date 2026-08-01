@@ -1,21 +1,21 @@
 local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
-local L = AceLocale:NewLocale("Spy", "enUS", true)
+local L = AceLocale:NewLocale("Ping", "enUS", true)
 if not L then return end
 
 -- Configuration
-L["Spy"] = "Spy"
+L["Ping"] = "Ping"
 L["Version"] = "Version"
-L["Spy Option"] = "Spy"
+L["Ping Option"] = "Ping"
 L["Profiles"] = "Profiles"
 
 -- Information
 L["About"] = "About"
-L["SpyDescription1"] = [[
-Spy is an addon that will alert you to the presence of nearby enemy players. These are some of the main features.
+L["PingDescription1"] = [[
+Ping is an addon that will alert you to the presence of nearby enemy players. These are some of the main features.
 
 ]]
 
-L["SpyDescription2"] = [[
+L["PingDescription2"] = [[
 |cffffd000 Nearby List |cffffffff
 Displays enemy players that have been detected nearby. Players are removed from the list if they have not been detected after a period of time.
 
@@ -23,14 +23,14 @@ Displays enemy players that have been detected nearby. Players are removed from 
 Displays all enemies that have been detected in the last hour.
 
 |cffffd000 Ignore List |cffffffff
-Players that are added to the Ignore list will not be reported by Spy. You can add and remove players to/from this list by using the button's drop down menu or by holding the Control key while clicking the button.
+Players that are added to the Ignore list will not be reported by Ping. You can add and remove players to/from this list by using the button's drop down menu or by holding the Control key while clicking the button.
 
 |cffffd000 Kill On Sight List |cffffffff
 Players on your Kill On Sight list cause an alarm to sound when detected. You can add and remove players to/from this list by using the button's drop down menu or by holding the Shift key while clicking the button. The drop down menu can also be used to set the reasons why you have added someone to the Kill On Sight list. If you want to enter a specific reason that is not in the list, then use the "Enter your own reason..." in the Other list.
 
 ]]
 
-L["SpyDescription3"] = [[
+L["PingDescription3"] = [[
 |cffffd000 Statistics Window |cffffffff
 The Statistics Window contains a list of all enemy encounters which can be sorted by name, level, guild, wins, losses and the last time an enemy was detected. It also provides the ability to search for a specific enemy by name or guild and has filters to show only enemies that are marked as Kill on Sight, with a Win/Loss or entered Reasons.
 
@@ -43,22 +43,22 @@ If enabled, this button will be located on the enemy players target frame. Click
 -- General Settings
 L["GeneralSettings"] = "General Settings"
 L["GeneralSettingsDescription"] = [[
-Options for when Spy is Enabled or Disabled.
+Options for when Ping is Enabled or Disabled.
 ]]
-L["EnableSpy"] = "Enable Spy"
-L["EnableSpyDescription"] = "Enables or disables Spy."
-L["EnabledInBattlegrounds"] = "Enable Spy in battlegrounds"
-L["EnabledInBattlegroundsDescription"] = "Enables or disables Spy when you are in a battleground."
-L["EnabledInArenas"] = "Enable Spy in arenas"
-L["EnabledInArenasDescription"] = "Enables or disables Spy when you are in an arena."
-L["EnabledInWintergrasp"] = "Enable Spy in world combat zones"
-L["EnabledInWintergraspDescription"] = "Enables or disables Spy when you are in world combat zones such as Lake Wintergrasp in Northrend."
-L["EnabledInSanctuaries"] = "Enable Spy in sanctuaries"
-L["EnabledInSanctuariesDescription"] = "Enables or disables Spy when you are in a sanctuary."
-L["DisableWhenPVPUnflagged"] = "Disable Spy when not flagged for PvP"
-L["DisableWhenPVPUnflaggedDescription"] = "Enables or disables Spy depending on your PVP status."
-L["DisabledInZones"] = "Disable Spy while in these locations"
-L["DisabledInZonesDescription"]	= "Select locations where Spy will be disabled"
+L["EnablePing"] = "Enable Ping"
+L["EnablePingDescription"] = "Enables or disables Ping."
+L["EnabledInBattlegrounds"] = "Enable Ping in battlegrounds"
+L["EnabledInBattlegroundsDescription"] = "Enables or disables Ping when you are in a battleground."
+L["EnabledInArenas"] = "Enable Ping in arenas"
+L["EnabledInArenasDescription"] = "Enables or disables Ping when you are in an arena."
+L["EnabledInWintergrasp"] = "Enable Ping in world combat zones"
+L["EnabledInWintergraspDescription"] = "Enables or disables Ping when you are in world combat zones such as Lake Wintergrasp in Northrend."
+L["EnabledInSanctuaries"] = "Enable Ping in sanctuaries"
+L["EnabledInSanctuariesDescription"] = "Enables or disables Ping when you are in a sanctuary."
+L["DisableWhenPVPUnflagged"] = "Disable Ping when not flagged for PvP"
+L["DisableWhenPVPUnflaggedDescription"] = "Enables or disables Ping depending on your PVP status."
+L["DisabledInZones"] = "Disable Ping while in these locations"
+L["DisabledInZonesDescription"]	= "Select locations where Ping will be disabled"
 L["Booty Bay"] = "Booty Bay"
 L["Everlook"] = "Everlook"						
 L["Gadgetzan"] = "Gadgetzan"
@@ -88,34 +88,34 @@ L["Delver's Headquarters"] = "Delver's Headquarters"
 -- Display
 L["DisplayOptions"] = "Display"
 L["DisplayOptionsDescription"] = [[
-Options for the Spy window and tooltips.
+Options for the Ping window and tooltips.
 ]]
-L["ShowOnDetection"] = "Show Spy when enemy players are detected"
-L["ShowOnDetectionDescription"] = "Set this to display the Spy window and the Nearby list if Spy is hidden when enemy players are detected."
-L["HideSpy"] = "Hide Spy when no enemy players are detected"
-L["HideSpyDescription"] = "Set this to hide Spy when the Nearby list is displayed and it becomes empty. Spy will not be hidden if you clear the list manually."
+L["ShowOnDetection"] = "Show Ping when enemy players are detected"
+L["ShowOnDetectionDescription"] = "Set this to display the Ping window and the Nearby list if Ping is hidden when enemy players are detected."
+L["HidePing"] = "Hide Ping when no enemy players are detected"
+L["HidePingDescription"] = "Set this to hide Ping when the Nearby list is displayed and it becomes empty. Ping will not be hidden if you clear the list manually."
 L["ShowOnlyPvPFlagged"] = "Show only enemy players flagged for PvP"
 L["ShowOnlyPvPFlaggedDescription"] = "Set this to show only enemy players that are flagged for PvP in the Nearby list."
 L["ShowKoSButton"] = "Show KOS button on the enemy target frame"
 L["ShowKoSButtonDescription"] = "Set this to show the KOS button on the enemy player's target frame."
 L["Alpha"] = "Transparency"
-L["AlphaDescription"] = "Set the transparency of the Spy window."
+L["AlphaDescription"] = "Set the transparency of the Ping window."
 L["AlphaBG"] = "Transparency in BGs"
-L["AlphaBGDescription"] = "Set the transparency of the Spy window in battlegrounds."
-L["LockSpy"] = "Lock the Spy window"
-L["LockSpyDescription"] = "Locks the Spy window in place so it doesn't move."
+L["AlphaBGDescription"] = "Set the transparency of the Ping window in battlegrounds."
+L["LockPing"] = "Lock the Ping window"
+L["LockPingDescription"] = "Locks the Ping window in place so it doesn't move."
 L["ClampToScreen"] = "Clamp to Screen"
-L["ClampToScreenDescription"] = "Controls whether the Spy window can be dragged off screen."
-L["InvertSpy"] = "Invert the Spy window"
-L["InvertSpyDescription"] = "Flips the Spy window upside down."
+L["ClampToScreenDescription"] = "Controls whether the Ping window can be dragged off screen."
+L["InvertPing"] = "Invert the Ping window"
+L["InvertPingDescription"] = "Flips the Ping window upside down."
 L["Reload"] = "Reload UI"
-L["ReloadDescription"] = "Required when changing the Spy window."
-L["ResizeSpy"] = "Resize the Spy window automatically"
-L["ResizeSpyDescription"] = "Set this to automatically resize the Spy window as enemy players are added and removed."
-L["ResizeSpyLimit"] = "List Limit"
-L["ResizeSpyLimitDescription"] = "Limit the number of enemy players shown in the Spy window."
-L["DisplayTooltipNearSpyWindow"] = "Display tooltip near the Spy window"
-L["DisplayTooltipNearSpyWindowDescription"] = "Set this to display tooltips near the Spy window."
+L["ReloadDescription"] = "Required when changing the Ping window."
+L["ResizePing"] = "Resize the Ping window automatically"
+L["ResizePingDescription"] = "Set this to automatically resize the Ping window as enemy players are added and removed."
+L["ResizePingLimit"] = "List Limit"
+L["ResizePingLimitDescription"] = "Limit the number of enemy players shown in the Ping window."
+L["DisplayTooltipNearPingWindow"] = "Display tooltip near the Ping window"
+L["DisplayTooltipNearPingWindowDescription"] = "Set this to display tooltips near the Ping window."
 L["SelectTooltipAnchor"] = "Tooltip Anchor Point"
 L["SelectTooltipAnchorDescription"] = "Select the anchor point for the tooltip if the option above has been checked"
 L["ANCHOR_CURSOR"] = "Cursor"
@@ -134,11 +134,11 @@ L["Name"] = "Name"
 L["Class"] = "Class"
 L["Rank"] = "Rank"
 L["SelectFont"] = "Select a Font"
-L["SelectFontDescription"] = "Select a Font for the Spy Window."
+L["SelectFontDescription"] = "Select a Font for the Ping Window."
 L["RowHeight"] = "Select the Row Height"
-L["RowHeightDescription"] = "Select the Row Height for the Spy window."
+L["RowHeightDescription"] = "Select the Row Height for the Ping window."
 L["Texture"] = "Texture"
-L["TextureDescription"] = "Select a texture for the Spy Window"
+L["TextureDescription"] = "Select a texture for the Ping Window"
 
 -- Target Picker
 L["TargetPicker"] = "Target Picker"
@@ -156,30 +156,30 @@ L["HealerMinHeal"] = "Confirming heal size"
 L["HealerMinHealDescription"] = "One heal at least this large marks a healer immediately, whatever the count."
 L["TDebug"] = "Diagnostics"
 L["DebugMode"] = "Enable diagnostic logging"
-L["DebugModeDescription"] = "Records information that is hard to judge by eye - how far level guesses are off, Spy's own Lua errors, and which game APIs are present so a WoW patch that changes something shows up straight away. Off by default and costs nothing when off. Use Copy diagnostics to send it on."
+L["DebugModeDescription"] = "Records information that is hard to judge by eye - how far level guesses are off, Ping's own Lua errors, and which game APIs are present so a WoW patch that changes something shows up straight away. Off by default and costs nothing when off. Use Copy diagnostics to send it on."
 L["DebugDumpButton"] = "Copy diagnostics"
 L["DebugDumpButtonDescription"] = "Open a window with everything recorded so far, ready to copy."
 L["DebugStatusButton"] = "Show what has been recorded"
 L["DebugStatusButtonDescription"] = "Print a one-line summary in chat: how many errors, level guesses and detections have been recorded so far."
 L["DebugResetButton"] = "Clear diagnostics"
-L["DebugDumpHint"] = "Click the box, Ctrl+A, Ctrl+C. Also saved to SavedVariables\\SpyDebugDB.lua."
+L["DebugDumpHint"] = "Click the box, Ctrl+A, Ctrl+C. Also saved to SavedVariables\\PingDebugDB.lua."
 L["DebugSlashDescription"] = "Diagnostics: on, off, note <text>, dump, reset, status"
-L["DebugOn"] = "diagnostics |cff40ff40on|r - use /spy debug note <text> to flag anything odd, /spy debug dump to copy it out."
+L["DebugOn"] = "diagnostics |cff40ff40on|r - use /ping debug note <text> to flag anything odd, /ping debug dump to copy it out."
 L["DebugOff"] = "diagnostics |cffff4040off|r."
 L["DebugNoted"] = "noted."
 L["DebugWasReset"] = "diagnostics cleared."
-L["DebugUsage"] = "usage: /spy debug on | off | note <text> | dump | reset | status"
+L["DebugUsage"] = "usage: /ping debug on | off | note <text> | dump | reset | status"
 L["DebugStatus"] = "diagnostics=%s  errors=%d  levels=%d  notes=%d  detections=%d"
 L["DebugDropped"] = "|cffff8000%d records were dropped (buffer full) - dump and reset to keep collecting.|r"
 
 L["TomTomWaypoint"] = "Point TomTom here"
 L["TomTomOnAltClick"] = "Alt-click a name to set a TomTom waypoint"
 L["TomTomOnAltClickDescription"] = "Alt-click any name in the list to drop a TomTom waypoint on the spot where that player was last seen, and target them. Also adds a right-click menu entry. Requires the TomTom addon."
-L["TomTomTracking"] = "|cff33ff99Spy|r tracking %s - %s"
-L["TomTomNoLocation"] = "|cff33ff99Spy|r has no recorded location for %s yet."
-L["TomTomMissing"] = "|cff33ff99Spy|r requires the TomTom addon for waypoints."
+L["TomTomTracking"] = "|cff33ff99Ping|r tracking %s - %s"
+L["TomTomNoLocation"] = "|cff33ff99Ping|r has no recorded location for %s yet."
+L["TomTomMissing"] = "|cff33ff99Ping|r requires the TomTom addon for waypoints."
 L["UseZoneLevelFloor"] = "Use zone minimum level for guesses"
-L["UseZoneLevelFloorDescription"] = "Spy guesses an enemy's level from the spells it has seen them cast, which can show impossible levels - a \"16+\" standing in Outland, where the entry level is 58. This raises a guessed level to the minimum for the zone they were seen in. Levels read directly off a player are never changed."
+L["UseZoneLevelFloorDescription"] = "Ping guesses an enemy's level from the spells it has seen them cast, which can show impossible levels - a \"16+\" standing in Outland, where the entry level is 58. This raises a guessed level to the minimum for the zone they were seen in. Levels read directly off a player are never changed."
 L["TMassFights"] = "Big Fights"
 L["MassFightsDescription"] = "\nIn a big fight the list takes hundreds of detections a minute through a few rows. These cut it down to what is worth attacking.\n"
 L["HealerOnlyFilter"] = "Show only healers"
@@ -235,7 +235,7 @@ L["ShowBackgroundDescription"] = "Show the window's background fill behind the r
 L["BackgroundOpacity"] = "Background opacity"
 L["BackgroundOpacityDescription"] = "How solid the window background looks."
 L["TitleBarStyle"] = "Title bar style"
-L["TitleBarStyleDescription"] = "How the window's title bar looks. Classic is Spy's original subtle bar; Solid is an opaque coloured strip."
+L["TitleBarStyleDescription"] = "How the window's title bar looks. Classic is Ping's original subtle bar; Solid is an opaque coloured strip."
 L["TitleBarClassic"] = "Classic (subtle)"
 L["TitleBarSolid"] = "Solid strip"
 L["TitleBarColor"] = "Title bar colour"
@@ -246,7 +246,7 @@ L["ShowBorder"] = "Show border"
 L["ShowBorderDescription"] = "Draw a border around the window."
 L["WindowBorderColor"] = "Border colour"
 L["WindowScale"] = "Window scale"
-L["WindowScaleDescription"] = "Scale the whole Spy window up or down."
+L["WindowScaleDescription"] = "Scale the whole Ping window up or down."
 L["KoSEdgeColor"] = "Kill-on-Sight edge colour"
 L["KoSEdgeColorDescription"] = "Colour of the left-edge accent on Kill-on-Sight rows."
 
@@ -333,7 +333,7 @@ L["MinimapNote"] = "          Note: Only works for players that can Track Humano
 L["MinimapDetails"] = "Display level/class details in tooltips"
 L["MinimapDetailsDescription"] = "Set this to update the map tooltips so that level/class details are displayed alongside enemy names."
 L["DisplayOnMap"] = "Display icons on the map"
-L["DisplayOnMapDescription"] = "Display map icons for the location of other Spy users in your party, raid and guild when they detect enemies."
+L["DisplayOnMapDescription"] = "Display map icons for the location of other Ping users in your party, raid and guild when they detect enemies."
 L["SwitchToZone"] = "Switch to current zone map on enemy detection"
 L["SwitchToZoneDescription"] = "Change the map to the players current zone map when enemies are detected."
 L["MapDisplayLimit"] = "Limit displayed map icons to:"
@@ -348,7 +348,7 @@ L["LimitSameContinentDescription"] = "Only displays detected enemies on the map 
 L["DataOptions"] = "Data Management"
 L["DataOptionsDescription"] = [[
 
-Options on how Spy maintains and gathers data.
+Options on how Ping maintains and gathers data.
 ]]
 L["PurgeData"] = "Purge undetected enemy player data after:"
 L["OneDay"] = "1 day"
@@ -367,18 +367,18 @@ L["PurgeKoS"] = "Purge Kill on Sight players based on undetected time."
 L["PurgeKoSDescription"] = "Set this to purge Kill on Sight players that have been undetected based on the time settings for undetected players."
 L["PurgeWinLossData"] = "Purge win/loss data based on undetected time."
 L["PurgeWinLossDataDescription"] = "Set this to purge win/loss data of your enemy encounters based on the time settings for undetected players."
-L["ShareData"] = "Share data with other Spy addon users"
-L["ShareDataDescription"] = "Set this to share the details of your enemy player encounters with other Spy users in your party, raid and guild."
-L["UseData"] = "Use data from other Spy addon users"
-L["UseDataDescription"] = "Set this to use the data collected by other Spy users in your party, raid and guild."
+L["ShareData"] = "Share data with other Ping addon users"
+L["ShareDataDescription"] = "Set this to share the details of your enemy player encounters with other Ping users in your party, raid and guild."
+L["UseData"] = "Use data from other Ping addon users"
+L["UseDataDescription"] = "Set this to use the data collected by other Ping users in your party, raid and guild."
 L["ShareKOSBetweenCharacters"] = "Share Kill On Sight players between your characters"
 L["ShareKOSBetweenCharactersDescription"] = "Set this to share the players you mark as Kill On Sight between other characters that you play on the same server and faction."
 
 -- Commands
 L["SlashCommand"] = "Slash Command"
-L["SpySlashDescription"] = "These buttons execute the same functions as the ones in the slash command /spy"
+L["PingSlashDescription"] = "These buttons execute the same functions as the ones in the slash command /ping"
 L["Enable"] = "Enable"
-L["EnableDescription"] = "Enables Spy and shows the main window."
+L["EnableDescription"] = "Enables Ping and shows the main window."
 L["Show"] = "Show"
 L["ShowDescription"] = "Shows the main window."
 L["Hide"] = "Hide"
@@ -388,7 +388,7 @@ L["ResetDescription"] = "Resets the position and appearance of the main window."
 L["ClearSlash"] = "Clear"
 L["ClearSlashDescription"] = "Clears the list of players that have been detected."
 L["Config"] = "Config"
-L["ConfigDescription"] = "Open the Interface Addons configuration window for Spy."
+L["ConfigDescription"] = "Open the Interface Addons configuration window for Ping."
 L["KOS"] = "KOS"
 L["KOSDescription"] = "Add/remove a player to/from the Kill On Sight list."
 L["InvalidInput"] = "Invalid Input"
@@ -397,7 +397,7 @@ L["IgnoreDescription"] = "Add/remove a player to/from the Ignore list."
 L["Test"] = "Test"
 L["TestDescription"] = "Shows a warning so it can be repositioned."
 L["Sanctuary"] = "Sanctuary"
-L["SanctuaryDescription"] = "Show/Hide Spy in a Sanctuary area."
+L["SanctuaryDescription"] = "Show/Hide Ping in a Sanctuary area."
 
 -- Lists
 L["Nearby"] = "Nearby"
@@ -420,10 +420,10 @@ L["HonorKills"] = "Honor Kills"
 L["PvPDeaths"] = "PvP Deaths"
 
 -- Output Messages
-L["VersionCheck"] = "|cffc41e3aWarning! The wrong version of Spy is installed. Uninstall this version and install the one that matches your current game version."
-L["SpyEnabled"] = "|cff9933ffSpy addon enabled."
-L["SpyDisabled"] = "|cff9933ffSpy addon disabled. Type |cffffffff/spy show|cff9933ff to enable."
-L["UpgradeAvailable"] = "|cff9933ffA new version of Spy is available. It can be downloaded from:\n|cffffffffhttps://www.curseforge.com/wow/addons/spy-tbc"
+L["VersionCheck"] = "|cffc41e3aWarning! The wrong version of Ping is installed. Uninstall this version and install the one that matches your current game version."
+L["PingEnabled"] = "|cff9933ffPing addon enabled."
+L["PingDisabled"] = "|cff9933ffPing addon disabled. Type |cffffffff/ping show|cff9933ff to enable."
+L["UpgradeAvailable"] = "|cff9933ffA new version of Ping is available. It can be downloaded from:\n|cffffffffhttps://www.curseforge.com/wow/addons/spy-tbc"
 L["AlertStealthTitle"] = "Stealth player detected!"
 L["AlertKOSTitle"] = "Kill On Sight player detected!"
 L["AlertKOSGuildTitle"] = "Kill On Sight player guild detected!"
@@ -432,7 +432,7 @@ L["AlertTitle_kosguildaway"] = "Kill On Sight player guild located by "
 L["StealthWarning"] = "|cff9933ffStealth player detected: |cffffffff"
 L["KOSWarning"] = "|cffff0000Kill On Sight player detected: |cffffffff"
 L["KOSGuildWarning"] = "|cffff0000Kill On Sight player guild detected: |cffffffff"
-L["SpySignatureColored"] = "|cff9933ff[Spy] "
+L["PingSignatureColored"] = "|cff9933ff[Ping] "
 L["PlayerDetectedColored"] = "Player detected: |cffffffff"
 L["PlayersDetectedColored"] = "Players detected: |cffffffff"
 L["KillOnSightDetectedColored"] = "Kill On Sight player detected: |cffffffff"
@@ -440,8 +440,8 @@ L["PlayerAddedToIgnoreColored"] = "Added player to Ignore list: |cffffffff"
 L["PlayerRemovedFromIgnoreColored"] = "Removed player from Ignore list: |cffffffff"
 L["PlayerAddedToKOSColored"] = "Added player to Kill On Sight list: |cffffffff"
 L["PlayerRemovedFromKOSColored"] = "Removed player from Kill On Sight list: |cffffffff"
-L["PlayerDetected"] = "[Spy] Player detected: "
-L["KillOnSightDetected"] = "[Spy] Kill On Sight player detected: "
+L["PlayerDetected"] = "[Ping] Player detected: "
+L["KillOnSightDetected"] = "[Ping] Kill On Sight player detected: "
 L["Level"] = "Level"
 L["LastSeen"] = "Last seen"
 L["LessThanOneMinuteAgo"] = "less than a minute ago"
@@ -449,11 +449,11 @@ L["MinutesAgo"] = "minutes ago"
 L["HoursAgo"] = "hours ago"
 L["DaysAgo"] = "days ago"
 L["Close"] = "Close"
-L["CloseDescription"] = "|cffffffffHides the Spy window. By default will show again when the next enemy player is detected."
+L["CloseDescription"] = "|cffffffffHides the Ping window. By default will show again when the next enemy player is detected."
 L["Left/Right"] = "Left/Right"
 L["Left/RightDescription"] = "|cffffffffNavigates between the Nearby, Last Hour, Ignore and Kill On Sight lists."
 L["Clear"] = "Clear"
-L["ClearDescription"] = "|cffffffffClears the list of players that have been detected. CTRL-Click will turn Spy On/Off. Shift-Click will turn all sound On/Off."
+L["ClearDescription"] = "|cffffffffClears the list of players that have been detected. CTRL-Click will turn Ping On/Off. Shift-Click will turn all sound On/Off."
 L["SoundEnabled"] = "Audio alerts enabled"
 L["SoundDisabled"] = "Audio alerts disabled"
 L["NearbyCount"] = "Nearby Count"
@@ -484,8 +484,8 @@ L["Located"] = "located:"
 L["DistanceUnit"] = "yards"
 L["LocalDefenseChannelName"] = "LocalDefense"
 
-Spy_KOSReasonListLength = 6
-Spy_KOSReasonList = {
+Ping_KOSReasonListLength = 6
+Ping_KOSReasonList = {
 	[1] = {
 		["title"] = "Started combat";
 		["content"] = {
@@ -623,7 +623,7 @@ L["MinimapClassTextMONK"] = "|cff00ff96"
 L["MinimapClassTextDEMONHUNTER"] = "|cffa330c9"
 L["MinimapClassTextEVOKER"] = "|cff33937f"
 
-Spy_IgnoreList = {
+Ping_IgnoreList = {
 	["Mailbox"]=true, ["Shred Master Mk1"]=true, ["Scrap-O-Matic 1000"]=true,
 	["Boat to Stormwind City"]=true, ["Boat to Boralus Harbor, Tiragarde Sound"]=true,
 	["Treasure Chest"]=true, ["Small Treasure Chest"]=true,	
@@ -641,7 +641,7 @@ Spy_IgnoreList = {
 -- page as tabs. Tab labels are drawn at a fixed width and clip rather than
 -- wrap, so these are deliberately short and no page carries more than three.
 ------------------------------------------------------------------------------
-L["TPageSpy"] = "Spy"
+L["TPagePing"] = "Ping"
 L["TTabZones"] = "Where it runs"
 L["TTabList"] = "The list"
 
@@ -670,7 +670,7 @@ L["TTabDiagnostics"] = "Diagnostics"
 -- Sight distance
 ------------------------------------------------------------------------------
 L["TTabDistance"] = "Distance"
-L["DistanceIntro"] = "How far away the game will tell you an enemy exists. Spy never lowers a value another addon set higher."
+L["DistanceIntro"] = "How far away the game will tell you an enemy exists. Ping never lowers a value another addon set higher."
 L["MaxNameplateShowEnemies"] = "Turn enemy nameplates on"
 L["MaxNameplateShowEnemiesDescription"] = "Nameplates that are switched off have no distance worth setting, so this turns enemy plates on as part of the same intent. Untick if you deliberately play without them."
 L["DistanceStatus"] = "|cffffd000In use now:|r nameplates %s yards, view distance %s."
@@ -682,14 +682,14 @@ L["DistanceNothingToDo"] = "both distance options are switched off - nothing to 
 L["StrictHealerDetection"] = "Only count real healing spells"
 L["StrictHealerDetectionDescription"] = "Only spells on the list below count. Off, anything that heals another player counts."
 L["HealerMinHeals"] = "Healing spells needed"
-L["HealerMinHealsDescription"] = "How many healing spells Spy must see before marking someone."
+L["HealerMinHealsDescription"] = "How many healing spells Ping must see before marking someone."
 L["NameplateDistanceMode"] = "Nameplate distance"
-L["NameplateDistanceModeDescription"] = "How Spy handles nameplateMaxDistance - how far away enemy nameplates will draw. Re-applied on login and on zone change, because other addons write this too and the last write wins."
+L["NameplateDistanceModeDescription"] = "How Ping handles nameplateMaxDistance - how far away enemy nameplates will draw. Re-applied on login and on zone change, because other addons write this too and the last write wins."
 L["NameplateDistanceValue"] = "Nameplate distance (yards)"
 L["NameplateDistanceValueDescription"] = "The exact value to use. Anything above what your client accepts is clamped by the game, and the line below reports what it actually took."
 L["DistanceViewHeader"] = "View distance"
 L["ViewDistanceMode"] = "View distance"
-L["ViewDistanceModeDescription"] = "How Spy handles farclip - how far the world itself is drawn. Higher costs frame rate on a weak machine, which is the whole trade."
+L["ViewDistanceModeDescription"] = "How Ping handles farclip - how far the world itself is drawn. Higher costs frame rate on a weak machine, which is the whole trade."
 L["ViewDistanceValue"] = "View distance"
 L["ViewDistanceValueDescription"] = "The exact value to use. Lower this if maximum view distance costs you too much frame rate but you still want it above the default."
 L["DistanceModeMax"] = "Maximum (never lower it)"
@@ -706,7 +706,7 @@ L["HealerSpellList"] = "Whitelisted healing spells"
 L["HealerSpellListDescription"] = "One spell per line. Blank lines and lines starting with -- are ignored."
 L["HealerSpellListStatus"] = "%d spells recognised right now."
 L["HealerSpellListReset"] = "Reset to the researched TBC list"
-L["HealerSpellListResetDescription"] = "Discards every edit and restores the 24 spells Spy shipped with."
+L["HealerSpellListResetDescription"] = "Discards every edit and restores the 24 spells Ping shipped with."
 
 ------------------------------------------------------------------------------
 -- Cooldown watch list - editable
@@ -725,7 +725,7 @@ L["CooldownListDescription"] = "One spell id per line - a name alone cannot be m
 L["CooldownListStatus"] = "%d spells watched."
 L["CooldownListStatusWithWarning"] = "%d spells watched. |cffff8000%d lines have no spell id|r and are being ignored."
 L["CooldownListReset"] = "Reset to the ten defaults"
-L["CooldownListResetDescription"] = "Discards every edit and restores the spells Spy ships with."
+L["CooldownListResetDescription"] = "Discards every edit and restores the spells Ping ships with."
 
 ------------------------------------------------------------------------------
 -- Class focus

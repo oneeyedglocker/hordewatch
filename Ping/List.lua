@@ -1,9 +1,9 @@
 local HBDP = LibStub("HereBeDragons-Pins-2.0")
 local AceLocale = LibStub("AceLocale-3.0")
-local L = AceLocale:GetLocale("Spy")
+local L = AceLocale:GetLocale("Ping")
 local _
 
-StaticPopupDialogs["Spy_SetKOSReasonOther"] = {
+StaticPopupDialogs["Ping_SetKOSReasonOther"] = {
 	text = L["EnterKOSReason"],		
 	button1 = ACCEPT,
 	button2 = CANCEL,	
@@ -19,7 +19,7 @@ StaticPopupDialogs["Spy_SetKOSReasonOther"] = {
     OnAccept = function(self)
 		local editBox = self.GetEditBox and self:GetEditBox() or self.editBox
 		local reason = editBox:GetText()
-		Spy:SetKOSReason(self.playerName, reason, data)		
+		Ping:SetKOSReason(self.playerName, reason, data)		
 	end,
 };
 
@@ -28,7 +28,7 @@ StaticPopupDialogs["Spy_SetKOSReasonOther"] = {
 -- ============================================================
 
 -- Heal-capable classes for the "by class" detection mode.
-Spy.HealerClasses = {
+Ping.HealerClasses = {
 	PRIEST = true,
 	PALADIN = true,
 	DRUID = true,
@@ -38,7 +38,7 @@ Spy.HealerClasses = {
 -- Curated set of known heal spells, matched by base name. TBC ranks share
 -- one base name (e.g. "Flash Heal(Rank 7)" reports as "Flash Heal"), so a
 -- name match is rank-agnostic and stable across the whole expansion.
-Spy.HealSpells = {
+Ping.HealSpells = {
 	-- Priest
 	["Flash Heal"] = true,
 	["Greater Heal"] = true,
@@ -57,17 +57,17 @@ Spy.HealSpells = {
 	["Rejuvenation"] = true,
 }
 
-function Spy:IsHealerClass(class)
-	return class ~= nil and Spy.HealerClasses[class] == true
+function Ping:IsHealerClass(class)
+	return class ~= nil and Ping.HealerClasses[class] == true
 end
 
 -- KoS-guild alerts fire per detected player, so running into a 5-man from a
 -- KoS guild used to spam five near-identical warnings. Rate-limit to one alert
 -- per guild per KOSGuildAlertCooldown seconds (0 = no throttle).
 local kosGuildAlerted = {}
-function Spy:AllowKOSGuildAlert(guild)
+function Ping:AllowKOSGuildAlert(guild)
 	if not guild then return false end
-	local cd = Spy.db.profile.KOSGuildAlertCooldown
+	local cd = Ping.db.profile.KOSGuildAlertCooldown
 	if cd == nil then cd = 20 end
 	if cd <= 0 then return true end
 	local nowT = GetTime()
@@ -84,29 +84,29 @@ end
 -- True when this player's class is one the user asked to focus on. Empty
 -- selection means "nothing is focused" rather than "everything is", so turning
 -- the mode on without picking a class cannot silently blank the list.
-function Spy:IsFocusClass(playerData)
+function Ping:IsFocusClass(playerData)
 	if not playerData or not playerData.class then return false end
-	local focus = Spy.db.profile.FocusClasses
+	local focus = Ping.db.profile.FocusClasses
 	if type(focus) ~= "table" then return false end
 	return focus[playerData.class] == true
 end
 
-function Spy:IsHealer(playerData)
+function Ping:IsHealer(playerData)
 	if not playerData then return false end
-	if Spy.db.profile.HealerDetectBy == "heal" then
+	if Ping.db.profile.HealerDetectBy == "heal" then
 		return playerData.isHealer == true
 	end
-	return Spy:IsHealerClass(playerData.class)
+	return Ping:IsHealerClass(playerData.class)
 end
 
-function Spy:RefreshCurrentList(player, source)
-	local MainWindow = Spy.MainWindow
+function Ping:RefreshCurrentList(player, source)
+	local MainWindow = Ping.MainWindow
 	if not MainWindow:IsShown() then
 		return
 	end
 
-	local mode = Spy.db.profile.CurrentList
-	local manageFunction = Spy.ListTypes[mode][2]
+	local mode = Ping.db.profile.CurrentList
+	local manageFunction = Ping.ListTypes[mode][2]
 	if manageFunction then
 		manageFunction()
 	end
@@ -114,27 +114,27 @@ function Spy:RefreshCurrentList(player, source)
 	-- Healer-only filter. In a mass fight the list is a firehose - hundreds of
 	-- detections a minute through fifteen rows - so this strips it down to the
 	-- only targets that matter. KoS players are always kept.
-	local displayList = Spy.CurrentList
-	if mode == 1 and (Spy.db.profile.HealerOnlyFilter
-		or Spy.db.profile.FocusClassMode == "only") then
-		local wantHealers = Spy.db.profile.HealerOnlyFilter
-		local wantFocus = Spy.db.profile.FocusClassMode == "only"
+	local displayList = Ping.CurrentList
+	if mode == 1 and (Ping.db.profile.HealerOnlyFilter
+		or Ping.db.profile.FocusClassMode == "only") then
+		local wantHealers = Ping.db.profile.HealerOnlyFilter
+		local wantFocus = Ping.db.profile.FocusClassMode == "only"
 		local filtered = {}
-		for _, entry in ipairs(Spy.CurrentList) do
-			local pd = SpyPerCharDB.PlayerData[entry.player]
+		for _, entry in ipairs(Ping.CurrentList) do
+			local pd = PingPerCharDB.PlayerData[entry.player]
 			-- KoS players are never filtered out, whichever filter is running.
-			local keep = SpyPerCharDB.KOSData[entry.player] and true or false
-			if not keep and wantHealers and Spy:IsHealer(pd) then keep = true end
-			if not keep and wantFocus and Spy:IsFocusClass(pd) then keep = true end
+			local keep = PingPerCharDB.KOSData[entry.player] and true or false
+			if not keep and wantHealers and Ping:IsHealer(pd) then keep = true end
+			if not keep and wantFocus and Ping:IsFocusClass(pd) then keep = true end
 			if keep then filtered[#filtered + 1] = entry end
 		end
 		displayList = filtered
 	end
-	Spy.DisplayedCount = #displayList
+	Ping.DisplayedCount = #displayList
 
 	local button = 1
 	for index, data in pairs(displayList) do
-		if button <= Spy.ButtonLimit then
+		if button <= Ping.ButtonLimit then
 			local description = ""
 			local level = "??"
 			local class = "UNKNOWN"
@@ -142,14 +142,14 @@ function Spy:RefreshCurrentList(player, source)
 --			local rank = 0
 			local opacity = 1
 
-			local playerData = SpyPerCharDB.PlayerData[data.player]
+			local playerData = PingPerCharDB.PlayerData[data.player]
 			if playerData then
 				-- Raise impossible guessed levels to the zone's entry level
 				-- (nobody is level 16 in Outland) before rendering.
-				Spy:ApplyZoneLevelFloor(playerData)
+				Ping:ApplyZoneLevelFloor(playerData)
 				if playerData.level then
 					level = playerData.level
-					if playerData.isGuess == true and tonumber(playerData.level) < Spy.MaximumPlayerLevel then
+					if playerData.isGuess == true and tonumber(playerData.level) < Ping.MaximumPlayerLevel then
 						level = level.."+"
 					end
 				end
@@ -164,64 +164,64 @@ function Spy:RefreshCurrentList(player, source)
 --				end
 			end
 			
-			if Spy.db.profile.DisplayListData == "1NameLevelClass" then
+			if Ping.db.profile.DisplayListData == "1NameLevelClass" then
 				description = level.." "
 				if L[class] and type(L[class]) == "string" then
 					description = description..L[class]
 				end
-			elseif Spy.db.profile.DisplayListData == "2NameLevelGuild" then
+			elseif Ping.db.profile.DisplayListData == "2NameLevelGuild" then
 				description = level.." "..guild
-			elseif Spy.db.profile.DisplayListData == "3NameLevelOnly" then
+			elseif Ping.db.profile.DisplayListData == "3NameLevelOnly" then
 				description = level.." "
-			elseif Spy.db.profile.DisplayListData == "4NamePvPRank" then
+			elseif Ping.db.profile.DisplayListData == "4NamePvPRank" then
 				description = L["Rank"].." "..rank
-			elseif Spy.db.profile.DisplayListData == "5NameGuild" then
+			elseif Ping.db.profile.DisplayListData == "5NameGuild" then
 				description = guild
 			end
-			if mode == 1 and Spy.InactiveList[data.player] then
+			if mode == 1 and Ping.InactiveList[data.player] then
 				opacity = 0.5
 			end
 			if player == data.player then
-				if not source or source ~= Spy.CharacterName then
-					Spy:AlertPlayer(player, source)
+				if not source or source ~= Ping.CharacterName then
+					Ping:AlertPlayer(player, source)
 					if not source then
-						Spy:AnnouncePlayer(player)
+						Ping:AnnouncePlayer(player)
 					end
 				end
 			end
 
-			Spy:SetBar(button, data.player, description, 100, "Class", class, nil, opacity)
-			Spy.ButtonName[button] = data.player
+			Ping:SetBar(button, data.player, description, 100, "Class", class, nil, opacity)
+			Ping.ButtonName[button] = data.player
 			button = button + 1
 		end
 	end
-	Spy.ListAmountDisplayed = button - 1
+	Ping.ListAmountDisplayed = button - 1
 
-	if Spy.db.profile.ResizeSpy then
-		Spy:AutomaticallyResize()
+	if Ping.db.profile.ResizePing then
+		Ping:AutomaticallyResize()
 	else
-		if not Spy.db.profile.InvertSpy then
-			if not InCombatLockdown() and Spy.MainWindow:GetHeight()< 34 then
-				Spy:RestoreMainWindowPosition(Spy.MainWindow:GetLeft(), Spy.MainWindow:GetTop(), Spy.MainWindow:GetWidth(), 34)
+		if not Ping.db.profile.InvertPing then
+			if not InCombatLockdown() and Ping.MainWindow:GetHeight()< 34 then
+				Ping:RestoreMainWindowPosition(Ping.MainWindow:GetLeft(), Ping.MainWindow:GetTop(), Ping.MainWindow:GetWidth(), 34)
 			end
 		else
-			if not InCombatLockdown() and Spy.MainWindow:GetHeight()< 34 then 
-				Spy:RestoreMainWindowPosition(Spy.MainWindow:GetLeft(), Spy.MainWindow:GetBottom(), Spy.MainWindow:GetWidth(), 34)
+			if not InCombatLockdown() and Ping.MainWindow:GetHeight()< 34 then 
+				Ping:RestoreMainWindowPosition(Ping.MainWindow:GetLeft(), Ping.MainWindow:GetBottom(), Ping.MainWindow:GetWidth(), 34)
 			end
 		end	
 	end
-	Spy:ManageBarsDisplayed()
+	Ping:ManageBarsDisplayed()
 end
 
-function Spy:ManageNearbyList()
-	local prioritiseKoS = Spy.db.profile.PrioritiseKoS
+function Ping:ManageNearbyList()
+	local prioritiseKoS = Ping.db.profile.PrioritiseKoS
 
 	local activeKoS = {}
 	local active = {}
-	for player in pairs(Spy.ActiveList) do
-		local position = Spy.NearbyList[player]
+	for player in pairs(Ping.ActiveList) do
+		local position = Ping.NearbyList[player]
 		if position ~= nil then
-			if prioritiseKoS and SpyPerCharDB.KOSData[player] then
+			if prioritiseKoS and PingPerCharDB.KOSData[player] then
 				table.insert(activeKoS, { player = player, time = position })
 			else
 				table.insert(active, { player = player, time = position })
@@ -231,10 +231,10 @@ function Spy:ManageNearbyList()
 
 	local inactiveKoS = {}
 	local inactive = {}
-	for player in pairs(Spy.InactiveList) do
-		local position = Spy.NearbyList[player]
+	for player in pairs(Ping.InactiveList) do
+		local position = Ping.NearbyList[player]
 		if position ~= nil then
-			if prioritiseKoS and SpyPerCharDB.KOSData[player] then
+			if prioritiseKoS and PingPerCharDB.KOSData[player] then
 				table.insert(inactiveKoS, { player = player, time = position })
 			else
 				table.insert(inactive, { player = player, time = position })
@@ -255,15 +255,15 @@ function Spy:ManageNearbyList()
 	-- existing time sort survives. KoS priority is untouched: it is already
 	-- expressed by the separate activeKoS/inactiveKoS groups.
 	local function tierOf(entry)
-		local pd = SpyPerCharDB.PlayerData[entry.player]
-		if Spy.db.profile.SortHealersToTop and Spy:IsHealer(pd) then return 1 end
-		if Spy.db.profile.FocusClassMode ~= "off" and Spy:IsFocusClass(pd) then return 2 end
+		local pd = PingPerCharDB.PlayerData[entry.player]
+		if Ping.db.profile.SortHealersToTop and Ping:IsHealer(pd) then return 1 end
+		if Ping.db.profile.FocusClassMode ~= "off" and Ping:IsFocusClass(pd) then return 2 end
 		return 3
 	end
 
 	local function appendGroup(dest, group)
-		local sortingHealers = Spy.db.profile.SortHealersToTop
-		local sortingFocus = Spy.db.profile.FocusClassMode ~= "off"
+		local sortingHealers = Ping.db.profile.SortHealersToTop
+		local sortingFocus = Ping.db.profile.FocusClassMode ~= "off"
 		if not sortingHealers and not sortingFocus then
 			for _, entry in ipairs(group) do
 				table.insert(dest, entry)
@@ -289,14 +289,14 @@ function Spy:ManageNearbyList()
 	-- attacking": KoS, then confirmed healers, then anyone actively engaged,
 	-- with recency only breaking ties. Recency ordering is useless in a big
 	-- fight because everything is recent.
-	if Spy.db.profile.KillPriorityOrder then
+	if Ping.db.profile.KillPriorityOrder then
 		local nowT = time()
 		for _, entry in ipairs(list) do
-			local pd = SpyPerCharDB.PlayerData[entry.player]
+			local pd = PingPerCharDB.PlayerData[entry.player]
 			local score = 0
-			if SpyPerCharDB.KOSData[entry.player] then score = score + 1000 end
-			if Spy:IsHealer(pd) then score = score + 500 end
-			if Spy.ActiveList[entry.player] then score = score + 100 end
+			if PingPerCharDB.KOSData[entry.player] then score = score + 1000 end
+			if Ping:IsHealer(pd) then score = score + 500 end
+			if Ping.ActiveList[entry.player] then score = score + 100 end
 			-- a burnt defensive cooldown means they're vulnerable now
 			if pd and pd.cdExpires and pd.cdExpires > GetTime() then score = score + 50 end
 			-- recency as the tiebreaker, capped so it never outranks a role
@@ -311,67 +311,67 @@ function Spy:ManageNearbyList()
 		end)
 	end
 
-	Spy.CurrentList = list
+	Ping.CurrentList = list
 end
 
-function Spy:ManageLastHourList()
+function Ping:ManageLastHourList()
 	local list = {}
-	for player in pairs(Spy.LastHourList) do
-		table.insert(list, { player = player, time = Spy.LastHourList[player] })
+	for player in pairs(Ping.LastHourList) do
+		table.insert(list, { player = player, time = Ping.LastHourList[player] })
 	end
 	table.sort(list, function(a, b) return a.time > b.time end)
-	Spy.CurrentList = list
+	Ping.CurrentList = list
 end
 
-function Spy:ManageIgnoreList()
+function Ping:ManageIgnoreList()
 	local list = {}
-	for player in pairs(SpyPerCharDB.IgnoreData) do
-		local playerData = SpyPerCharDB.PlayerData[player]
+	for player in pairs(PingPerCharDB.IgnoreData) do
+		local playerData = PingPerCharDB.PlayerData[player]
 		local position = time()
 		if playerData then position = playerData.time end
 		table.insert(list, { player = player, time = position })
 	end
 	table.sort(list, function(a, b) return a.time > b.time end)
-	Spy.CurrentList = list
+	Ping.CurrentList = list
 end
 
-function Spy:ManageKillOnSightList()
+function Ping:ManageKillOnSightList()
 	local list = {}
-	for player in pairs(SpyPerCharDB.KOSData) do
-		local playerData = SpyPerCharDB.PlayerData[player]
+	for player in pairs(PingPerCharDB.KOSData) do
+		local playerData = PingPerCharDB.PlayerData[player]
 		local position = time()
 		if playerData then position = playerData.time end
 		table.insert(list, { player = player, time = position })
 	end
 	table.sort(list, function(a, b) return a.time > b.time end)
-	Spy.CurrentList = list
+	Ping.CurrentList = list
 end
 
-function Spy:GetNearbyListSize()
+function Ping:GetNearbyListSize()
 	local entries = 0
-	for v in pairs(Spy.NearbyList) do
+	for v in pairs(Ping.NearbyList) do
 		entries = entries + 1
 	end
 	return entries
 end
 
-function Spy:UpdateActiveCount()
+function Ping:UpdateActiveCount()
     local activeCount = 0
     local healerCount = 0
-    for k in pairs(Spy.ActiveList) do
+    for k in pairs(Ping.ActiveList) do
         activeCount = activeCount + 1
-        if Spy:IsHealer(SpyPerCharDB.PlayerData[k]) then
+        if Ping:IsHealer(PingPerCharDB.PlayerData[k]) then
             healerCount = healerCount + 1
         end
     end
-	local theFrame = Spy.MainWindow
+	local theFrame = Ping.MainWindow
 	if not theFrame or not theFrame.CountFrame then return end
 
 	-- Aggregate header: in a big fight the individual names scroll past far too
 	-- fast to read, but "how many, and how many of them heal" stays useful.
 	local text
-	if Spy.db.profile.ShowAggregateHeader and healerCount > 0 then
-		local hc = Spy.db.profile.Colors["Spy"]["Healer Marker"]
+	if Ping.db.profile.ShowAggregateHeader and healerCount > 0 then
+		local hc = Ping.db.profile.Colors["Ping"]["Healer Marker"]
 		local hex = hc and format("%02x%02x%02x", hc.r * 255, hc.g * 255, hc.b * 255) or "4fe27a"
 		text = format("|cFF0070DE%d|r |cff%s%dH|r", activeCount, hex, healerCount)
 	else
@@ -380,103 +380,103 @@ function Spy:UpdateActiveCount()
 	theFrame.CountFrame.Text:SetText(text)
 end
 
-function Spy:ManageExpirations()
-	local mode = Spy.db.profile.CurrentList
-	local expirationFunction = Spy.ListTypes[mode][3]
+function Ping:ManageExpirations()
+	local mode = Ping.db.profile.CurrentList
+	local expirationFunction = Ping.ListTypes[mode][3]
 	if expirationFunction then
 		expirationFunction()
 	end
 end
 
-function Spy:ManageNearbyListExpirations()
+function Ping:ManageNearbyListExpirations()
 	local expired = false
 	local currentTime = time()
-	for player in pairs(Spy.ActiveList) do
-		if (currentTime - Spy.ActiveList[player]) > Spy.ActiveTimeout then
-			Spy.InactiveList[player] = Spy.ActiveList[player]
-			Spy.ActiveList[player] = nil
+	for player in pairs(Ping.ActiveList) do
+		if (currentTime - Ping.ActiveList[player]) > Ping.ActiveTimeout then
+			Ping.InactiveList[player] = Ping.ActiveList[player]
+			Ping.ActiveList[player] = nil
 			expired = true
 		end
 	end
-	if Spy.db.profile.RemoveUndetected ~= "Never" then
-		for player in pairs(Spy.InactiveList) do
-			if (currentTime - Spy.InactiveList[player]) > Spy.InactiveTimeout then
-				if Spy.PlayerCommList[player] ~= nil then
-					Spy.MapNoteList[Spy.PlayerCommList[player]].displayed = false
-					Spy.MapNoteList[Spy.PlayerCommList[player]].worldIcon:Hide()
-					HBDP:RemoveMinimapIcon(self, Spy.MapNoteList[Spy.PlayerCommList[player]].miniIcon)
-					Spy.PlayerCommList[player] = nil
+	if Ping.db.profile.RemoveUndetected ~= "Never" then
+		for player in pairs(Ping.InactiveList) do
+			if (currentTime - Ping.InactiveList[player]) > Ping.InactiveTimeout then
+				if Ping.PlayerCommList[player] ~= nil then
+					Ping.MapNoteList[Ping.PlayerCommList[player]].displayed = false
+					Ping.MapNoteList[Ping.PlayerCommList[player]].worldIcon:Hide()
+					HBDP:RemoveMinimapIcon(self, Ping.MapNoteList[Ping.PlayerCommList[player]].miniIcon)
+					Ping.PlayerCommList[player] = nil
 				end
-				Spy.InactiveList[player] = nil
-				Spy.NearbyList[player] = nil
+				Ping.InactiveList[player] = nil
+				Ping.NearbyList[player] = nil
 				expired = true
 			end
 		end
 	end
 	if expired then
-		Spy:RefreshCurrentList()
-		Spy:UpdateActiveCount()
-		if Spy.db.profile.HideSpy and Spy:GetNearbyListSize() == 0 then 
+		Ping:RefreshCurrentList()
+		Ping:UpdateActiveCount()
+		if Ping.db.profile.HidePing and Ping:GetNearbyListSize() == 0 then 
 			if not InCombatLockdown() then
-				Spy.MainWindow:Hide()
+				Ping.MainWindow:Hide()
 			else	
-				Spy:HideSpyCombatCheck()
+				Ping:HidePingCombatCheck()
 			end
 		end
 	end
 end
 
-function Spy:ManageLastHourListExpirations()
+function Ping:ManageLastHourListExpirations()
 	local expired = false
 	local currentTime = time()
-	for player in pairs(Spy.LastHourList) do
-		if (currentTime - Spy.LastHourList[player]) > 3600 then
-			Spy.LastHourList[player] = nil
+	for player in pairs(Ping.LastHourList) do
+		if (currentTime - Ping.LastHourList[player]) > 3600 then
+			Ping.LastHourList[player] = nil
 			expired = true
 		end
 	end
 	if expired then
-		Spy:RefreshCurrentList()
+		Ping:RefreshCurrentList()
 	end
 end
 
-function Spy:RemovePlayerFromList(player)
-	Spy.NearbyList[player] = nil
-	Spy.ActiveList[player] = nil
-	Spy.InactiveList[player] = nil
-	if Spy.PlayerCommList[player] ~= nil then
-		Spy.MapNoteList[Spy.PlayerCommList[player]].displayed = false
-		Spy.MapNoteList[Spy.PlayerCommList[player]].worldIcon:Hide()
-		HBDP:RemoveMinimapIcon(self, Spy.MapNoteList[Spy.PlayerCommList[player]].miniIcon)
-		Spy.PlayerCommList[player] = nil
+function Ping:RemovePlayerFromList(player)
+	Ping.NearbyList[player] = nil
+	Ping.ActiveList[player] = nil
+	Ping.InactiveList[player] = nil
+	if Ping.PlayerCommList[player] ~= nil then
+		Ping.MapNoteList[Ping.PlayerCommList[player]].displayed = false
+		Ping.MapNoteList[Ping.PlayerCommList[player]].worldIcon:Hide()
+		HBDP:RemoveMinimapIcon(self, Ping.MapNoteList[Ping.PlayerCommList[player]].miniIcon)
+		Ping.PlayerCommList[player] = nil
 	end
-	Spy:RefreshCurrentList()
-	Spy:UpdateActiveCount()	
+	Ping:RefreshCurrentList()
+	Ping:UpdateActiveCount()	
 end
 
-function Spy:ClearList()
+function Ping:ClearList()
 	if IsShiftKeyDown () then
-		Spy:EnableSound(not Spy.db.profile.EnableSound, false)
+		Ping:EnableSound(not Ping.db.profile.EnableSound, false)
 	else	
-		Spy.NearbyList = {}
-		Spy.ActiveList = {}
-		Spy.InactiveList = {}
-		Spy.PlayerCommList = {}
-		Spy.ListAmountDisplayed = 0
-		for i = 1, Spy.MapNoteLimit do
-			Spy.MapNoteList[i].displayed = false
-			Spy.MapNoteList[i].worldIcon:Hide()
-			HBDP:RemoveMinimapIcon(self, Spy.MapNoteList[i].miniIcon)
+		Ping.NearbyList = {}
+		Ping.ActiveList = {}
+		Ping.InactiveList = {}
+		Ping.PlayerCommList = {}
+		Ping.ListAmountDisplayed = 0
+		for i = 1, Ping.MapNoteLimit do
+			Ping.MapNoteList[i].displayed = false
+			Ping.MapNoteList[i].worldIcon:Hide()
+			HBDP:RemoveMinimapIcon(self, Ping.MapNoteList[i].miniIcon)
 		end
-		Spy:SetCurrentList(1)
+		Ping:SetCurrentList(1)
 		if IsControlKeyDown() then
-			Spy:EnableSpy(not Spy.db.profile.Enabled, false)
+			Ping:EnablePing(not Ping.db.profile.Enabled, false)
 		end
-		Spy:UpdateActiveCount()
+		Ping:UpdateActiveCount()
 	end	
 end
 
-function Spy:AddPlayerData(name, class, level, race, guild, faction, isEnemy, isGuess)
+function Ping:AddPlayerData(name, class, level, race, guild, faction, isEnemy, isGuess)
 	local info = {}
 	info.name = name  --++ added to normalize data
 	info.class = class
@@ -486,15 +486,15 @@ function Spy:AddPlayerData(name, class, level, race, guild, faction, isEnemy, is
 	info.faction = faction
 	info.isEnemy = isEnemy
 	info.isGuess = isGuess
-	SpyPerCharDB.PlayerData[name] = info
-	return SpyPerCharDB.PlayerData[name]
+	PingPerCharDB.PlayerData[name] = info
+	return PingPerCharDB.PlayerData[name]
 end
 
-function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy, isGuess)
+function Ping:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy, isGuess)
 	local detected = true
-	local playerData = SpyPerCharDB.PlayerData[name]
+	local playerData = PingPerCharDB.PlayerData[name]
 	if not playerData then
-		playerData = Spy:AddPlayerData(name, class, level, race, guild, faction, isEnemy, isGuess)
+		playerData = Ping:AddPlayerData(name, class, level, race, guild, faction, isEnemy, isGuess)
 	else
 		if name ~= nil then playerData.name = name end  
 		if class ~= nil then playerData.class = class end
@@ -507,15 +507,15 @@ function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy,
 	end
 	if playerData then
 		-- measure how wrong a guess was, before the real level overwrites it
-		if type(level) == "number" and isGuess == false and Spy.DebugLevelCheck then
-			Spy:DebugLevelCheck(name, level)
+		if type(level) == "number" and isGuess == false and Ping.DebugLevelCheck then
+			Ping:DebugLevelCheck(name, level)
 		end
 		playerData.time = time()
-		Spy:ApplyZoneLevelFloor(playerData)
+		Ping:ApplyZoneLevelFloor(playerData)
 		-- Detection accounting. This was written and then never called, so every
 		-- dump reported zero detections for every session.
-		if Spy.DebugDetection then
-			Spy:DebugDetection(isGuess == false and "verified" or "guess", playerData)
+		if Ping.DebugDetection then
+			Ping:DebugDetection(isGuess == false and "verified" or "guess", playerData)
 		end
 
 		-- Position is refreshed on EVERY detection, not just the first.
@@ -523,8 +523,8 @@ function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy,
 		-- a player was being actively detected their coordinates froze at wherever
 		-- they were first spotted while the timestamp kept updating, so the last
 		-- known location went stale exactly while you were chasing them.
-		local isNewDetection = not Spy.ActiveList[name]
-		if isNewDetection and WorldMapFrame:IsVisible() and Spy.db.profile.SwitchToZone then
+		local isNewDetection = not Ping.ActiveList[name]
+		if isNewDetection and WorldMapFrame:IsVisible() and Ping.db.profile.SwitchToZone then
 			WorldMapFrame:SetMapID(C_Map.GetBestMapForUnit("player"))
 		end
 
@@ -554,10 +554,10 @@ function Spy:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy,
 	return detected
 end
 
-function Spy:UpdatePlayerStatus(name, class, level, race, guild, faction, isEnemy, isGuess)
-	local playerData = SpyPerCharDB.PlayerData[name]
+function Ping:UpdatePlayerStatus(name, class, level, race, guild, faction, isEnemy, isGuess)
+	local playerData = PingPerCharDB.PlayerData[name]
 	if not playerData then
-		playerData = Spy:AddPlayerData(name, class, level, race, guild, faction, isEnemy, isGuess)
+		playerData = Ping:AddPlayerData(name, class, level, race, guild, faction, isEnemy, isGuess)
 	else
 		if name ~= nil then playerData.name = name end  
 		if class ~= nil then playerData.class = class end
@@ -573,55 +573,55 @@ function Spy:UpdatePlayerStatus(name, class, level, race, guild, faction, isEnem
 	end	
 end
 
-function Spy:RemovePlayerData(name)
-	local playerData = SpyPerCharDB.PlayerData[name]
+function Ping:RemovePlayerData(name)
+	local playerData = PingPerCharDB.PlayerData[name]
 		if ((playerData.loses == nil) and (playerData.wins == nil)) then
-			SpyPerCharDB.PlayerData[name] = nil
+			PingPerCharDB.PlayerData[name] = nil
 		else
 			playerData.isEnemy = false
 		end
 end
 
-function Spy:RemovePlayerDataFromStats(name)
-	SpyPerCharDB.PlayerData[name] = nil
+function Ping:RemovePlayerDataFromStats(name)
+	PingPerCharDB.PlayerData[name] = nil
 end
 
-function Spy:AddIgnoreData(name)
-	SpyPerCharDB.IgnoreData[name] = true
+function Ping:AddIgnoreData(name)
+	PingPerCharDB.IgnoreData[name] = true
 end
 
-function Spy:RemoveIgnoreData(name)
-	if SpyPerCharDB.IgnoreData[name] then
-		SpyPerCharDB.IgnoreData[name] = nil
+function Ping:RemoveIgnoreData(name)
+	if PingPerCharDB.IgnoreData[name] then
+		PingPerCharDB.IgnoreData[name] = nil
 	end
 end
 
-function Spy:AddKOSData(name)
-	SpyPerCharDB.KOSData[name] = time()
---	SpyPerCharDB.PlayerData[name].kos = 1 
-	if Spy.db.profile.ShareKOSBetweenCharacters then
-		SpyDB.removeKOSData[Spy.RealmName][Spy.FactionName][name] = nil
+function Ping:AddKOSData(name)
+	PingPerCharDB.KOSData[name] = time()
+--	PingPerCharDB.PlayerData[name].kos = 1 
+	if Ping.db.profile.ShareKOSBetweenCharacters then
+		PingDB.removeKOSData[Ping.RealmName][Ping.FactionName][name] = nil
 	end
 end
 
-function Spy:RemoveKOSData(name)
-	if SpyPerCharDB.KOSData[name] then
-		local playerData = SpyPerCharDB.PlayerData[name]
+function Ping:RemoveKOSData(name)
+	if PingPerCharDB.KOSData[name] then
+		local playerData = PingPerCharDB.PlayerData[name]
 		if playerData and playerData.reason then
 			playerData.reason = nil
 		end
-		SpyPerCharDB.KOSData[name] = nil
-		if SpyPerCharDB.PlayerData[name] then
-			SpyPerCharDB.PlayerData[name].kos = nil
+		PingPerCharDB.KOSData[name] = nil
+		if PingPerCharDB.PlayerData[name] then
+			PingPerCharDB.PlayerData[name].kos = nil
 		end
-		if Spy.db.profile.ShareKOSBetweenCharacters then
-			SpyDB.removeKOSData[Spy.RealmName][Spy.FactionName][name] = time()
+		if Ping.db.profile.ShareKOSBetweenCharacters then
+			PingDB.removeKOSData[Ping.RealmName][Ping.FactionName][name] = time()
 		end
 	end
 end
 
-function Spy:SetKOSReason(name, reason, other)
-	local playerData = SpyPerCharDB.PlayerData[name]
+function Ping:SetKOSReason(name, reason, other)
+	local playerData = PingPerCharDB.PlayerData[name]
 	if playerData then
 		if not reason then
 			playerData.reason = nil
@@ -629,7 +629,7 @@ function Spy:SetKOSReason(name, reason, other)
 			if not playerData.reason then playerData.reason = {} end
 			if reason == L["KOSReasonOther"] then
 				if not other then 
-					local dialog = StaticPopup_Show("Spy_SetKOSReasonOther", name)
+					local dialog = StaticPopup_Show("Ping_SetKOSReasonOther", name)
 					if dialog then
 						dialog.playerName = name
 					end
@@ -639,7 +639,7 @@ function Spy:SetKOSReason(name, reason, other)
 					else
 						playerData.reason[L["KOSReasonOther"]] = other
 					end
-					Spy:RegenerateKOSCentralList(name)
+					Ping:RegenerateKOSCentralList(name)
 				end
 			else
 				if playerData.reason[reason] then
@@ -647,23 +647,23 @@ function Spy:SetKOSReason(name, reason, other)
 				else
 					playerData.reason[reason] = true
 				end
-				Spy:RegenerateKOSCentralList(name)
+				Ping:RegenerateKOSCentralList(name)
 			end
 		end
 	end
 end
 
-function Spy:AlertPlayer(player, source)
-	local playerData = SpyPerCharDB.PlayerData[player]
-	if SpyPerCharDB.KOSData[player] and Spy.db.profile.WarnOnKOS then
---		if Spy.db.profile.DisplayWarningsInErrorsFrame then
-		if Spy.db.profile.DisplayWarnings == "ErrorFrame" then
-			local text = Spy.db.profile.Colors.Warning["Warning Text"]
+function Ping:AlertPlayer(player, source)
+	local playerData = PingPerCharDB.PlayerData[player]
+	if PingPerCharDB.KOSData[player] and Ping.db.profile.WarnOnKOS then
+--		if Ping.db.profile.DisplayWarningsInErrorsFrame then
+		if Ping.db.profile.DisplayWarnings == "ErrorFrame" then
+			local text = Ping.db.profile.Colors.Warning["Warning Text"]
 			local msg = L["KOSWarning"]..player
 			UIErrorsFrame:AddMessage(msg, text.r, text.g, text.b, 1.0, UIERRORS_HOLD_TIME)
 		else
-			if source ~= nil and source ~= Spy.CharacterName then
-				Spy:ShowAlert("kosaway", player, source, Spy:GetPlayerLocation(playerData))
+			if source ~= nil and source ~= Ping.CharacterName then
+				Ping:ShowAlert("kosaway", player, source, Ping:GetPlayerLocation(playerData))
 			else
 				local reasonText = ""
 				if playerData.reason then
@@ -676,113 +676,113 @@ function Spy:AlertPlayer(player, source)
 						end
 					end
 				end
-				Spy:ShowAlert("kos", player, nil, reasonText)
+				Ping:ShowAlert("kos", player, nil, reasonText)
 			end
 		end
-		if Spy.db.profile.EnableSound then
-			if source ~= nil and source ~= Spy.CharacterName then
-				PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-kosaway.mp3", Spy.db.profile.SoundChannel)
+		if Ping.db.profile.EnableSound then
+			if source ~= nil and source ~= Ping.CharacterName then
+				PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-kosaway.mp3", Ping.db.profile.SoundChannel)
 			else
-				PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-kos.mp3", Spy.db.profile.SoundChannel)
+				PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-kos.mp3", Ping.db.profile.SoundChannel)
 			end
 		end
-		if Spy.db.profile.ShareKOSBetweenCharacters then Spy:RegenerateKOSCentralList(player) end
-	elseif Spy.db.profile.WarnOnKOSGuild then
-		if playerData and playerData.guild and Spy.KOSGuild[playerData.guild] and Spy:AllowKOSGuildAlert(playerData.guild) then
+		if Ping.db.profile.ShareKOSBetweenCharacters then Ping:RegenerateKOSCentralList(player) end
+	elseif Ping.db.profile.WarnOnKOSGuild then
+		if playerData and playerData.guild and Ping.KOSGuild[playerData.guild] and Ping:AllowKOSGuildAlert(playerData.guild) then
 			-- Show WHO was detected, not just the guild tag: several members of one
 			-- KoS guild are usually around at once, and "<Guild>" alone told you
 			-- nothing about which of them you were actually looking at.
 			local who = player.." <"..playerData.guild..">"
---			if Spy.db.profile.DisplayWarningsInErrorsFrame then
-			if Spy.db.profile.DisplayWarnings == "ErrorFrame" then
-				local text = Spy.db.profile.Colors.Warning["Warning Text"]
+--			if Ping.db.profile.DisplayWarningsInErrorsFrame then
+			if Ping.db.profile.DisplayWarnings == "ErrorFrame" then
+				local text = Ping.db.profile.Colors.Warning["Warning Text"]
 				local msg = L["KOSGuildWarning"]..who
 				UIErrorsFrame:AddMessage(msg, text.r, text.g, text.b, 1.0, UIERRORS_HOLD_TIME)
 			else
-				if source ~= nil and source ~= Spy.CharacterName then
-					Spy:ShowAlert("kosguildaway", who, source, Spy:GetPlayerLocation(playerData))
+				if source ~= nil and source ~= Ping.CharacterName then
+					Ping:ShowAlert("kosguildaway", who, source, Ping:GetPlayerLocation(playerData))
 				else
-					Spy:ShowAlert("kosguild", who)
+					Ping:ShowAlert("kosguild", who)
 				end
 			end
-			if Spy.db.profile.EnableSound then
-				if source ~= nil and source ~= Spy.CharacterName then
-					PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-kosaway.mp3", Spy.db.profile.SoundChannel)
+			if Ping.db.profile.EnableSound then
+				if source ~= nil and source ~= Ping.CharacterName then
+					PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-kosaway.mp3", Ping.db.profile.SoundChannel)
 				else
-					PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-kosguild.mp3", Spy.db.profile.SoundChannel)
+					PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-kosguild.mp3", Ping.db.profile.SoundChannel)
 				end
 			end
 		else
-			if Spy.db.profile.EnableSound and not Spy.db.profile.OnlySoundKoS then 
-				if source == nil or source == Spy.CharacterName then
-					if playerData and Spy.db.profile.WarnOnRace and playerData.race == Spy.db.profile.SelectWarnRace then --++
-						PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-race.mp3", Spy.db.profile.SoundChannel) 
+			if Ping.db.profile.EnableSound and not Ping.db.profile.OnlySoundKoS then 
+				if source == nil or source == Ping.CharacterName then
+					if playerData and Ping.db.profile.WarnOnRace and playerData.race == Ping.db.profile.SelectWarnRace then --++
+						PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-race.mp3", Ping.db.profile.SoundChannel) 
 					else
-						PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-nearby.mp3", Spy.db.profile.SoundChannel)
+						PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-nearby.mp3", Ping.db.profile.SoundChannel)
 					end
 				end
 			end
 		end 
-	elseif Spy.db.profile.EnableSound and not Spy.db.profile.OnlySoundKoS then 
-		if source == nil or source == Spy.CharacterName then
-			if playerData and Spy.db.profile.WarnOnRace and playerData.race == Spy.db.profile.SelectWarnRace then
-				PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-race.mp3", Spy.db.profile.SoundChannel) 
+	elseif Ping.db.profile.EnableSound and not Ping.db.profile.OnlySoundKoS then 
+		if source == nil or source == Ping.CharacterName then
+			if playerData and Ping.db.profile.WarnOnRace and playerData.race == Ping.db.profile.SelectWarnRace then
+				PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-race.mp3", Ping.db.profile.SoundChannel) 
 			else
-				PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-nearby.mp3", Spy.db.profile.SoundChannel)
+				PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-nearby.mp3", Ping.db.profile.SoundChannel)
 			end
 		end
-	elseif Spy.db.profile.EnableSound and not Spy.db.profile.OnlySoundKoS then
-		if source == nil or source == Spy.CharacterName then
-			PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-nearby.mp3", Spy.db.profile.SoundChannel)
+	elseif Ping.db.profile.EnableSound and not Ping.db.profile.OnlySoundKoS then
+		if source == nil or source == Ping.CharacterName then
+			PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-nearby.mp3", Ping.db.profile.SoundChannel)
 		end
 	end
 end
 
-function Spy:AlertStealthPlayer(player)
-	if Spy.db.profile.WarnOnStealth then
---		if Spy.db.profile.DisplayWarningsInErrorsFrame then
-		if Spy.db.profile.DisplayWarnings == "ErrorFrame" then
-			local text = Spy.db.profile.Colors.Warning["Warning Text"]
+function Ping:AlertStealthPlayer(player)
+	if Ping.db.profile.WarnOnStealth then
+--		if Ping.db.profile.DisplayWarningsInErrorsFrame then
+		if Ping.db.profile.DisplayWarnings == "ErrorFrame" then
+			local text = Ping.db.profile.Colors.Warning["Warning Text"]
 			local msg = L["StealthWarning"]..player
 			UIErrorsFrame:AddMessage(msg, text.r, text.g, text.b, 1.0, UIERRORS_HOLD_TIME)
 		else
-			Spy:ShowAlert("stealth", player)
+			Ping:ShowAlert("stealth", player)
 		end
-		if Spy.db.profile.EnableSound then
-			PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-stealth.mp3", Spy.db.profile.SoundChannel)
+		if Ping.db.profile.EnableSound then
+			PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-stealth.mp3", Ping.db.profile.SoundChannel)
 		end
 	end
 end
 
-function Spy:AlertProwlPlayer(player)
-	if Spy.db.profile.WarnOnStealth then
---		if Spy.db.profile.DisplayWarningsInErrorsFrame then
-		if Spy.db.profile.DisplayWarnings == "ErrorFrame" then
-			local text = Spy.db.profile.Colors.Warning["Warning Text"]
+function Ping:AlertProwlPlayer(player)
+	if Ping.db.profile.WarnOnStealth then
+--		if Ping.db.profile.DisplayWarningsInErrorsFrame then
+		if Ping.db.profile.DisplayWarnings == "ErrorFrame" then
+			local text = Ping.db.profile.Colors.Warning["Warning Text"]
 			local msg = L["StealthWarning"]..player
 			UIErrorsFrame:AddMessage(msg, text.r, text.g, text.b, 1.0, UIERRORS_HOLD_TIME)
 		else
-			Spy:ShowAlert("prowl", player)
+			Ping:ShowAlert("prowl", player)
 		end
-		if Spy.db.profile.EnableSound then
-			PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\detected-stealth.mp3", Spy.db.profile.SoundChannel)
+		if Ping.db.profile.EnableSound then
+			PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\detected-stealth.mp3", Ping.db.profile.SoundChannel)
 		end
 	end
 end
 
-function Spy:AnnouncePlayer(player, channel)
-	if not Spy_IgnoreList[player] then
+function Ping:AnnouncePlayer(player, channel)
+	if not Ping_IgnoreList[player] then
 		local msg = ""
-		local isKOS = SpyPerCharDB.KOSData[player]
-		local playerData = SpyPerCharDB.PlayerData[player]
+		local isKOS = PingPerCharDB.KOSData[player]
+		local playerData = PingPerCharDB.PlayerData[player]
 
-		local announce = Spy.db.profile.Announce  
-		if channel or announce == "Self" or announce == "LocalDefense" or (announce == "Guild" and GetGuildInfo("player") ~= nil and not Spy.InInstance) or (announce == "Party" and GetNumGroupMembers() > 0) or (announce == "Raid" and UnitInRaid("player")) then --++
+		local announce = Ping.db.profile.Announce  
+		if channel or announce == "Self" or announce == "LocalDefense" or (announce == "Guild" and GetGuildInfo("player") ~= nil and not Ping.InInstance) or (announce == "Party" and GetNumGroupMembers() > 0) or (announce == "Raid" and UnitInRaid("player")) then --++
 			if announce == "Self" and not channel then
 				if isKOS then
-					msg = msg..L["SpySignatureColored"]..L["KillOnSightDetectedColored"]..player.." "
+					msg = msg..L["PingSignatureColored"]..L["KillOnSightDetectedColored"]..player.." "
 				else
-					msg = msg..L["SpySignatureColored"]..L["PlayerDetectedColored"]..player.." "
+					msg = msg..L["PingSignatureColored"]..L["PlayerDetectedColored"]..player.." "
 				end
 			else
 				if isKOS then
@@ -828,7 +828,7 @@ function Spy:AnnouncePlayer(player, channel)
 				end
 			else
 				-- announce to standard channel
-				if isKOS or not Spy.db.profile.OnlyAnnounceKoS then
+				if isKOS or not Ping.db.profile.OnlyAnnounceKoS then
 					if announce == "Self" then
 						DEFAULT_CHAT_FRAME:AddMessage(msg)
 					elseif announce == "LocalDefense" then
@@ -840,8 +840,8 @@ function Spy:AnnouncePlayer(player, channel)
 			end
 		end
 
-		-- announce to other Spy users
-		if Spy.db.profile.ShareData then
+		-- announce to other Ping users
+		if Ping.db.profile.ShareData then
 			local class, level, race, zone, subZone, mapX, mapY, guild, mapID = "", "", "", "", "", "", "", "", ""
 			if playerData then
 				if playerData.class then class = playerData.class end
@@ -854,21 +854,21 @@ function Spy:AnnouncePlayer(player, channel)
 				if playerData.mapY then mapY = playerData.mapY end
 				if playerData.guild then guild = playerData.guild end
 			end
-			local details = Spy.Version.."|"..player.."|"..class.."|"..level.."|"..race.."|"..zone.."|"..subZone.."|"..mapX.."|"..mapY.."|"..guild.."|"..mapID
+			local details = Ping.Version.."|"..player.."|"..class.."|"..level.."|"..race.."|"..zone.."|"..subZone.."|"..mapX.."|"..mapY.."|"..guild.."|"..mapID
 			if strlen(details) < 240 then
 				if channel then
 					if (channel == "PARTY" and GetNumGroupMembers() > 0) or (channel == "RAID" and UnitInRaid("player")) or (channel == "GUILD" and GetGuildInfo("player") ~= nil) then
-						Spy:SendCommMessage(Spy.Signature, details, channel)
+						Ping:SendCommMessage(Ping.Signature, details, channel)
 					end
 				else
 					if GetNumGroupMembers() > 0 then
-						Spy:SendCommMessage(Spy.Signature, details, "PARTY")
+						Ping:SendCommMessage(Ping.Signature, details, "PARTY")
 					end
 					if UnitInRaid("player") then
-						Spy:SendCommMessage(Spy.Signature, details, "RAID")
+						Ping:SendCommMessage(Ping.Signature, details, "RAID")
 					end
-					if Spy.InInstance == false and GetGuildInfo("player") ~= nil then
-						Spy:SendCommMessage(Spy.Signature, details, "GUILD")
+					if Ping.InInstance == false and GetGuildInfo("player") ~= nil then
+						Ping:SendCommMessage(Ping.Signature, details, "GUILD")
 					end
 				end
 			end
@@ -876,8 +876,8 @@ function Spy:AnnouncePlayer(player, channel)
 	end	
 end
 
-function Spy:SendKoStoGuild(player)
-	local playerData = SpyPerCharDB.PlayerData[player]
+function Ping:SendKoStoGuild(player)
+	local playerData = PingPerCharDB.PlayerData[player]
 	local class, level, race, zone, subZone, mapX, mapY, guild, mapID = "", "", "", "", "", "", "", "", ""	 			
 	if playerData then
 		if playerData.class then class = playerData.class end
@@ -890,102 +890,102 @@ function Spy:SendKoStoGuild(player)
 		if playerData.mapY then mapY = playerData.mapY end
 		if playerData.guild then guild = playerData.guild end
 	end
-	local details = Spy.Version.."|"..player.."|"..class.."|"..level.."|"..race.."|"..zone.."|"..subZone.."|"..mapX.."|"..mapY.."|"..guild.."|"..mapID
+	local details = Ping.Version.."|"..player.."|"..class.."|"..level.."|"..race.."|"..zone.."|"..subZone.."|"..mapX.."|"..mapY.."|"..guild.."|"..mapID
 	if strlen(details) < 240 then
-		if Spy.InInstance == false and GetGuildInfo("player") ~= nil then
-			Spy:SendCommMessage(Spy.Signature, details, "GUILD")
+		if Ping.InInstance == false and GetGuildInfo("player") ~= nil then
+			Ping:SendCommMessage(Ping.Signature, details, "GUILD")
 		end
 	end
 end
 
-function Spy:ToggleIgnorePlayer(ignore, player)
+function Ping:ToggleIgnorePlayer(ignore, player)
 	if ignore then
-		Spy:AddIgnoreData(player)
-		Spy:RemoveKOSData(player)
-		if Spy.db.profile.EnableSound then
-			PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\list-add.mp3", Spy.db.profile.SoundChannel)
+		Ping:AddIgnoreData(player)
+		Ping:RemoveKOSData(player)
+		if Ping.db.profile.EnableSound then
+			PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\list-add.mp3", Ping.db.profile.SoundChannel)
 		end
-		DEFAULT_CHAT_FRAME:AddMessage(L["SpySignatureColored"]..L["PlayerAddedToIgnoreColored"]..player)
+		DEFAULT_CHAT_FRAME:AddMessage(L["PingSignatureColored"]..L["PlayerAddedToIgnoreColored"]..player)
 	else
-		Spy:RemoveIgnoreData(player)
-		if Spy.db.profile.EnableSound then
-			PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\list-remove.mp3", Spy.db.profile.SoundChannel)
+		Ping:RemoveIgnoreData(player)
+		if Ping.db.profile.EnableSound then
+			PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\list-remove.mp3", Ping.db.profile.SoundChannel)
 		end
-		DEFAULT_CHAT_FRAME:AddMessage(L["SpySignatureColored"]..L["PlayerRemovedFromIgnoreColored"]..player)
+		DEFAULT_CHAT_FRAME:AddMessage(L["PingSignatureColored"]..L["PlayerRemovedFromIgnoreColored"]..player)
 	end
-	Spy:RegenerateKOSGuildList()
-	if Spy.db.profile.ShareKOSBetweenCharacters then
-		Spy:RegenerateKOSCentralList()
+	Ping:RegenerateKOSGuildList()
+	if Ping.db.profile.ShareKOSBetweenCharacters then
+		Ping:RegenerateKOSCentralList()
 	end
-	Spy:RefreshCurrentList()
+	Ping:RefreshCurrentList()
 end
 
-function Spy:ToggleKOSPlayer(kos, player)
+function Ping:ToggleKOSPlayer(kos, player)
 	if kos then
-		Spy:AddKOSData(player)
-		Spy:RemoveIgnoreData(player)
-		if player ~= SpyPerCharDB.PlayerData[name] then
---			Spy:UpdatePlayerData(player, nil, nil, nil, nil, nil, true, nil)
-			Spy:UpdatePlayerStatus(player, nil, nil, nil, nil, nil, true, nil)
-			SpyPerCharDB.PlayerData[player].kos = 1
+		Ping:AddKOSData(player)
+		Ping:RemoveIgnoreData(player)
+		if player ~= PingPerCharDB.PlayerData[name] then
+--			Ping:UpdatePlayerData(player, nil, nil, nil, nil, nil, true, nil)
+			Ping:UpdatePlayerStatus(player, nil, nil, nil, nil, nil, true, nil)
+			PingPerCharDB.PlayerData[player].kos = 1
 		end	
-		if Spy.db.profile.EnableSound then
-			PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\list-add.mp3", Spy.db.profile.SoundChannel)
+		if Ping.db.profile.EnableSound then
+			PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\list-add.mp3", Ping.db.profile.SoundChannel)
 		end
-		DEFAULT_CHAT_FRAME:AddMessage(L["SpySignatureColored"]..L["PlayerAddedToKOSColored"]..player)
+		DEFAULT_CHAT_FRAME:AddMessage(L["PingSignatureColored"]..L["PlayerAddedToKOSColored"]..player)
 	else
-		Spy:RemoveKOSData(player)
-		if Spy.db.profile.EnableSound then
-			PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\list-remove.mp3", Spy.db.profile.SoundChannel)
+		Ping:RemoveKOSData(player)
+		if Ping.db.profile.EnableSound then
+			PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\list-remove.mp3", Ping.db.profile.SoundChannel)
 		end
-		DEFAULT_CHAT_FRAME:AddMessage(L["SpySignatureColored"]..L["PlayerRemovedFromKOSColored"]..player)
+		DEFAULT_CHAT_FRAME:AddMessage(L["PingSignatureColored"]..L["PlayerRemovedFromKOSColored"]..player)
 	end
-	Spy:RegenerateKOSGuildList()
-	if Spy.db.profile.ShareKOSBetweenCharacters then
-		Spy:RegenerateKOSCentralList()
+	Ping:RegenerateKOSGuildList()
+	if Ping.db.profile.ShareKOSBetweenCharacters then
+		Ping:RegenerateKOSCentralList()
 	end
-	Spy:RefreshCurrentList()
+	Ping:RefreshCurrentList()
 end
 
-function Spy:PurgeUndetectedData()
+function Ping:PurgeUndetectedData()
 	local secondsPerDay = 60 * 60 * 24
 	local timeout = 90 * secondsPerDay
-	if Spy.db.profile.PurgeData == "OneDay" then
+	if Ping.db.profile.PurgeData == "OneDay" then
 		timeout = secondsPerDay
-	elseif Spy.db.profile.PurgeData == "FiveDays" then
+	elseif Ping.db.profile.PurgeData == "FiveDays" then
 		timeout = 5 * secondsPerDay
-	elseif Spy.db.profile.PurgeData == "TenDays" then
+	elseif Ping.db.profile.PurgeData == "TenDays" then
 		timeout = 10 * secondsPerDay
-	elseif Spy.db.profile.PurgeData == "ThirtyDays" then
+	elseif Ping.db.profile.PurgeData == "ThirtyDays" then
 		timeout = 30 * secondsPerDay
-	elseif Spy.db.profile.PurgeData == "SixtyDays" then
+	elseif Ping.db.profile.PurgeData == "SixtyDays" then
 		timeout = 60 * secondsPerDay
-	elseif Spy.db.profile.PurgeData == "NinetyDays" then
+	elseif Ping.db.profile.PurgeData == "NinetyDays" then
 		timeout = 90 * secondsPerDay
 	end
 
 	-- remove expired players held in character data
 	local currentTime = time()
-	for player in pairs(SpyPerCharDB.PlayerData) do
-		local playerData = SpyPerCharDB.PlayerData[player]
-		if Spy.db.profile.PurgeWinLossData then
+	for player in pairs(PingPerCharDB.PlayerData) do
+		local playerData = PingPerCharDB.PlayerData[player]
+		if Ping.db.profile.PurgeWinLossData then
 --			if not playerData.time or (currentTime - playerData.time) > timeout or not playerData.isEnemy then
 			if not playerData.time or (currentTime - playerData.time) > timeout then
-				Spy:RemoveIgnoreData(player)
-				Spy:RemoveKOSData(player)
-				SpyPerCharDB.PlayerData[player] = nil
+				Ping:RemoveIgnoreData(player)
+				Ping:RemoveKOSData(player)
+				PingPerCharDB.PlayerData[player] = nil
 			end
 		else
 			if ((playerData.loses == nil) and (playerData.wins == nil)) then
 --				if not playerData.time or (currentTime - playerData.time) > timeout or not playerData.isEnemy then
 				if not playerData.time or (currentTime - playerData.time) > timeout then
-					Spy:RemoveIgnoreData(player)
-					if Spy.db.profile.PurgeKoS then
-						Spy:RemoveKOSData(player)
-						SpyPerCharDB.PlayerData[player] = nil
+					Ping:RemoveIgnoreData(player)
+					if Ping.db.profile.PurgeKoS then
+						Ping:RemoveKOSData(player)
+						PingPerCharDB.PlayerData[player] = nil
 					else
 						if (playerData.kos == nil) then
-							SpyPerCharDB.PlayerData[player] = nil
+							PingPerCharDB.PlayerData[player] = nil
 						end	
 					end	
 				end
@@ -994,73 +994,73 @@ function Spy:PurgeUndetectedData()
 	end
 	
 	-- remove expired kos players held in central data
-	local kosData = SpyDB.kosData[Spy.RealmName][Spy.FactionName]
+	local kosData = PingDB.kosData[Ping.RealmName][Ping.FactionName]
 	for characterName in pairs(kosData) do
 		local characterKosData = kosData[characterName]
 		for player in pairs(characterKosData) do
 			local kosPlayerData = characterKosData[player]
-			if Spy.db.profile.PurgeKoS then
+			if Ping.db.profile.PurgeKoS then
 				if not kosPlayerData.time or (currentTime - kosPlayerData.time) > timeout or not kosPlayerData.isEnemy then
-					SpyDB.kosData[Spy.RealmName][Spy.FactionName][characterName][player] = nil
-					SpyDB.removeKOSData[Spy.RealmName][Spy.FactionName][player] = nil
+					PingDB.kosData[Ping.RealmName][Ping.FactionName][characterName][player] = nil
+					PingDB.removeKOSData[Ping.RealmName][Ping.FactionName][player] = nil
 				end
 			end
 		end
 	end
-	if not Spy.db.profile.AppendUnitNameCheck then 	
-		Spy:AppendUnitNames() end
-	if not Spy.db.profile.AppendUnitKoSCheck then
-		Spy:AppendUnitKoS() end
+	if not Ping.db.profile.AppendUnitNameCheck then 	
+		Ping:AppendUnitNames() end
+	if not Ping.db.profile.AppendUnitKoSCheck then
+		Ping:AppendUnitKoS() end
 end
 
-function Spy:RegenerateKOSGuildList()
-	Spy.KOSGuild = {}
-	for player in pairs(SpyPerCharDB.KOSData) do
-		local playerData = SpyPerCharDB.PlayerData[player]
+function Ping:RegenerateKOSGuildList()
+	Ping.KOSGuild = {}
+	for player in pairs(PingPerCharDB.KOSData) do
+		local playerData = PingPerCharDB.PlayerData[player]
 		if playerData and playerData.guild then
-			Spy.KOSGuild[playerData.guild] = true
+			Ping.KOSGuild[playerData.guild] = true
 		end
 	end
 end
 
-function Spy:RemoveLocalKOSPlayers()
-	for player in pairs(SpyPerCharDB.KOSData) do
-		if SpyDB.removeKOSData[Spy.RealmName][Spy.FactionName][player] then
-			Spy:RemoveKOSData(player)
+function Ping:RemoveLocalKOSPlayers()
+	for player in pairs(PingPerCharDB.KOSData) do
+		if PingDB.removeKOSData[Ping.RealmName][Ping.FactionName][player] then
+			Ping:RemoveKOSData(player)
 		end
 	end
 end
 
-function Spy:RegenerateKOSCentralList(player)
+function Ping:RegenerateKOSCentralList(player)
 	if player then
-		local playerData = SpyPerCharDB.PlayerData[player]
-		SpyDB.kosData[Spy.RealmName][Spy.FactionName][Spy.CharacterName][player] = {}
+		local playerData = PingPerCharDB.PlayerData[player]
+		PingDB.kosData[Ping.RealmName][Ping.FactionName][Ping.CharacterName][player] = {}
 		if playerData then
-			SpyDB.kosData[Spy.RealmName][Spy.FactionName][Spy.CharacterName][player] = playerData
+			PingDB.kosData[Ping.RealmName][Ping.FactionName][Ping.CharacterName][player] = playerData
 		end
-		SpyDB.kosData[Spy.RealmName][Spy.FactionName][Spy.CharacterName][player].added = SpyPerCharDB.KOSData[player]
+		PingDB.kosData[Ping.RealmName][Ping.FactionName][Ping.CharacterName][player].added = PingPerCharDB.KOSData[player]
 	else
-		for player in pairs(SpyPerCharDB.KOSData) do
-			local playerData = SpyPerCharDB.PlayerData[player]
-			SpyDB.kosData[Spy.RealmName][Spy.FactionName][Spy.CharacterName][player] = {}
+		for player in pairs(PingPerCharDB.KOSData) do
+			local playerData = PingPerCharDB.PlayerData[player]
+			PingDB.kosData[Ping.RealmName][Ping.FactionName][Ping.CharacterName][player] = {}
 			if playerData then
-				SpyDB.kosData[Spy.RealmName][Spy.FactionName][Spy.CharacterName][player] = playerData
+				PingDB.kosData[Ping.RealmName][Ping.FactionName][Ping.CharacterName][player] = playerData
 			end
-			SpyDB.kosData[Spy.RealmName][Spy.FactionName][Spy.CharacterName][player].added = SpyPerCharDB.KOSData[player]
+			PingDB.kosData[Ping.RealmName][Ping.FactionName][Ping.CharacterName][player].added = PingPerCharDB.KOSData[player]
 		end
 	end
 end
 
-function Spy:RegenerateKOSListFromCentral()
-	local kosData = SpyDB.kosData[Spy.RealmName][Spy.FactionName]
+function Ping:RegenerateKOSListFromCentral()
+	local kosData = PingDB.kosData[Ping.RealmName][Ping.FactionName]
 	for characterName in pairs(kosData) do
-		if characterName ~= Spy.CharacterName then
+		if characterName ~= Ping.CharacterName then
 			local characterKosData = kosData[characterName]
 			for player in pairs(characterKosData) do
-				if not SpyDB.removeKOSData[Spy.RealmName][Spy.FactionName][player] then
-					local playerData = SpyPerCharDB.PlayerData[player]
+				if not PingDB.removeKOSData[Ping.RealmName][Ping.FactionName][player] then
+					local playerData = PingPerCharDB.PlayerData[player]
 					if not playerData then
-						playerData = Spy:AddPlayerData(player, class, level, race, guild, faction, isEnemy, isGuess)
+						playerData = Ping:AddPlayerData(player, class, level, race, guild, faction, isEnemy, isGuess)
 					end
 					local kosPlayerData = characterKosData[player]
 					if kosPlayerData.time and (not playerData.time or (playerData.time and playerData.time < kosPlayerData.time)) then
@@ -1114,9 +1114,9 @@ function Spy:RegenerateKOSListFromCentral()
 							end
 						end
 					end
-					local characterKOSPlayerData = SpyPerCharDB.KOSData[player]
+					local characterKOSPlayerData = PingPerCharDB.KOSData[player]
 					if kosPlayerData.added and (not characterKOSPlayerData or characterKOSPlayerData < kosPlayerData.added) then
-						SpyPerCharDB.KOSData[player] = kosPlayerData.added
+						PingPerCharDB.KOSData[player] = kosPlayerData.added
 					end
 				end
 			end
@@ -1126,29 +1126,29 @@ end
 
 -- ============================================================
 -- TomTom integration: point TomTom's arrow at where a player was last seen.
--- Spy already records mapID/mapX/mapY per player, which is exactly what
+-- Ping already records mapID/mapX/mapY per player, which is exactly what
 -- TomTom:AddWaypoint wants, so a sighting can become a navigable waypoint.
 -- ============================================================
-function Spy:HasTomTom()
+function Ping:HasTomTom()
 	return TomTom ~= nil and type(TomTom.AddWaypoint) == "function"
 end
 
-function Spy:SetTomTomWaypoint(name)
+function Ping:SetTomTomWaypoint(name)
 	if not name or name == "" then return end
-	if not Spy:HasTomTom() then
+	if not Ping:HasTomTom() then
 		DEFAULT_CHAT_FRAME:AddMessage(L["TomTomMissing"])
 		return
 	end
-	local playerData = SpyPerCharDB.PlayerData[name]
+	local playerData = PingPerCharDB.PlayerData[name]
 	if not playerData or not playerData.mapID or not playerData.mapX or not playerData.mapY then
 		DEFAULT_CHAT_FRAME:AddMessage(format(L["TomTomNoLocation"], name))
 		return
 	end
 
-	-- Clear the previous Spy waypoint so repeated clicks don't stack arrows.
-	if Spy.TomTomWaypoint and TomTom.RemoveWaypoint then
-		pcall(TomTom.RemoveWaypoint, TomTom, Spy.TomTomWaypoint)
-		Spy.TomTomWaypoint = nil
+	-- Clear the previous Ping waypoint so repeated clicks don't stack arrows.
+	if Ping.TomTomWaypoint and TomTom.RemoveWaypoint then
+		pcall(TomTom.RemoveWaypoint, TomTom, Ping.TomTomWaypoint)
+		Ping.TomTomWaypoint = nil
 	end
 
 	-- Age matters: a two-minute-old sighting is a guess, not a location.
@@ -1160,47 +1160,47 @@ function Spy:SetTomTomWaypoint(name)
 
 	local ok, uid = pcall(TomTom.AddWaypoint, TomTom, playerData.mapID, playerData.mapX, playerData.mapY, {
 		title = title,
-		from = "Spy",
+		from = "Ping",
 		persistent = false,
 		minimap = true,
 		world = true,
 		crazy = true,	-- show the arrow immediately, that's the point
 	})
 	if ok and uid then
-		Spy.TomTomWaypoint = uid
-		local where = Spy:GetPlayerLocation(playerData) or ""
+		Ping.TomTomWaypoint = uid
+		local where = Ping:GetPlayerLocation(playerData) or ""
 		DEFAULT_CHAT_FRAME:AddMessage(format(L["TomTomTracking"], name, where))
 	end
 end
 
-function Spy:ClearTomTomWaypoint()
-	if Spy.TomTomWaypoint and Spy:HasTomTom() and TomTom.RemoveWaypoint then
-		pcall(TomTom.RemoveWaypoint, TomTom, Spy.TomTomWaypoint)
-		Spy.TomTomWaypoint = nil
+function Ping:ClearTomTomWaypoint()
+	if Ping.TomTomWaypoint and Ping:HasTomTom() and TomTom.RemoveWaypoint then
+		pcall(TomTom.RemoveWaypoint, TomTom, Ping.TomTomWaypoint)
+		Ping.TomTomWaypoint = nil
 	end
 end
 
-function Spy:ButtonClicked(self, button)
-	local name = Spy.ButtonName[self.id]
+function Ping:ButtonClicked(self, button)
+	local name = Ping.ButtonName[self.id]
 	if name and name ~= "" then
 		if button == "LeftButton" then
-			if IsAltKeyDown() and Spy.db.profile.TomTomOnAltClick then
-				Spy:SetTomTomWaypoint(name)
+			if IsAltKeyDown() and Ping.db.profile.TomTomOnAltClick then
+				Ping:SetTomTomWaypoint(name)
 				-- still target them as well, so alt-click is "go get this one"
 				if not InCombatLockdown() then
 					self:SetAttribute("macrotext", "/targetexact "..name)
 				end
 			elseif IsShiftKeyDown() then
-				if SpyPerCharDB.KOSData[name] then
-					Spy:ToggleKOSPlayer(false, name)
+				if PingPerCharDB.KOSData[name] then
+					Ping:ToggleKOSPlayer(false, name)
 				else
-					Spy:ToggleKOSPlayer(true, name)
+					Ping:ToggleKOSPlayer(true, name)
 				end
 			elseif IsControlKeyDown() then
-				if SpyPerCharDB.IgnoreData[name] then
-					Spy:ToggleIgnorePlayer(false, name)
+				if PingPerCharDB.IgnoreData[name] then
+					Ping:ToggleIgnorePlayer(false, name)
 				else
-					Spy:ToggleIgnorePlayer(true, name)
+					Ping:ToggleIgnorePlayer(true, name)
 				end
 			else
 				if not InCombatLockdown() then
@@ -1208,14 +1208,14 @@ function Spy:ButtonClicked(self, button)
 				end
 			end
 		elseif button == "RightButton" then
-			Spy:BarDropDownOpen(self)
+			Ping:BarDropDownOpen(self)
 			CloseDropDownMenus(1)
-			ToggleDropDownMenu(1, nil, Spy_BarDropDownMenu)
+			ToggleDropDownMenu(1, nil, Ping_BarDropDownMenu)
 		end
 	end
 end
 
-function Spy:ParseMinimapTooltip(tooltip)
+function Ping:ParseMinimapTooltip(tooltip)
 	local newTooltip = ""
 	local newLine = false
 	for text in string.gmatch(tooltip, "[^\n]*") do
@@ -1224,12 +1224,12 @@ function Spy:ParseMinimapTooltip(tooltip)
 			if strsub(text, 1, 2) == "|T" then
 			name = strtrim(gsub(gsub(text, "|T.-|t", ""), "|r", ""))
 			end
-			local playerData = SpyPerCharDB.PlayerData[name]
+			local playerData = PingPerCharDB.PlayerData[name]
 			if not playerData then
-				for index, v in pairs(Spy.LastHourList) do
+				for index, v in pairs(Ping.LastHourList) do
 					local realmSeparator = strfind(index, "-")
 					if realmSeparator and realmSeparator > 1 and strsub(index, 1, realmSeparator - 1) == strsub(name, 1, realmSeparator - 1) then
-						playerData = SpyPerCharDB.PlayerData[index]
+						playerData = PingPerCharDB.PlayerData[index]
 						break
 					end
 				end
@@ -1250,10 +1250,10 @@ function Spy:ParseMinimapTooltip(tooltip)
 				else
 					newTooltip = newTooltip.."\r"..text.."|r"..desc
 				end	
-				if not SpyPerCharDB.IgnoreData[name] and not Spy.InInstance then
-					local detected = Spy:UpdatePlayerData(name, nil, nil, nil, nil, nil, true, nil)
-					if detected and Spy.db.profile.MinimapDetection then
-						Spy:AddDetected(name, time(), false)
+				if not PingPerCharDB.IgnoreData[name] and not Ping.InInstance then
+					local detected = Ping:UpdatePlayerData(name, nil, nil, nil, nil, nil, true, nil)
+					if detected and Ping.db.profile.MinimapDetection then
+						Ping:AddDetected(name, time(), false)
 					end
 				end
 			else
@@ -1272,7 +1272,7 @@ function Spy:ParseMinimapTooltip(tooltip)
 	return newTooltip
 end
 
-function Spy:ParseUnitAbility(analyseSpell, event, player, class, race, spellId, spellName)
+function Ping:ParseUnitAbility(analyseSpell, event, player, class, race, spellId, spellName)
 	local learnt = false
 	if player then
 --		local class = nil
@@ -1281,7 +1281,7 @@ function Spy:ParseUnitAbility(analyseSpell, event, player, class, race, spellId,
 		local isEnemy = true
 		local isGuess = true
 
-		local playerData = SpyPerCharDB.PlayerData[player]
+		local playerData = PingPerCharDB.PlayerData[player]
 		if not playerData or playerData.isEnemy == nil then
 			learnt = true
 		end
@@ -1289,8 +1289,8 @@ function Spy:ParseUnitAbility(analyseSpell, event, player, class, race, spellId,
 		if analyseSpell then
 			local abilityType = strsub(event, 1, 5)
 			if abilityType == "SWING" or abilityType == "SPELL" or abilityType == "RANGE" then
---				local ability = Spy_AbilityList[spellName]
-				local ability = Spy_AbilityList[spellId]
+--				local ability = Ping_AbilityList[spellName]
+				local ability = Ping_AbilityList[spellId]
 				if ability then
 					if class == nil then
 						if ability.class and not (playerData and playerData.class) then
@@ -1317,7 +1317,7 @@ function Spy:ParseUnitAbility(analyseSpell, event, player, class, race, spellId,
 				else	
 --					print(spellId, " - ", spellName, " - ", class)
 				end
-				if class and race and level == Spy.MaximumPlayerLevel then
+				if class and race and level == Ping.MaximumPlayerLevel then
 					isGuess = false
 					learnt = true
 				end
@@ -1337,13 +1337,13 @@ function Spy:ParseUnitAbility(analyseSpell, event, player, class, race, spellId,
 		-- heal, remember it. Only meaningful when analysing the source
 		-- (analyseSpell); a heal landing ON them says nothing about their role.
 		local sawHeal = false
-		if analyseSpell and spellName and Spy.HealSpells[spellName] then
+		if analyseSpell and spellName and Ping.HealSpells[spellName] then
 			sawHeal = true
 		end
 
-		Spy:UpdatePlayerData(player, class, level, race, nil, nil, isEnemy, isGuess)
+		Ping:UpdatePlayerData(player, class, level, race, nil, nil, isEnemy, isGuess)
 		if sawHeal then
-			local pd = SpyPerCharDB.PlayerData[player]
+			local pd = PingPerCharDB.PlayerData[player]
 			if pd then pd.isHealer = true end
 		end
 		return learnt, playerData
@@ -1351,11 +1351,11 @@ function Spy:ParseUnitAbility(analyseSpell, event, player, class, race, spellId,
 	return learnt, nil
 end
 
-function Spy:ParseUnitDetails(player, class, level, race, zone, subZone, mapX, mapY, guild, mapID)
+function Ping:ParseUnitDetails(player, class, level, race, zone, subZone, mapX, mapY, guild, mapID)
 	if player then
-		local playerData = SpyPerCharDB.PlayerData[player]
+		local playerData = PingPerCharDB.PlayerData[player]
 		if not playerData then
-			playerData = Spy:AddPlayerData(player, class, level, race, guild, nil, true, true)
+			playerData = Ping:AddPlayerData(player, class, level, race, guild, nil, true, true)
 		else
 			if not playerData.class then playerData.class = class end
 			if level then
@@ -1389,93 +1389,93 @@ function Spy:ParseUnitDetails(player, class, level, race, zone, subZone, mapX, m
 	return true, nil
 end
 
-function Spy:AddDetected(player, timestamp, learnt, source)
-	if Spy.db.profile.StopAlertsOnTaxi then
+function Ping:AddDetected(player, timestamp, learnt, source)
+	if Ping.db.profile.StopAlertsOnTaxi then
 		if not UnitOnTaxi("player") then 
-			Spy:AddDetectedToLists(player, timestamp, learnt, source)
+			Ping:AddDetectedToLists(player, timestamp, learnt, source)
 		end
 	else
-		Spy:AddDetectedToLists(player, timestamp, learnt, source)
+		Ping:AddDetectedToLists(player, timestamp, learnt, source)
 	end
---[[if Spy.db.profile.ShowOnlyPvPFlagged then
+--[[if Ping.db.profile.ShowOnlyPvPFlagged then
 		if UnitIsPVP("target") then
-			Spy:AddDetectedToLists(player, timestamp, learnt, source)
+			Ping:AddDetectedToLists(player, timestamp, learnt, source)
 		end	
 	else
-		Spy:AddDetectedToLists(player, timestamp, learnt, source)
+		Ping:AddDetectedToLists(player, timestamp, learnt, source)
 	end ]]--
 end
 
-function Spy:AddDetectedToLists(player, timestamp, learnt, source)
-	if not Spy.NearbyList[player] then
-		if Spy.db.profile.ShowOnDetection and not Spy.db.profile.MainWindowVis then
-			Spy:SetCurrentList(1)
-			Spy:EnableSpy(true, true, true)
+function Ping:AddDetectedToLists(player, timestamp, learnt, source)
+	if not Ping.NearbyList[player] then
+		if Ping.db.profile.ShowOnDetection and not Ping.db.profile.MainWindowVis then
+			Ping:SetCurrentList(1)
+			Ping:EnablePing(true, true, true)
 		end
-		if Spy.db.profile.CurrentList ~= 1 and Spy.db.profile.MainWindowVis and Spy.db.profile.ShowNearbyList then
-			Spy:SetCurrentList(1)
-		end
-
-		if source and source ~= Spy.CharacterName and not Spy.ActiveList[player] then
-			Spy.NearbyList[player] = timestamp
-			Spy.LastHourList[player] = timestamp
-			Spy.InactiveList[player] = timestamp
-		else
-			Spy.NearbyList[player] = timestamp
-			Spy.LastHourList[player] = timestamp
-			Spy.ActiveList[player] = timestamp
-			Spy.InactiveList[player] = nil
+		if Ping.db.profile.CurrentList ~= 1 and Ping.db.profile.MainWindowVis and Ping.db.profile.ShowNearbyList then
+			Ping:SetCurrentList(1)
 		end
 
-		if Spy.db.profile.CurrentList == 1 then
-			Spy:RefreshCurrentList(player, source)
-			Spy:UpdateActiveCount()			
+		if source and source ~= Ping.CharacterName and not Ping.ActiveList[player] then
+			Ping.NearbyList[player] = timestamp
+			Ping.LastHourList[player] = timestamp
+			Ping.InactiveList[player] = timestamp
 		else
-			if not source or source ~= Spy.CharacterName then
-				Spy:AlertPlayer(player, source)
-				if not source then Spy:AnnouncePlayer(player) end
+			Ping.NearbyList[player] = timestamp
+			Ping.LastHourList[player] = timestamp
+			Ping.ActiveList[player] = timestamp
+			Ping.InactiveList[player] = nil
+		end
+
+		if Ping.db.profile.CurrentList == 1 then
+			Ping:RefreshCurrentList(player, source)
+			Ping:UpdateActiveCount()			
+		else
+			if not source or source ~= Ping.CharacterName then
+				Ping:AlertPlayer(player, source)
+				if not source then Ping:AnnouncePlayer(player) end
 			end
 		end
-	elseif not Spy.ActiveList[player] then
-		if Spy.db.profile.ShowOnDetection and not Spy.db.profile.MainWindowVis then
-			Spy:SetCurrentList(1)
-			Spy:EnableSpy(true, true, true)
+	elseif not Ping.ActiveList[player] then
+		if Ping.db.profile.ShowOnDetection and not Ping.db.profile.MainWindowVis then
+			Ping:SetCurrentList(1)
+			Ping:EnablePing(true, true, true)
 		end
-		if Spy.db.profile.CurrentList ~= 1 and Spy.db.profile.MainWindowVis and Spy.db.profile.ShowNearbyList then
-			Spy:SetCurrentList(1)
+		if Ping.db.profile.CurrentList ~= 1 and Ping.db.profile.MainWindowVis and Ping.db.profile.ShowNearbyList then
+			Ping:SetCurrentList(1)
 		end
 
-		Spy.LastHourList[player] = timestamp
-		Spy.ActiveList[player] = timestamp
-		Spy.InactiveList[player] = nil
+		Ping.LastHourList[player] = timestamp
+		Ping.ActiveList[player] = timestamp
+		Ping.InactiveList[player] = nil
 
-		if Spy.PlayerCommList[player] ~= nil then
-			if Spy.db.profile.CurrentList == 1 then
-				Spy:RefreshCurrentList(player, source)
+		if Ping.PlayerCommList[player] ~= nil then
+			if Ping.db.profile.CurrentList == 1 then
+				Ping:RefreshCurrentList(player, source)
 			else
-				if not source or source ~= Spy.CharacterName then
-					Spy:AlertPlayer(player, source)
-					if not source then Spy:AnnouncePlayer(player) end
+				if not source or source ~= Ping.CharacterName then
+					Ping:AlertPlayer(player, source)
+					if not source then Ping:AnnouncePlayer(player) end
 				end
 			end
 		else
-			if Spy.db.profile.CurrentList == 1 then
-				Spy:RefreshCurrentList()
-				Spy:UpdateActiveCount()
+			if Ping.db.profile.CurrentList == 1 then
+				Ping:RefreshCurrentList()
+				Ping:UpdateActiveCount()
 			end
 		end
 	else
-		Spy.ActiveList[player] = timestamp
-		Spy.LastHourList[player] = timestamp
-		if learnt and Spy.db.profile.CurrentList == 1 then
-			Spy:RefreshCurrentList()
-			Spy:UpdateActiveCount()
+		Ping.ActiveList[player] = timestamp
+		Ping.LastHourList[player] = timestamp
+		if learnt and Ping.db.profile.CurrentList == 1 then
+			Ping:RefreshCurrentList()
+			Ping:UpdateActiveCount()
 		end
 	end
 end
 
-function Spy:AppendUnitNames()
-	for key, unit in pairs(SpyPerCharDB.PlayerData) do	
+function Ping:AppendUnitNames()
+	for key, unit in pairs(PingPerCharDB.PlayerData) do	
 		-- find any units without a name
 		if not unit.name then
 			local name = key
@@ -1486,32 +1486,32 @@ function Spy:AppendUnitNames()
 		end
     end
 	-- set profile so it only runs once
-	Spy.db.profile.AppendUnitNameCheck=true
+	Ping.db.profile.AppendUnitNameCheck=true
 end
 
-function Spy:AppendUnitKoS()
-	for kosName, value in pairs(SpyPerCharDB.KOSData) do
+function Ping:AppendUnitKoS()
+	for kosName, value in pairs(PingPerCharDB.KOSData) do
 		if kosName then	
-			local playerData = SpyPerCharDB.PlayerData[kosName]
+			local playerData = PingPerCharDB.PlayerData[kosName]
 			if not playerData then 
-				Spy:UpdatePlayerData(kosName, nil, nil, nil, nil, nil, true, nil) 
-				SpyPerCharDB.PlayerData[kosName].kos = 1
-				SpyPerCharDB.PlayerData[kosName].time = value
+				Ping:UpdatePlayerData(kosName, nil, nil, nil, nil, nil, true, nil) 
+				PingPerCharDB.PlayerData[kosName].kos = 1
+				PingPerCharDB.PlayerData[kosName].time = value
 			end
 		end
     end
 	-- set profile so it only runs once
-	Spy.db.profile.AppendUnitKoSCheck=true
+	Ping.db.profile.AppendUnitKoSCheck=true
 end
 
-Spy.ListTypes = {
-	{L["Nearby"], Spy.ManageNearbyList, Spy.ManageNearbyListExpirations},
-	{L["LastHour"], Spy.ManageLastHourList, Spy.ManageLastHourListExpirations},
-	{L["Ignore"], Spy.ManageIgnoreList},
-	{L["KillOnSight"], Spy.ManageKillOnSightList},
+Ping.ListTypes = {
+	{L["Nearby"], Ping.ManageNearbyList, Ping.ManageNearbyListExpirations},
+	{L["LastHour"], Ping.ManageLastHourList, Ping.ManageLastHourListExpirations},
+	{L["Ignore"], Ping.ManageIgnoreList},
+	{L["KillOnSight"], Ping.ManageKillOnSightList},
 }
 
-Spy_AbilityList = {
+Ping_AbilityList = {
 --++ Racial Traits ++	
 	[822]={ race = "Blood Elf", level = 1, },
 	[2481]={ race = "Dwarf", level = 1, },

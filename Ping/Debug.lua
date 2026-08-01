@@ -1,32 +1,32 @@
 --[[--------------------------------------------------------------------------
-  Spy Debug -- opt-in diagnostics.
+  Ping Debug -- opt-in diagnostics.
 
   Off by default and costs nothing when off. When enabled it records the small
   number of things that are actually hard to judge by eye:
 
     * env      - client build / locale / which APIs exist, so a WoW patch that
                  removes or changes something shows up immediately
-    * errors   - Lua errors raised from Spy's own code
+    * errors   - Lua errors raised from Ping's own code
     * levels   - guessed level vs the real level once it becomes known, which
                  is the only way to measure how wrong the guessing is
     * detect   - detection counts by method, and how often position data is
                  missing
-    * notes    - whatever you type with /spy debug note <text>
+    * notes    - whatever you type with /ping debug note <text>
 
   Buffers are bounded, but unlike a silent ring buffer the dump reports how
   many records were dropped so the data is never quietly incomplete.
 
-  /spy debug            toggle on/off
-  /spy debug note <t>   timestamp an observation
-  /spy debug dump       open a copy box
-  /spy debug reset      clear
+  /ping debug            toggle on/off
+  /ping debug note <t>   timestamp an observation
+  /ping debug dump       open a copy box
+  /ping debug reset      clear
 ----------------------------------------------------------------------------]]
 
 local AceLocale = LibStub("AceLocale-3.0")
-local L = AceLocale:GetLocale("Spy")
+local L = AceLocale:GetLocale("Ping")
 local HBD = LibStub("HereBeDragons-2.0", true)
 
-SpyDebugDB = SpyDebugDB or {}
+PingDebugDB = PingDebugDB or {}
 
 -- Moved into the C_AddOns namespace; the bare global is gone on current clients.
 local getAddOnMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
@@ -34,18 +34,18 @@ local getAddOnMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMet
 local CAP = { errors = 60, levels = 250, notes = 100 }
 
 local Debug = {}
-Spy.Debug = Debug
+Ping.Debug = Debug
 
 local function db()
-	if not SpyDebugDB.started then
-		SpyDebugDB.started = date("%Y-%m-%d %H:%M:%S")
-		SpyDebugDB.errors = {}
-		SpyDebugDB.levels, SpyDebugDB.notes = {}, {}
-		SpyDebugDB.detect = { method = {}, noPosition = 0, noMapID = 0, total = 0 }
-		SpyDebugDB.dropped = {}
-		SpyDebugDB.zones = {}
+	if not PingDebugDB.started then
+		PingDebugDB.started = date("%Y-%m-%d %H:%M:%S")
+		PingDebugDB.errors = {}
+		PingDebugDB.levels, PingDebugDB.notes = {}, {}
+		PingDebugDB.detect = { method = {}, noPosition = 0, noMapID = 0, total = 0 }
+		PingDebugDB.dropped = {}
+		PingDebugDB.zones = {}
 	end
-	return SpyDebugDB
+	return PingDebugDB
 end
 
 local function push(list, key, item)
@@ -58,8 +58,8 @@ local function push(list, key, item)
 	list[#list + 1] = item
 end
 
-function Spy:IsDebugging()
-	return Spy.db and Spy.db.profile and Spy.db.profile.DebugMode
+function Ping:IsDebugging()
+	return Ping.db and Ping.db.profile and Ping.db.profile.DebugMode
 end
 
 ------------------------------------------------------------------------------
@@ -89,7 +89,7 @@ end
 -- player? It exists in this client, but is documented as working for only a
 -- very limited set of unit ids. If it ever returns coordinates for an enemy
 -- record the answer instead of assuming.
-function Spy:ProbeEnemyPositionAPIs()
+function Ping:ProbeEnemyPositionAPIs()
 	local out = { checkedAt = date("%H:%M:%S") }
 	local unit
 	if UnitExists("target") and UnitIsPlayer("target") and UnitCanAttack("player", "target") then
@@ -118,15 +118,15 @@ function Spy:ProbeEnemyPositionAPIs()
 	-- destroys the bearing for the one unit we care most about.
 	out.clampTargetNameplate = GetCVar and GetCVar("clampTargetNameplateToScreen") or nil
 	out.nameplateGlobalScale = GetCVar and GetCVar("nameplateGlobalScale") or nil
-	out.nameplateAddon = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or nil
-	out.nameplates = Spy:ProbeNameplates()
+	out.nameplateAddon = Ping.GetNameplateDriver and Ping:GetNameplateDriver() or nil
+	out.nameplates = Ping:ProbeNameplates()
 	db().positionProbe = out
 	return out
 end
 
-function Spy:ProbeNameplates()
+function Ping:ProbeNameplates()
 	local out = {
-		driver = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or "unknown",
+		driver = Ping.GetNameplateDriver and Ping:GetNameplateDriver() or "unknown",
 		hasGetNamePlateForUnit = (C_NamePlate and C_NamePlate.GetNamePlateForUnit) ~= nil,
 		hasGetNamePlates = (C_NamePlate and C_NamePlate.GetNamePlates) ~= nil,
 		uiScale = UIParent:GetEffectiveScale(),
@@ -192,11 +192,11 @@ function Spy:ProbeNameplates()
 	return out
 end
 
-function Spy:CaptureDebugEnvironment()
+function Ping:CaptureDebugEnvironment()
 	local d = db()
 	local version, build, bdate, iface = GetBuildInfo()
 	d.env = {
-		spyVersion = getAddOnMetadata and getAddOnMetadata("Spy", "Version") or "?",
+		spyVersion = getAddOnMetadata and getAddOnMetadata("Ping", "Version") or "?",
 		wow = version, build = build, buildDate = bdate, interface = iface,
 		locale = GetLocale(),
 		player = UnitName("player"), realm = GetRealmName(),
@@ -204,29 +204,29 @@ function Spy:CaptureDebugEnvironment()
 		faction = UnitFactionGroup("player"),
 		hbd = HBD ~= nil,
 		tomtom = TomTom ~= nil,
-		nameplateAddon = Spy.GetNameplateDriver and Spy:GetNameplateDriver() or nil,
+		nameplateAddon = Ping.GetNameplateDriver and Ping:GetNameplateDriver() or nil,
 		api = apiPresence(),
 	}
 end
 
 ------------------------------------------------------------------------------
--- Lua errors raised by Spy
+-- Lua errors raised by Ping
 ------------------------------------------------------------------------------
 local errorHooked = false
-function Spy:HookDebugErrors()
+function Ping:HookDebugErrors()
 	if errorHooked then return end
 	errorHooked = true
 	local previous = geterrorhandler()
 	seterrorhandler(function(err)
-		if Spy:IsDebugging() then
+		if Ping:IsDebugging() then
 			local text = tostring(err)
-			-- Matching only the message misses most of Spy's own errors, because
+			-- Matching only the message misses most of Ping's own errors, because
 			-- the message describes the failed API and never mentions us. The
 			-- nameplate measurement error is exactly that shape:
 			-- "NamePlate3:GetCenter(): ... Can't measure restricted regions".
-			-- Only the stack names Spy, so check the stack too.
+			-- Only the stack names Ping, so check the stack too.
 			local stack = debugstack and debugstack(2, 8, 0) or ""
-			if text:find("Spy", 1, true) or stack:find("Spy", 1, true) then
+			if text:find("Ping", 1, true) or stack:find("Ping", 1, true) then
 				push(db().errors, "errors", {
 					when = date("%H:%M:%S"),
 					err = text:sub(1, 400),
@@ -246,8 +246,8 @@ end
 -- Record the real id, name and continent for every zone visited so the table can
 -- be completed from evidence instead of from assumption.
 ------------------------------------------------------------------------------
-function Spy:DebugZone(mapID)
-	if not Spy:IsDebugging() then return end
+function Ping:DebugZone(mapID)
+	if not Ping:IsDebugging() then return end
 	if type(mapID) ~= "number" then return end
 	local d = db()
 	d.zones = d.zones or {}
@@ -266,15 +266,15 @@ function Spy:DebugZone(mapID)
 		local ok, _, _, _, _, _, _, _, instanceID = pcall(GetInstanceInfo)
 		if ok then entry.instanceID = instanceID end
 	end
-	entry.floorApplied = Spy.GetZoneLevelFloor and Spy:GetZoneLevelFloor(mapID) or nil
+	entry.floorApplied = Ping.GetZoneLevelFloor and Ping:GetZoneLevelFloor(mapID) or nil
 	d.zones[mapID] = entry
 end
 
 ------------------------------------------------------------------------------
 -- detection accounting
 ------------------------------------------------------------------------------
-function Spy:DebugDetection(method, playerData)
-	if not Spy:IsDebugging() then return end
+function Ping:DebugDetection(method, playerData)
+	if not Ping:IsDebugging() then return end
 	local d = db().detect
 	d.total = d.total + 1
 	method = tostring(method or "?")
@@ -288,13 +288,13 @@ end
 ------------------------------------------------------------------------------
 -- level guess vs reality
 --
--- Called when we read a real level off a unit. If Spy was guessing before,
+-- Called when we read a real level off a unit. If Ping was guessing before,
 -- the delta says exactly how wrong the guess was.
 ------------------------------------------------------------------------------
-function Spy:DebugLevelCheck(name, actualLevel)
-	if not Spy:IsDebugging() then return end
+function Ping:DebugLevelCheck(name, actualLevel)
+	if not Ping:IsDebugging() then return end
 	if type(actualLevel) ~= "number" or actualLevel <= 0 then return end
-	local playerData = SpyPerCharDB.PlayerData[name]
+	local playerData = PingPerCharDB.PlayerData[name]
 	if not playerData or playerData.isGuess ~= true then return end
 	local guess = tonumber(playerData.level)
 	if not guess then return end
@@ -326,7 +326,7 @@ end
 ------------------------------------------------------------------------------
 -- notes / dump
 ------------------------------------------------------------------------------
-function Spy:DebugNote(text)
+function Ping:DebugNote(text)
 	local d = db()
 	push(d.notes, "notes", {
 		when = date("%H:%M:%S"), text = text,
@@ -360,18 +360,18 @@ local function serialize(v, indent, out, depth)
 	return out
 end
 
-function Spy:ShowDebugDump()
-	Spy:CaptureDebugEnvironment()
+function Ping:ShowDebugDump()
+	Ping:CaptureDebugEnvironment()
 	-- Run the position probes as part of taking a dump rather than leaving them
 	-- to a separate command nobody knows to type. Two dumps arrived without this
 	-- block because it had to be triggered by hand.
-	if Spy.ProbeEnemyPositionAPIs then pcall(Spy.ProbeEnemyPositionAPIs, Spy) end
+	if Ping.ProbeEnemyPositionAPIs then pcall(Ping.ProbeEnemyPositionAPIs, Ping) end
 	local d = db()
-	local text = "SpyDebug=" .. table.concat(serialize(d))
+	local text = "PingDebug=" .. table.concat(serialize(d))
 
-	local fr = Spy_DebugDumpFrame
+	local fr = Ping_DebugDumpFrame
 	if not fr then
-		fr = CreateFrame("Frame", "Spy_DebugDumpFrame", UIParent, "BackdropTemplate")
+		fr = CreateFrame("Frame", "Ping_DebugDumpFrame", UIParent, "BackdropTemplate")
 		fr:SetSize(660, 470)
 		fr:SetPoint("CENTER")
 		fr:SetFrameStrata("DIALOG")
@@ -386,7 +386,7 @@ function Spy:ShowDebugDump()
 		fr:RegisterForDrag("LeftButton")
 		fr:SetScript("OnDragStart", fr.StartMoving)
 		fr:SetScript("OnDragStop", fr.StopMovingOrSizing)
-		local sc = CreateFrame("ScrollFrame", "Spy_DebugDumpScroll", fr, "UIPanelScrollFrameTemplate")
+		local sc = CreateFrame("ScrollFrame", "Ping_DebugDumpScroll", fr, "UIPanelScrollFrameTemplate")
 		sc:SetPoint("TOPLEFT", 16, -16)
 		sc:SetPoint("BOTTOMRIGHT", -36, 44)
 		local eb = CreateFrame("EditBox", nil, sc)
@@ -414,19 +414,19 @@ function Spy:ShowDebugDump()
 	fr:Show()
 end
 
-function Spy:ResetDebug()
-	wipe(SpyDebugDB)
+function Ping:ResetDebug()
+	wipe(PingDebugDB)
 	db()
-	Spy:CaptureDebugEnvironment()
+	Ping:CaptureDebugEnvironment()
 end
 
-function Spy:DebugStatus()
+function Ping:DebugStatus()
 	local d = db()
-	Spy:Print(format(L["DebugStatus"],
-		tostring(Spy:IsDebugging()), #d.errors, #d.levels, #d.notes, d.detect.total))
+	Ping:Print(format(L["DebugStatus"],
+		tostring(Ping:IsDebugging()), #d.errors, #d.levels, #d.notes, d.detect.total))
 	local dropped = 0
 	for _, n in pairs(d.dropped) do dropped = dropped + n end
-	if dropped > 0 then Spy:Print(format(L["DebugDropped"], dropped)) end
+	if dropped > 0 then Ping:Print(format(L["DebugDropped"], dropped)) end
 end
 
 ------------------------------------------------------------------------------
@@ -435,7 +435,7 @@ end
 local sampler = CreateFrame("Frame")
 local acc = 0
 sampler:SetScript("OnUpdate", function(_, elapsed)
-	if not Spy.db or not Spy.db.profile or not Spy.db.profile.DebugMode then return end
+	if not Ping.db or not Ping.db.profile or not Ping.db.profile.DebugMode then return end
 	acc = acc + elapsed
 	if acc < 1 then return end
 	acc = 0

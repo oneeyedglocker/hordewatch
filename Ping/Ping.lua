@@ -2,41 +2,41 @@ local SM = LibStub:GetLibrary("LibSharedMedia-3.0")
 local HBD = LibStub("HereBeDragons-2.0")
 local HBDP = LibStub("HereBeDragons-Pins-2.0")
 local AceLocale = LibStub("AceLocale-3.0")
-local L = AceLocale:GetLocale("Spy")
+local L = AceLocale:GetLocale("Ping")
 local fonts = SM:List("font")
 local _
 
-Spy = LibStub("AceAddon-3.0"):NewAddon("Spy", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Spy.Version = "2.1.0"
-Spy.DatabaseVersion = "1.1"
-Spy.Signature = "[Spy]"
-Spy.ButtonLimit = 15
-Spy.MaximumPlayerLevel = MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
---Spy.MaximumPlayerLevel = GetMaxLevelForLatestExpansion()
-Spy.MapNoteLimit = 20
-Spy.MapProximityThreshold = 0.02
-Spy.CurrentMapNote = 1
-Spy.ZoneID = {}
-Spy.KOSGuild = {}
-Spy.CurrentList = {}
-Spy.NearbyList = {}
-Spy.LastHourList = {}
-Spy.ActiveList = {}
-Spy.InactiveList = {}
-Spy.PlayerCommList = {}
-Spy.ListAmountDisplayed = 0
-Spy.ButtonName = {}
-Spy.EnabledInZone = false
-Spy.InInstance = false
-Spy.AlertType = nil
-Spy.UpgradeMessageSent = false
-Spy.zName = ""
-Spy.ChnlTime = 0
-Spy.Skull = -1
-Spy.PetGUID = {}
+Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
+Ping.Version = "2.1.0"
+Ping.DatabaseVersion = "1.1"
+Ping.Signature = "[Ping]"
+Ping.ButtonLimit = 15
+Ping.MaximumPlayerLevel = MAX_PLAYER_LEVEL_TABLE[GetExpansionLevel()]
+--Ping.MaximumPlayerLevel = GetMaxLevelForLatestExpansion()
+Ping.MapNoteLimit = 20
+Ping.MapProximityThreshold = 0.02
+Ping.CurrentMapNote = 1
+Ping.ZoneID = {}
+Ping.KOSGuild = {}
+Ping.CurrentList = {}
+Ping.NearbyList = {}
+Ping.LastHourList = {}
+Ping.ActiveList = {}
+Ping.InactiveList = {}
+Ping.PlayerCommList = {}
+Ping.ListAmountDisplayed = 0
+Ping.ButtonName = {}
+Ping.EnabledInZone = false
+Ping.InInstance = false
+Ping.AlertType = nil
+Ping.UpgradeMessageSent = false
+Ping.zName = ""
+Ping.ChnlTime = 0
+Ping.Skull = -1
+Ping.PetGUID = {}
 
--- Localizations for SpyStats
-L_STATS = "Spy "..L["Statistics"]
+-- Localizations for PingStats
+L_STATS = "Ping "..L["Statistics"]
 L_WON = L["Won"]
 L_LOST = L["Lost"]
 L_REASON = L["Reason"]
@@ -45,8 +45,8 @@ L_TIME = L["Time"]
 L_FILTER = L["Filter"]..":"
 L_SHOWONLY = L["Show Only"]..":"
 
-Spy.options = {
-	name = L["Spy"],
+Ping.options = {
+	name = L["Ping"],
 	type = "group",
 	args = {
 		About = {
@@ -55,33 +55,33 @@ Spy.options = {
 			type = "group",
 			-- Reference material, not settings. AceConfigDialog sorts negative
 			-- orders after positive ones, so this sits at the foot of the
-			-- sidebar (just above Profiles at -2) and /spy config now opens on
+			-- sidebar (just above Profiles at -2) and /ping config now opens on
 			-- a page that actually has controls on it.
 			order = -3,
 			args = {
 				intro1 = {
-					name = L["SpyDescription1"],
+					name = L["PingDescription1"],
 					type = "description",
 					order = 1,
 					fontSize = "medium",
 				},	
 				intro2 = {
-					name = L["SpyDescription2"],
+					name = L["PingDescription2"],
 					type = "description",
 					order = 2,
 					fontSize = "medium",
 				},
 				intro3 = {
-					name = L["SpyDescription3"],
+					name = L["PingDescription3"],
 					type = "description",
 					order = 3,
 					fontSize = "medium",
 				},
 			},
 		},
-		SpyGroup = {
-			name = L["TPageSpy"],
-			desc = L["TPageSpy"],
+		PingGroup = {
+			name = L["TPagePing"],
+			desc = L["TPagePing"],
 			type = "group",
 			order = 2,
 			childGroups = "tab",
@@ -99,11 +99,11 @@ Spy.options = {
 							order = 1,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.EnabledInBattlegrounds
+								return Ping.db.profile.EnabledInBattlegrounds
 							end,
 							set = function(info, value)
-								Spy.db.profile.EnabledInBattlegrounds = value
-								Spy:ZoneChangedEvent()
+								Ping.db.profile.EnabledInBattlegrounds = value
+								Ping:ZoneChangedEvent()
 							end,
 						},
 						EnabledInArenas = {
@@ -113,11 +113,11 @@ Spy.options = {
 							order = 2,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.EnabledInArenas
+								return Ping.db.profile.EnabledInArenas
 							end,
 							set = function(info, value)
-								Spy.db.profile.EnabledInArenas = value
-								Spy:ZoneChangedEvent()
+								Ping.db.profile.EnabledInArenas = value
+								Ping:ZoneChangedEvent()
 							end,
 						},
 						EnabledInSanctuaries = {
@@ -127,11 +127,11 @@ Spy.options = {
 							order = 3,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.EnabledInSanctuaries
+								return Ping.db.profile.EnabledInSanctuaries
 							end,
 							set = function(info, value)
-								Spy.db.profile.EnabledInSanctuaries = value
-								Spy:ZoneChangedEvent()
+								Ping.db.profile.EnabledInSanctuaries = value
+								Ping:ZoneChangedEvent()
 							end,
 						},
 						DisableWhenPVPUnflagged = {
@@ -141,11 +141,11 @@ Spy.options = {
 							order = 4,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.DisableWhenPVPUnflagged
+								return Ping.db.profile.DisableWhenPVPUnflagged
 							end,
 							set = function(info, value)
-								Spy.db.profile.DisableWhenPVPUnflagged = value
-								Spy:ZoneChangedEvent()
+								Ping.db.profile.DisableWhenPVPUnflagged = value
+								Ping:ZoneChangedEvent()
 							end,
 						},
 						DisabledInZones = {
@@ -154,10 +154,10 @@ Spy.options = {
 							type = "multiselect",
 							order = 5,
 							get = function(info, key) 
-								return Spy.db.profile.FilteredZones[key] 
+								return Ping.db.profile.FilteredZones[key] 
 							end,
 							set = function(info, key, value) 
-								Spy.db.profile.FilteredZones[key] = value 
+								Ping.db.profile.FilteredZones[key] = value 
 							end,
 							values = {
 								["Booty Bay"] = L["Booty Bay"],
@@ -193,25 +193,25 @@ Spy.options = {
 							order = 6,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.ShowOnDetection
+								return Ping.db.profile.ShowOnDetection
 							end,
 							set = function(info, value)
-								Spy.db.profile.ShowOnDetection = value
+								Ping.db.profile.ShowOnDetection = value
 							end,
 						},
-						HideSpy = {
-							name = L["HideSpy"],
-							desc = L["HideSpyDescription"],
+						HidePing = {
+							name = L["HidePing"],
+							desc = L["HidePingDescription"],
 							type = "toggle",
 							order = 7,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.HideSpy
+								return Ping.db.profile.HidePing
 							end,
 							set = function(info, value)
-								Spy.db.profile.HideSpy = value
-								if Spy.db.profile.HideSpy and Spy:GetNearbyListSize() == 0 then
-									Spy.MainWindow:Hide()
+								Ping.db.profile.HidePing = value
+								if Ping.db.profile.HidePing and Ping:GetNearbyListSize() == 0 then
+									Ping.MainWindow:Hide()
 								end
 							end,
 						},
@@ -222,10 +222,10 @@ Spy.options = {
 							order = 8,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.ShowKoSButton
+								return Ping.db.profile.ShowKoSButton
 							end,
 							set = function(info, value)
-								Spy.db.profile.ShowKoSButton = value
+								Ping.db.profile.ShowKoSButton = value
 							end,
 						},
 					},
@@ -243,10 +243,10 @@ Spy.options = {
 							order = 1,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.ShowNearbyList
+								return Ping.db.profile.ShowNearbyList
 							end,
 							set = function(info, value)
-								Spy.db.profile.ShowNearbyList = value
+								Ping.db.profile.ShowNearbyList = value
 							end,
 						},
 						PrioritiseKoS = {
@@ -256,38 +256,38 @@ Spy.options = {
 							order = 2,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.PrioritiseKoS
+								return Ping.db.profile.PrioritiseKoS
 							end,
 							set = function(info, value)
-								Spy.db.profile.PrioritiseKoS = value
+								Ping.db.profile.PrioritiseKoS = value
 							end,
 						},
-						ResizeSpy = {
-							name = L["ResizeSpy"],
-							desc = L["ResizeSpyDescription"],
+						ResizePing = {
+							name = L["ResizePing"],
+							desc = L["ResizePingDescription"],
 							type = "toggle",
 							order = 3,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.ResizeSpy
+								return Ping.db.profile.ResizePing
 							end,
 							set = function(info, value)
-								Spy.db.profile.ResizeSpy = value
-								if value then Spy:RefreshCurrentList() end
+								Ping.db.profile.ResizePing = value
+								if value then Ping:RefreshCurrentList() end
 							end,
 						},
-						ResizeSpyLimit = {  
+						ResizePingLimit = {  
 							type = "range",
 							order = 4,
-							name = L["ResizeSpyLimit"],
-							desc = L["ResizeSpyLimitDescription"],
+							name = L["ResizePingLimit"],
+							desc = L["ResizePingLimitDescription"],
 							min = 1, max = 15, step = 1,
-							get = function() return Spy.db.profile.ResizeSpyLimit end,
+							get = function() return Ping.db.profile.ResizePingLimit end,
 							set = function(info, value)
-								Spy.db.profile.ResizeSpyLimit = value
+								Ping.db.profile.ResizePingLimit = value
 								if value then 
-									Spy:ResizeMainWindow()
-									Spy:RefreshCurrentList() 
+									Ping:ResizeMainWindow()
+									Ping:RefreshCurrentList() 
 								end	
 							end,
 						},
@@ -304,11 +304,11 @@ Spy.options = {
 								["6NameOnly"] = L["Name"],
 							},
 							get = function()
-								return Spy.db.profile.DisplayListData
+								return Ping.db.profile.DisplayListData
 							end,
 							set = function(info, value)
-								Spy.db.profile.DisplayListData = value
-								Spy:RefreshCurrentList() 
+								Ping.db.profile.DisplayListData = value
+								Ping:RefreshCurrentList() 
 							end,
 						},
 						DisplayLastSeen = {
@@ -318,10 +318,10 @@ Spy.options = {
 							order = 6,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.DisplayLastSeen
+								return Ping.db.profile.DisplayLastSeen
 							end,
 							set = function(info, value)
-								Spy.db.profile.DisplayLastSeen = value
+								Ping.db.profile.DisplayLastSeen = value
 							end,
 						},
 						DisplayKOSReason = {
@@ -331,10 +331,10 @@ Spy.options = {
 							order = 7,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.DisplayKOSReason
+								return Ping.db.profile.DisplayKOSReason
 							end,
 							set = function(info, value)
-								Spy.db.profile.DisplayKOSReason = value
+								Ping.db.profile.DisplayKOSReason = value
 							end,
 						},
 						DisplayWinLossStatistics = {
@@ -344,23 +344,23 @@ Spy.options = {
 							order = 8,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.DisplayWinLossStatistics
+								return Ping.db.profile.DisplayWinLossStatistics
 							end,
 							set = function(info, value)
-								Spy.db.profile.DisplayWinLossStatistics = value
+								Ping.db.profile.DisplayWinLossStatistics = value
 							end,
 						},
-						DisplayTooltipNearSpyWindow = {
-							name = L["DisplayTooltipNearSpyWindow"],
-							desc = L["DisplayTooltipNearSpyWindowDescription"],
+						DisplayTooltipNearPingWindow = {
+							name = L["DisplayTooltipNearPingWindow"],
+							desc = L["DisplayTooltipNearPingWindowDescription"],
 							type = "toggle",
 							order = 9,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.DisplayTooltipNearSpyWindow
+								return Ping.db.profile.DisplayTooltipNearPingWindow
 							end,
 							set = function(info, value)
-								Spy.db.profile.DisplayTooltipNearSpyWindow = value
+								Ping.db.profile.DisplayTooltipNearPingWindow = value
 							end,
 						},
 						SelectTooltipAnchor = {
@@ -376,10 +376,10 @@ Spy.options = {
 								["ANCHOR_RIGHT"] = L["ANCHOR_RIGHT"], 
 							},
 							get = function()
-								return Spy.db.profile.TooltipAnchor
+								return Ping.db.profile.TooltipAnchor
 							end,
 							set = function(info, value)
-								Spy.db.profile.TooltipAnchor = value
+								Ping.db.profile.TooltipAnchor = value
 							end,
 						},
 					},
@@ -405,10 +405,10 @@ Spy.options = {
 							type = "toggle",
 							order = 1,
 							width = "full",
-							get = function() return Spy.db.profile.MarkHealers end,
+							get = function() return Ping.db.profile.MarkHealers end,
 							set = function(_, value)
-								Spy.db.profile.MarkHealers = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.MarkHealers = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						HealerDetectBy = {
@@ -420,10 +420,10 @@ Spy.options = {
 								["class"] = L["HealerDetectByClass"],
 								["heal"] = L["HealerDetectByHeal"],
 							},
-							get = function() return Spy.db.profile.HealerDetectBy end,
+							get = function() return Ping.db.profile.HealerDetectBy end,
 							set = function(_, value)
-								Spy.db.profile.HealerDetectBy = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.HealerDetectBy = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						StrictHealerDetection = {
@@ -432,10 +432,10 @@ Spy.options = {
 							type = "toggle",
 							order = 2.5,
 							width = "full",
-							get = function() return Spy.db.profile.StrictHealerDetection end,
+							get = function() return Ping.db.profile.StrictHealerDetection end,
 							set = function(_, v)
-								Spy.db.profile.StrictHealerDetection = v
-								Spy:RefreshCurrentList()
+								Ping.db.profile.StrictHealerDetection = v
+								Ping:RefreshCurrentList()
 							end,
 						},
 						HealerMinHeals = {
@@ -444,8 +444,8 @@ Spy.options = {
 							type = "range",
 							order = 2.7,
 							min = 1, max = 6, step = 1,
-							get = function() return Spy.db.profile.HealerMinHeals end,
-							set = function(_, v) Spy.db.profile.HealerMinHeals = v end,
+							get = function() return Ping.db.profile.HealerMinHeals end,
+							set = function(_, v) Ping.db.profile.HealerMinHeals = v end,
 						},
 						HealerMinHeal = {
 							name = L["HealerMinHeal"],
@@ -453,9 +453,9 @@ Spy.options = {
 							type = "range",
 							order = 3,
 							min = 0, max = 3000, step = 50,
-							disabled = function() return Spy.db.profile.HealerDetectBy ~= "heal" end,
-							get = function() return Spy.db.profile.HealerMinHeal end,
-							set = function(_, value) Spy.db.profile.HealerMinHeal = value end,
+							disabled = function() return Ping.db.profile.HealerDetectBy ~= "heal" end,
+							get = function() return Ping.db.profile.HealerMinHeal end,
+							set = function(_, value) Ping.db.profile.HealerMinHeal = value end,
 						},
 						HealerMarkerStyle = {
 							name = L["HealerMarkerStyle"],
@@ -467,10 +467,10 @@ Spy.options = {
 								["asterisk"] = L["HealerMarkerAsterisk"],
 								["dot"] = L["HealerMarkerDot"],
 							},
-							get = function() return Spy.db.profile.HealerMarkerStyle end,
+							get = function() return Ping.db.profile.HealerMarkerStyle end,
 							set = function(_, value)
-								Spy.db.profile.HealerMarkerStyle = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.HealerMarkerStyle = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						HealerMarkerSide = {
@@ -482,10 +482,10 @@ Spy.options = {
 								["right"] = L["HealerMarkerRight"],
 								["left"] = L["HealerMarkerLeft"],
 							},
-							get = function() return Spy.db.profile.HealerMarkerSide end,
+							get = function() return Ping.db.profile.HealerMarkerSide end,
 							set = function(_, value)
-								Spy.db.profile.HealerMarkerSide = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.HealerMarkerSide = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						HealerMarkerColor = {
@@ -494,13 +494,13 @@ Spy.options = {
 							order = 6,
 							hasAlpha = false,
 							get = function()
-								local c = Spy.db.profile.Colors["Spy"]["Healer Marker"]
+								local c = Ping.db.profile.Colors["Ping"]["Healer Marker"]
 								return c.r, c.g, c.b
 							end,
 							set = function(_, r, g, b)
-								local c = Spy.db.profile.Colors["Spy"]["Healer Marker"]
+								local c = Ping.db.profile.Colors["Ping"]["Healer Marker"]
 								c.r, c.g, c.b = r, g, b
-								Spy:RefreshCurrentList()
+								Ping:RefreshCurrentList()
 							end,
 						},
 						SortHealersToTop = {
@@ -509,10 +509,10 @@ Spy.options = {
 							type = "toggle",
 							order = 7,
 							width = "full",
-							get = function() return Spy.db.profile.SortHealersToTop end,
+							get = function() return Ping.db.profile.SortHealersToTop end,
 							set = function(_, value)
-								Spy.db.profile.SortHealersToTop = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.SortHealersToTop = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						HealerGreenEdge = {
@@ -520,10 +520,10 @@ Spy.options = {
 							desc = L["HealerGreenEdgeDescription"],
 							type = "toggle",
 							order = 8,
-							get = function() return Spy.db.profile.HealerGreenEdge end,
+							get = function() return Ping.db.profile.HealerGreenEdge end,
 							set = function(_, value)
-								Spy.db.profile.HealerGreenEdge = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.HealerGreenEdge = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						HealerEdgeColor = {
@@ -532,13 +532,13 @@ Spy.options = {
 							order = 9,
 							hasAlpha = true,
 							get = function()
-								local c = Spy.db.profile.Colors["Spy"]["Healer Edge"]
+								local c = Ping.db.profile.Colors["Ping"]["Healer Edge"]
 								return c.r, c.g, c.b, c.a
 							end,
 							set = function(_, r, g, b, a)
-								local c = Spy.db.profile.Colors["Spy"]["Healer Edge"]
+								local c = Ping.db.profile.Colors["Ping"]["Healer Edge"]
 								c.r, c.g, c.b, c.a = r, g, b, a
-								Spy:RefreshCurrentList()
+								Ping:RefreshCurrentList()
 							end,
 						},
 						DimNonHealers = {
@@ -547,10 +547,10 @@ Spy.options = {
 							type = "toggle",
 							order = 10,
 							width = "full",
-							get = function() return Spy.db.profile.DimNonHealers end,
+							get = function() return Ping.db.profile.DimNonHealers end,
 							set = function(_, value)
-								Spy.db.profile.DimNonHealers = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.DimNonHealers = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						listHeader = {
@@ -571,25 +571,25 @@ Spy.options = {
 							multiline = 10,
 							width = "full",
 							order = 22,
-							disabled = function() return Spy.db.profile.StrictHealerDetection == false end,
+							disabled = function() return Ping.db.profile.StrictHealerDetection == false end,
 							get = function()
 								-- Seed on first read, so the box never appears empty
 								-- while 24 spells are quietly being matched.
-								if not Spy.db.profile.HealerSpellListSeeded then
-									Spy:BuildHealerSpellNames()
+								if not Ping.db.profile.HealerSpellListSeeded then
+									Ping:BuildHealerSpellNames()
 								end
-								return Spy.db.profile.HealerSpellListText
+								return Ping.db.profile.HealerSpellListText
 							end,
 							set = function(_, v)
-								Spy.db.profile.HealerSpellListText = v
-								Spy.db.profile.HealerSpellListSeeded = true
-								Spy:BuildHealerSpellNames()
-								Spy:RefreshCurrentList()
+								Ping.db.profile.HealerSpellListText = v
+								Ping.db.profile.HealerSpellListSeeded = true
+								Ping:BuildHealerSpellNames()
+								Ping:RefreshCurrentList()
 							end,
 						},
 						healerListStatus = {
 							name = function()
-								return format(L["HealerSpellListStatus"], Spy.HealerSpellCount or 0)
+								return format(L["HealerSpellListStatus"], Ping.HealerSpellCount or 0)
 							end,
 							type = "description",
 							order = 23,
@@ -599,7 +599,7 @@ Spy.options = {
 							desc = L["HealerSpellListResetDescription"],
 							type = "execute",
 							order = 24,
-							func = function() Spy:ResetHealerSpellList() Spy:RefreshCurrentList() end,
+							func = function() Ping:ResetHealerSpellList() Ping:RefreshCurrentList() end,
 						},
 					},
 				},
@@ -620,11 +620,11 @@ Spy.options = {
 							type = "toggle",
 							order = 2,
 							width = "full",
-							get = function() return Spy.db.profile.HealerOnlyFilter end,
+							get = function() return Ping.db.profile.HealerOnlyFilter end,
 							set = function(_, value)
-								Spy.db.profile.HealerOnlyFilter = value
-								Spy:UpdateWindowTitle()
-								Spy:RefreshCurrentList()
+								Ping.db.profile.HealerOnlyFilter = value
+								Ping:UpdateWindowTitle()
+								Ping:RefreshCurrentList()
 							end,
 						},
 						KillPriorityOrder = {
@@ -633,10 +633,10 @@ Spy.options = {
 							type = "toggle",
 							order = 3,
 							width = "full",
-							get = function() return Spy.db.profile.KillPriorityOrder end,
+							get = function() return Ping.db.profile.KillPriorityOrder end,
 							set = function(_, value)
-								Spy.db.profile.KillPriorityOrder = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.KillPriorityOrder = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						ShowAggregateHeader = {
@@ -645,10 +645,10 @@ Spy.options = {
 							type = "toggle",
 							order = 4,
 							width = "full",
-							get = function() return Spy.db.profile.ShowAggregateHeader end,
+							get = function() return Ping.db.profile.ShowAggregateHeader end,
 							set = function(_, value)
-								Spy.db.profile.ShowAggregateHeader = value
-								Spy:UpdateActiveCount()
+								Ping.db.profile.ShowAggregateHeader = value
+								Ping:UpdateActiveCount()
 							end,
 						},
 						UseZoneLevelFloor = {
@@ -657,10 +657,10 @@ Spy.options = {
 							type = "toggle",
 							order = 5,
 							width = "full",
-							get = function() return Spy.db.profile.UseZoneLevelFloor end,
+							get = function() return Ping.db.profile.UseZoneLevelFloor end,
 							set = function(_, value)
-								Spy.db.profile.UseZoneLevelFloor = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.UseZoneLevelFloor = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						focusHeader = {
@@ -684,10 +684,10 @@ Spy.options = {
 								["sort"] = L["FocusClassSort"],
 								["only"] = L["FocusClassOnly"],
 							},
-							get = function() return Spy.db.profile.FocusClassMode end,
+							get = function() return Ping.db.profile.FocusClassMode end,
 							set = function(_, v)
-								Spy.db.profile.FocusClassMode = v
-								Spy:RefreshCurrentList()
+								Ping.db.profile.FocusClassMode = v
+								Ping:RefreshCurrentList()
 							end,
 						},
 						FocusClasses = {
@@ -695,20 +695,20 @@ Spy.options = {
 							desc = L["FocusClassesDescription"],
 							type = "multiselect",
 							order = 13,
-							disabled = function() return Spy.db.profile.FocusClassMode == "off" end,
+							disabled = function() return Ping.db.profile.FocusClassMode == "off" end,
 							values = function()
 								-- Driven by the client's own class list rather than a second
 								-- hardcoded one, so it cannot drift out of step with detection.
 								local t = {}
-								for class in pairs(Spy.ValidClasses or {}) do
+								for class in pairs(Ping.ValidClasses or {}) do
 									t[class] = L[class] or class
 								end
 								return t
 							end,
-							get = function(_, class) return Spy.db.profile.FocusClasses[class] == true end,
+							get = function(_, class) return Ping.db.profile.FocusClasses[class] == true end,
 							set = function(_, class, value)
-								Spy.db.profile.FocusClasses[class] = value or nil
-								Spy:RefreshCurrentList()
+								Ping.db.profile.FocusClasses[class] = value or nil
+								Ping:RefreshCurrentList()
 							end,
 						},
 					},
@@ -725,10 +725,10 @@ Spy.options = {
 							type = "toggle",
 							order = 1,
 							width = "full",
-							get = function() return Spy.db.profile.TrackCooldowns end,
+							get = function() return Ping.db.profile.TrackCooldowns end,
 							set = function(_, value)
-								Spy.db.profile.TrackCooldowns = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.TrackCooldowns = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						AnnounceCooldowns = {
@@ -737,24 +737,24 @@ Spy.options = {
 							type = "toggle",
 							order = 2,
 							width = "full",
-							disabled = function() return not Spy.db.profile.TrackCooldowns end,
-							get = function() return Spy.db.profile.AnnounceCooldowns end,
-							set = function(_, value) Spy.db.profile.AnnounceCooldowns = value end,
+							disabled = function() return not Ping.db.profile.TrackCooldowns end,
+							get = function() return Ping.db.profile.AnnounceCooldowns end,
+							set = function(_, value) Ping.db.profile.AnnounceCooldowns = value end,
 						},
 						CooldownColor = {
 							name = L["CooldownColor"],
 							type = "color",
 							order = 3,
 							hasAlpha = false,
-							disabled = function() return not Spy.db.profile.TrackCooldowns end,
+							disabled = function() return not Ping.db.profile.TrackCooldowns end,
 							get = function()
-								local c = Spy.db.profile.Colors["Spy"]["Cooldown"]
+								local c = Ping.db.profile.Colors["Ping"]["Cooldown"]
 								return c.r, c.g, c.b
 							end,
 							set = function(_, r, g, b)
-								local c = Spy.db.profile.Colors["Spy"]["Cooldown"]
+								local c = Ping.db.profile.Colors["Ping"]["Cooldown"]
 								c.r, c.g, c.b = r, g, b
-								Spy:RefreshCurrentList()
+								Ping:RefreshCurrentList()
 							end,
 						},
 						KOSGuildAlertCooldown = {
@@ -763,8 +763,8 @@ Spy.options = {
 							type = "range",
 							order = 4,
 							min = 0, max = 120, step = 5,
-							get = function() return Spy.db.profile.KOSGuildAlertCooldown end,
-							set = function(_, value) Spy.db.profile.KOSGuildAlertCooldown = value end,
+							get = function() return Ping.db.profile.KOSGuildAlertCooldown end,
+							set = function(_, value) Ping.db.profile.KOSGuildAlertCooldown = value end,
 						},
 						cdListHeader = {
 							name = L["CooldownListHeader"],
@@ -784,28 +784,28 @@ Spy.options = {
 							multiline = 12,
 							width = "full",
 							order = 12,
-							disabled = function() return not Spy.db.profile.TrackCooldowns end,
+							disabled = function() return not Ping.db.profile.TrackCooldowns end,
 							get = function()
 								-- Seed on first read so the box is never shown empty while
 								-- ten spells are quietly being tracked.
-								if not Spy.db.profile.CooldownListSeeded then
-									Spy:BuildCooldownLookup()
+								if not Ping.db.profile.CooldownListSeeded then
+									Ping:BuildCooldownLookup()
 								end
-								return Spy.db.profile.CooldownListText
+								return Ping.db.profile.CooldownListText
 							end,
 							set = function(_, v)
-								Spy.db.profile.CooldownListText = v
-								Spy.db.profile.CooldownListSeeded = true
-								Spy:BuildCooldownLookup()
+								Ping.db.profile.CooldownListText = v
+								Ping.db.profile.CooldownListSeeded = true
+								Ping:BuildCooldownLookup()
 							end,
 						},
 						cdListStatus = {
 							name = function()
 								local total = 0
-								for _ in pairs(Spy.CooldownLookup or {}) do total = total + 1 end
-								if (Spy.CooldownListUnresolved or 0) > 0 then
+								for _ in pairs(Ping.CooldownLookup or {}) do total = total + 1 end
+								if (Ping.CooldownListUnresolved or 0) > 0 then
 									return format(L["CooldownListStatusWithWarning"], total,
-										Spy.CooldownListUnresolved)
+										Ping.CooldownListUnresolved)
 								end
 								return format(L["CooldownListStatus"], total)
 							end,
@@ -817,7 +817,7 @@ Spy.options = {
 							desc = L["CooldownListResetDescription"],
 							type = "execute",
 							order = 14,
-							func = function() Spy:ResetCooldownList() end,
+							func = function() Ping:ResetCooldownList() end,
 						},
 					},
 				},
@@ -852,10 +852,10 @@ Spy.options = {
 								["custom"] = L["DistanceModeCustom"],
 								["off"] = L["DistanceModeOff"],
 							},
-							get = function() return Spy.db.profile.NameplateDistanceMode end,
+							get = function() return Ping.db.profile.NameplateDistanceMode end,
 							set = function(_, v)
-								Spy.db.profile.NameplateDistanceMode = v
-								Spy:ApplyDistanceSettings(true)
+								Ping.db.profile.NameplateDistanceMode = v
+								Ping:ApplyDistanceSettings(true)
 							end,
 						},
 						NameplateDistanceValue = {
@@ -864,11 +864,11 @@ Spy.options = {
 							type = "range",
 							order = 3,
 							min = 20, max = 100, step = 5,
-							disabled = function() return Spy.db.profile.NameplateDistanceMode ~= "custom" end,
-							get = function() return Spy.db.profile.NameplateDistanceValue end,
+							disabled = function() return Ping.db.profile.NameplateDistanceMode ~= "custom" end,
+							get = function() return Ping.db.profile.NameplateDistanceValue end,
 							set = function(_, v)
-								Spy.db.profile.NameplateDistanceValue = v
-								Spy:ApplyDistanceSettings(false)
+								Ping.db.profile.NameplateDistanceValue = v
+								Ping:ApplyDistanceSettings(false)
 							end,
 						},
 						MaxNameplateDistanceShowsEnemies = {
@@ -877,11 +877,11 @@ Spy.options = {
 							type = "toggle",
 							order = 4,
 							width = "full",
-							disabled = function() return Spy.db.profile.NameplateDistanceMode == "off" end,
-							get = function() return Spy.db.profile.MaxNameplateDistanceShowsEnemies end,
+							disabled = function() return Ping.db.profile.NameplateDistanceMode == "off" end,
+							get = function() return Ping.db.profile.MaxNameplateDistanceShowsEnemies end,
 							set = function(_, v)
-								Spy.db.profile.MaxNameplateDistanceShowsEnemies = v
-								if v then Spy:ApplyDistanceSettings(true) end
+								Ping.db.profile.MaxNameplateDistanceShowsEnemies = v
+								if v then Ping:ApplyDistanceSettings(true) end
 							end,
 						},
 						viewHeader = {
@@ -899,10 +899,10 @@ Spy.options = {
 								["custom"] = L["DistanceModeCustom"],
 								["off"] = L["DistanceModeOff"],
 							},
-							get = function() return Spy.db.profile.ViewDistanceMode end,
+							get = function() return Ping.db.profile.ViewDistanceMode end,
 							set = function(_, v)
-								Spy.db.profile.ViewDistanceMode = v
-								Spy:ApplyDistanceSettings(true)
+								Ping.db.profile.ViewDistanceMode = v
+								Ping:ApplyDistanceSettings(true)
 							end,
 						},
 						ViewDistanceValue = {
@@ -911,16 +911,16 @@ Spy.options = {
 							type = "range",
 							order = 7,
 							min = 100, max = 1000, step = 25,
-							disabled = function() return Spy.db.profile.ViewDistanceMode ~= "custom" end,
-							get = function() return Spy.db.profile.ViewDistanceValue end,
+							disabled = function() return Ping.db.profile.ViewDistanceMode ~= "custom" end,
+							get = function() return Ping.db.profile.ViewDistanceValue end,
 							set = function(_, v)
-								Spy.db.profile.ViewDistanceValue = v
-								Spy:ApplyDistanceSettings(false)
+								Ping.db.profile.ViewDistanceValue = v
+								Ping:ApplyDistanceSettings(false)
 							end,
 						},
 						status = {
 							name = function()
-								local plates, view = Spy:GetDistanceStatus()
+								local plates, view = Ping:GetDistanceStatus()
 								return format(L["DistanceStatus"],
 									plates and tostring(plates) or "?",
 									view and tostring(view) or "?")
@@ -930,8 +930,8 @@ Spy.options = {
 						},
 						ceilings = {
 							name = function()
-								local np = Spy:GetNameplateCeiling()
-								local fc = Spy:GetViewCeiling()
+								local np = Ping:GetNameplateCeiling()
+								local fc = Ping:GetViewCeiling()
 								return format(L["DistanceCeilings"],
 									np and tostring(np) or "?",
 									fc and tostring(fc) or "?")
@@ -944,7 +944,7 @@ Spy.options = {
 							desc = L["DistanceApplyNowDescription"],
 							type = "execute",
 							order = 12,
-							func = function() Spy:ApplyDistanceSettings(true) end,
+							func = function() Ping:ApplyDistanceSettings(true) end,
 						},
 					},
 				},
@@ -961,10 +961,10 @@ Spy.options = {
 							order = 1,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.MinimapDetection
+								return Ping.db.profile.MinimapDetection
 							end,
 							set = function(info, value)
-								Spy.db.profile.MinimapDetection = value
+								Ping.db.profile.MinimapDetection = value
 							end,
 						},
 						MinimapNote = {
@@ -979,10 +979,10 @@ Spy.options = {
 							order = 3,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.MinimapDetails
+								return Ping.db.profile.MinimapDetails
 							end,
 							set = function(info, value)
-								Spy.db.profile.MinimapDetails = value
+								Ping.db.profile.MinimapDetails = value
 							end,
 						},
 						DisplayOnMap = {
@@ -992,10 +992,10 @@ Spy.options = {
 							order = 4,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.DisplayOnMap
+								return Ping.db.profile.DisplayOnMap
 							end,
 							set = function(info, value)
-								Spy.db.profile.DisplayOnMap = value
+								Ping.db.profile.DisplayOnMap = value
 							end,
 						},
 						SwitchToZone = {
@@ -1005,10 +1005,10 @@ Spy.options = {
 							order = 5,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.SwitchToZone
+								return Ping.db.profile.SwitchToZone
 							end,
 							set = function(info, value)
-								Spy.db.profile.SwitchToZone = value
+								Ping.db.profile.SwitchToZone = value
 							end,
 						},
 						MapDisplayLimit = {
@@ -1024,10 +1024,10 @@ Spy.options = {
 									order = 1,
 									width = "full",
 									get = function(info)
-										return Spy.db.profile.MapDisplayLimit == "SameZone"
+										return Ping.db.profile.MapDisplayLimit == "SameZone"
 									end,
 									set = function(info, value)
-										Spy.db.profile.MapDisplayLimit = "SameZone"
+										Ping.db.profile.MapDisplayLimit = "SameZone"
 									end,
 								},
 								SameContinent = {
@@ -1037,10 +1037,10 @@ Spy.options = {
 									order = 2,
 									width = "full",
 									get = function(info)
-										return Spy.db.profile.MapDisplayLimit == "SameContinent"
+										return Ping.db.profile.MapDisplayLimit == "SameContinent"
 									end,
 									set = function(info, value)
-										Spy.db.profile.MapDisplayLimit = "SameContinent"
+										Ping.db.profile.MapDisplayLimit = "SameContinent"
 									end,
 								},
 								None = {
@@ -1050,10 +1050,10 @@ Spy.options = {
 									order = 3,
 									width = "full",
 									get = function(info)
-										return Spy.db.profile.MapDisplayLimit == "None"
+										return Ping.db.profile.MapDisplayLimit == "None"
 									end,
 									set = function(info, value)
-										Spy.db.profile.MapDisplayLimit = "None"
+										Ping.db.profile.MapDisplayLimit = "None"
 									end,
 								},
 							},
@@ -1085,9 +1085,9 @@ Spy.options = {
 								["flat"] = L["LookFlat"],
 								["compact"] = L["LookCompact"],
 							},
-							get = function() return Spy.db.profile.LookPreset end,
+							get = function() return Ping.db.profile.LookPreset end,
 							set = function(_, value)
-								Spy:ApplyLookPreset(value)
+								Ping:ApplyLookPreset(value)
 							end,
 						},
 						ClassColoredNames = {
@@ -1096,10 +1096,10 @@ Spy.options = {
 							type = "toggle",
 							order = 2,
 							width = "full",
-							get = function() return Spy.db.profile.ClassColoredNames end,
+							get = function() return Ping.db.profile.ClassColoredNames end,
 							set = function(_, value)
-								Spy.db.profile.ClassColoredNames = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.ClassColoredNames = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						SelectFont = {
@@ -1110,15 +1110,15 @@ Spy.options = {
 							values = fonts,
 							get = function()
 								for info, value in next, fonts do
-									if value == Spy.db.profile.Font then
+									if value == Ping.db.profile.Font then
 										return info
 									end
 								end
 							end,
 							set = function(_, value)
-								Spy.db.profile.Font = fonts[value]
+								Ping.db.profile.Font = fonts[value]
 								if value then
-									Spy:UpdateBarTextures()
+									Ping:UpdateBarTextures()
 								end
 							end,
 						},
@@ -1129,12 +1129,12 @@ Spy.options = {
 							desc = L["RowHeightDescription"], 
 							min = 8, max = 20, step = 1,
 							get = function()
-								return Spy.db.profile.MainWindow.RowHeight
+								return Ping.db.profile.MainWindow.RowHeight
 							end,
 							set = function(info, value)
-								Spy.db.profile.MainWindow.RowHeight = value
+								Ping.db.profile.MainWindow.RowHeight = value
 								if value then
-									Spy:BarsChanged()
+									Ping:BarsChanged()
 								end
 							end,
 						},
@@ -1147,11 +1147,11 @@ Spy.options = {
 							width = "double",
 							values = SM:HashTable("statusbar"),
 							get = function()
-								return Spy.db.profile.BarTexture
+								return Ping.db.profile.BarTexture
 							end,
 							set = function(_, key)
-								Spy.db.profile.BarTexture = key
-								Spy:UpdateBarTextures()
+								Ping.db.profile.BarTexture = key
+								Ping:UpdateBarTextures()
 							end,
 						},
 						BarOpacity = {
@@ -1161,10 +1161,10 @@ Spy.options = {
 							order = 6,
 							min = 0, max = 1, step = 0.05,
 							isPercent = true,
-							get = function() return Spy.db.profile.BarOpacity end,
+							get = function() return Ping.db.profile.BarOpacity end,
 							set = function(_, value)
-								Spy.db.profile.BarOpacity = value
-								Spy:RefreshCurrentList()
+								Ping.db.profile.BarOpacity = value
+								Ping:RefreshCurrentList()
 							end,
 						},
 						KoSEdgeColor = {
@@ -1174,13 +1174,13 @@ Spy.options = {
 							order = 7,
 							hasAlpha = true,
 							get = function()
-								local c = Spy.db.profile.Colors["Spy"]["KoS Edge"]
+								local c = Ping.db.profile.Colors["Ping"]["KoS Edge"]
 								return c.r, c.g, c.b, c.a
 							end,
 							set = function(_, r, g, b, a)
-								local c = Spy.db.profile.Colors["Spy"]["KoS Edge"]
+								local c = Ping.db.profile.Colors["Ping"]["KoS Edge"]
 								c.r, c.g, c.b, c.a = r, g, b, a
-								Spy:RefreshCurrentList()
+								Ping:RefreshCurrentList()
 							end,
 						},
 					},
@@ -1204,21 +1204,21 @@ Spy.options = {
 							width = "double",
 							values = function()
 								local t = {}
-								for key, theme in pairs(Spy.LookThemes) do t[key] = theme.name end
+								for key, theme in pairs(Ping.LookThemes) do t[key] = theme.name end
 								return t
 							end,
-							get = function() return Spy.db.profile.LookTheme end,
-							set = function(_, v) Spy:ApplyLookTheme(v) end,
+							get = function() return Ping.db.profile.LookTheme end,
+							set = function(_, v) Ping:ApplyLookTheme(v) end,
 						},
 						LockPosition = {
 							name = L["LockPosition"],
 							desc = L["LockPositionDescription"],
 							type = "toggle",
 							order = 1,
-							get = function() return Spy.db.profile.LockPosition end,
+							get = function() return Ping.db.profile.LockPosition end,
 							set = function(_, value)
-								Spy.db.profile.LockPosition = value
-								Spy:ApplyWindowLocks()
+								Ping.db.profile.LockPosition = value
+								Ping:ApplyWindowLocks()
 							end,
 						},
 						LockSize = {
@@ -1226,25 +1226,25 @@ Spy.options = {
 							desc = L["LockSizeDescription"],
 							type = "toggle",
 							order = 2,
-							get = function() return Spy.db.profile.LockSize end,
+							get = function() return Ping.db.profile.LockSize end,
 							set = function(_, value)
-								Spy.db.profile.LockSize = value
-								Spy:ApplyWindowLocks()
+								Ping.db.profile.LockSize = value
+								Ping:ApplyWindowLocks()
 							end,
 						},
 						Lock = {
-							name = L["LockSpy"],
-							desc = L["LockSpyDescription"],
+							name = L["LockPing"],
+							desc = L["LockPingDescription"],
 							type = "toggle",
 							order = 3,
 							width = 1.6,
 							get = function(info) 
-								return Spy.db.profile.Locked
+								return Ping.db.profile.Locked
 							end,
 							set = function(info, value)
-								Spy.db.profile.Locked = value
-								Spy:LockWindows(value)
-								Spy:RefreshCurrentList()
+								Ping.db.profile.Locked = value
+								Ping:LockWindows(value)
+								Ping:RefreshCurrentList()
 							end,
 						},
 						ClampToScreen = {
@@ -1254,23 +1254,23 @@ Spy.options = {
 							order = 4,
 		--					width = "double",
 							get = function(info) 
-								return Spy.db.profile.ClampToScreen
+								return Ping.db.profile.ClampToScreen
 							end,
 							set = function(info, value)
-								Spy.db.profile.ClampToScreen = value
-								Spy:ClampToScreen(value)
+								Ping.db.profile.ClampToScreen = value
+								Ping:ClampToScreen(value)
 							end,
 						},
-						InvertSpy = {
-							name = L["InvertSpy"],
-							desc = L["InvertSpyDescription"],
+						InvertPing = {
+							name = L["InvertPing"],
+							desc = L["InvertPingDescription"],
 							type = "toggle",
 							order = 5,
 							get = function(info)
-								return Spy.db.profile.InvertSpy
+								return Ping.db.profile.InvertPing
 							end,
 							set = function(info, value)
-								Spy.db.profile.InvertSpy = value
+								Ping.db.profile.InvertPing = value
 							end,
 						},
 						WindowScale = {
@@ -1280,10 +1280,10 @@ Spy.options = {
 							order = 6,
 							min = 0.5, max = 2, step = 0.05,
 							isPercent = true,
-							get = function() return Spy.db.profile.WindowScale end,
+							get = function() return Ping.db.profile.WindowScale end,
 							set = function(_, value)
-								Spy.db.profile.WindowScale = value
-								Spy:ApplyWindowStyle()
+								Ping.db.profile.WindowScale = value
+								Ping:ApplyWindowStyle()
 							end,
 						},
 						ShowBackground = {
@@ -1291,10 +1291,10 @@ Spy.options = {
 							desc = L["ShowBackgroundDescription"],
 							type = "toggle",
 							order = 7,
-							get = function() return Spy.db.profile.ShowBackground end,
+							get = function() return Ping.db.profile.ShowBackground end,
 							set = function(_, value)
-								Spy.db.profile.ShowBackground = value
-								Spy:ApplyWindowStyle()
+								Ping.db.profile.ShowBackground = value
+								Ping:ApplyWindowStyle()
 							end,
 						},
 						BackgroundOpacity = {
@@ -1304,10 +1304,10 @@ Spy.options = {
 							order = 8,
 							min = 0, max = 1, step = 0.05,
 							isPercent = true,
-							get = function() return Spy.db.profile.BackgroundOpacity end,
+							get = function() return Ping.db.profile.BackgroundOpacity end,
 							set = function(_, value)
-								Spy.db.profile.BackgroundOpacity = value
-								Spy:ApplyWindowStyle()
+								Ping.db.profile.BackgroundOpacity = value
+								Ping:ApplyWindowStyle()
 							end,
 						},
 						Alpha = {
@@ -1319,10 +1319,10 @@ Spy.options = {
 							min = 0, max = 1, step = 0.01,
 							isPercent = true,
 							get = function()
-								return Spy.db.profile.MainWindow.Alpha end,
+								return Ping.db.profile.MainWindow.Alpha end,
 							set = function(info, value)
-								Spy.db.profile.MainWindow.Alpha = value
-								Spy:UpdateMainWindow()
+								Ping.db.profile.MainWindow.Alpha = value
+								Ping:UpdateMainWindow()
 
 							end,
 						},
@@ -1335,10 +1335,10 @@ Spy.options = {
 							min = 0, max = 1, step = 0.01,
 							isPercent = true,
 							get = function()
-								return Spy.db.profile.MainWindow.AlphaBG end,
+								return Ping.db.profile.MainWindow.AlphaBG end,
 							set = function(info, value)
-								Spy.db.profile.MainWindow.AlphaBG = value
-								Spy:UpdateMainWindow()
+								Ping.db.profile.MainWindow.AlphaBG = value
+								Ping:UpdateMainWindow()
 							end,
 						},
 						TitleBarStyle = {
@@ -1350,10 +1350,10 @@ Spy.options = {
 								["classic"] = L["TitleBarClassic"],
 								["solid"] = L["TitleBarSolid"],
 							},
-							get = function() return Spy.db.profile.TitleBarStyle end,
+							get = function() return Ping.db.profile.TitleBarStyle end,
 							set = function(_, value)
-								Spy.db.profile.TitleBarStyle = value
-								Spy:ApplyWindowStyle()
+								Ping.db.profile.TitleBarStyle = value
+								Ping:ApplyWindowStyle()
 							end,
 						},
 						TitleBarColor = {
@@ -1362,15 +1362,15 @@ Spy.options = {
 							type = "color",
 							order = 12,
 							hasAlpha = false,
-							disabled = function() return Spy.db.profile.TitleBarStyle ~= "solid" end,
+							disabled = function() return Ping.db.profile.TitleBarStyle ~= "solid" end,
 							get = function()
-								local c = Spy.db.profile.Colors["Spy"]["Title Bar"]
+								local c = Ping.db.profile.Colors["Ping"]["Title Bar"]
 								return c.r, c.g, c.b
 							end,
 							set = function(_, r, g, b)
-								local c = Spy.db.profile.Colors["Spy"]["Title Bar"]
+								local c = Ping.db.profile.Colors["Ping"]["Title Bar"]
 								c.r, c.g, c.b = r, g, b
-								Spy:ApplyWindowStyle()
+								Ping:ApplyWindowStyle()
 							end,
 						},
 						TitleBarOpacity = {
@@ -1380,11 +1380,11 @@ Spy.options = {
 							order = 13,
 							min = 0, max = 1, step = 0.05,
 							isPercent = true,
-							disabled = function() return Spy.db.profile.TitleBarStyle ~= "solid" end,
-							get = function() return Spy.db.profile.TitleBarOpacity end,
+							disabled = function() return Ping.db.profile.TitleBarStyle ~= "solid" end,
+							get = function() return Ping.db.profile.TitleBarOpacity end,
 							set = function(_, value)
-								Spy.db.profile.TitleBarOpacity = value
-								Spy:ApplyWindowStyle()
+								Ping.db.profile.TitleBarOpacity = value
+								Ping:ApplyWindowStyle()
 							end,
 						},
 						ShowBorder = {
@@ -1392,10 +1392,10 @@ Spy.options = {
 							desc = L["ShowBorderDescription"],
 							type = "toggle",
 							order = 14,
-							get = function() return Spy.db.profile.ShowBorder end,
+							get = function() return Ping.db.profile.ShowBorder end,
 							set = function(_, value)
-								Spy.db.profile.ShowBorder = value
-								Spy:ApplyWindowStyle()
+								Ping.db.profile.ShowBorder = value
+								Ping:ApplyWindowStyle()
 							end,
 						},
 						WindowBorderColor = {
@@ -1404,13 +1404,13 @@ Spy.options = {
 							order = 15,
 							hasAlpha = true,
 							get = function()
-								local c = Spy.db.profile.Colors["Spy"]["Window Border"]
+								local c = Ping.db.profile.Colors["Ping"]["Window Border"]
 								return c.r, c.g, c.b, c.a
 							end,
 							set = function(_, r, g, b, a)
-								local c = Spy.db.profile.Colors["Spy"]["Window Border"]
+								local c = Ping.db.profile.Colors["Ping"]["Window Border"]
 								c.r, c.g, c.b, c.a = r, g, b, a
-								Spy:ApplyWindowStyle()
+								Ping:ApplyWindowStyle()
 							end,
 						},
 					},
@@ -1437,10 +1437,10 @@ Spy.options = {
 							order = 1,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.EnableSound
+								return Ping.db.profile.EnableSound
 							end,
 							set = function(info, value)
-								Spy.db.profile.EnableSound = value
+								Ping.db.profile.EnableSound = value
 							end,
 						},
 						SoundChannel = {
@@ -1454,10 +1454,10 @@ Spy.options = {
 								["Ambience"] = L["Ambience"],
 							},					
 							get = function()
-								return Spy.db.profile.SoundChannel
+								return Ping.db.profile.SoundChannel
 							end,
 							set = function(info, value)
-								Spy.db.profile.SoundChannel = value 
+								Ping.db.profile.SoundChannel = value 
 							end,
 						},
 						OnlySoundKoS = {
@@ -1467,10 +1467,10 @@ Spy.options = {
 							order = 3,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.OnlySoundKoS
+								return Ping.db.profile.OnlySoundKoS
 							end,
 							set = function(info, value)
-								Spy.db.profile.OnlySoundKoS = value
+								Ping.db.profile.OnlySoundKoS = value
 							end,
 						},
 						StopAlertsOnTaxi = {
@@ -1480,10 +1480,10 @@ Spy.options = {
 							order = 4,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.StopAlertsOnTaxi
+								return Ping.db.profile.StopAlertsOnTaxi
 							end,
 							set = function(info, value)
-								Spy.db.profile.StopAlertsOnTaxi = value
+								Ping.db.profile.StopAlertsOnTaxi = value
 							end,
 						},
 					},
@@ -1506,10 +1506,10 @@ Spy.options = {
 									type = "toggle",
 									order = 1,
 									get = function(info)
-										return Spy.db.profile.Announce == "None"
+										return Ping.db.profile.Announce == "None"
 									end,
 									set = function(info, value)
-										Spy.db.profile.Announce = "None"
+										Ping.db.profile.Announce = "None"
 									end,
 								},
 								Self = {
@@ -1518,10 +1518,10 @@ Spy.options = {
 									type = "toggle",
 									order = 2,
 									get = function(info)
-										return Spy.db.profile.Announce == "Self"
+										return Ping.db.profile.Announce == "Self"
 									end,
 									set = function(info, value)
-										Spy.db.profile.Announce = "Self"
+										Ping.db.profile.Announce = "Self"
 									end,
 								},
 								Party = {
@@ -1530,10 +1530,10 @@ Spy.options = {
 									type = "toggle",
 									order = 3,
 									get = function(info)
-										return Spy.db.profile.Announce == "Party"
+										return Ping.db.profile.Announce == "Party"
 									end,
 									set = function(info, value)
-										Spy.db.profile.Announce = "Party"
+										Ping.db.profile.Announce = "Party"
 									end,
 								},
 								Guild = {
@@ -1542,10 +1542,10 @@ Spy.options = {
 									type = "toggle",
 									order = 4,
 									get = function(info)
-										return Spy.db.profile.Announce == "Guild"
+										return Ping.db.profile.Announce == "Guild"
 									end,
 									set = function(info, value)
-										Spy.db.profile.Announce = "Guild"
+										Ping.db.profile.Announce = "Guild"
 									end,
 								},
 								Raid = {
@@ -1554,10 +1554,10 @@ Spy.options = {
 									type = "toggle",
 									order = 5,
 									get = function(info)
-										return Spy.db.profile.Announce == "Raid"
+										return Ping.db.profile.Announce == "Raid"
 									end,
 									set = function(info, value)
-										Spy.db.profile.Announce = "Raid"
+										Ping.db.profile.Announce = "Raid"
 									end,
 								},
 							},
@@ -1569,10 +1569,10 @@ Spy.options = {
 							order = 2,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.OnlyAnnounceKoS
+								return Ping.db.profile.OnlyAnnounceKoS
 							end,
 							set = function(info, value)
-								Spy.db.profile.OnlyAnnounceKoS = value
+								Ping.db.profile.OnlyAnnounceKoS = value
 							end,
 						},
 						DisplayWarnings = {
@@ -1585,11 +1585,11 @@ Spy.options = {
 								["Moveable"] = L["Moveable"],
 							},
 							get = function()
-								return Spy.db.profile.DisplayWarnings
+								return Ping.db.profile.DisplayWarnings
 							end,
 							set = function(info, value)
-								Spy.db.profile.DisplayWarnings = value
-								Spy:UpdateAlertWindow()
+								Ping.db.profile.DisplayWarnings = value
+								Ping:UpdateAlertWindow()
 							end,
 						},
 						WarnOnStealth = {
@@ -1599,10 +1599,10 @@ Spy.options = {
 							order = 4,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.WarnOnStealth
+								return Ping.db.profile.WarnOnStealth
 							end,
 							set = function(info, value)
-								Spy.db.profile.WarnOnStealth = value
+								Ping.db.profile.WarnOnStealth = value
 							end,
 						},
 						WarnOnKOS = {
@@ -1612,10 +1612,10 @@ Spy.options = {
 							order = 5,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.WarnOnKOS
+								return Ping.db.profile.WarnOnKOS
 							end,
 							set = function(info, value)
-								Spy.db.profile.WarnOnKOS = value
+								Ping.db.profile.WarnOnKOS = value
 							end,
 						},
 						WarnOnKOSGuild = {
@@ -1625,10 +1625,10 @@ Spy.options = {
 							order = 6,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.WarnOnKOSGuild
+								return Ping.db.profile.WarnOnKOSGuild
 							end,
 							set = function(info, value)
-								Spy.db.profile.WarnOnKOSGuild = value
+								Ping.db.profile.WarnOnKOSGuild = value
 							end,
 						},
 						WarnOnRace = {
@@ -1638,10 +1638,10 @@ Spy.options = {
 							order = 7,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.WarnOnRace
+								return Ping.db.profile.WarnOnRace
 							end,
 							set = function(info, value)
-								Spy.db.profile.WarnOnRace = value
+								Ping.db.profile.WarnOnRace = value
 							end,
 						},
 						SelectWarnRace = {
@@ -1650,10 +1650,10 @@ Spy.options = {
 							name = L["SelectWarnRace"],
 							desc = L["SelectWarnRaceDescription"],
 							get = function()
-								return Spy.db.profile.SelectWarnRace
+								return Ping.db.profile.SelectWarnRace
 							end,
 							set = function(info, value)
-								Spy.db.profile.SelectWarnRace = value
+								Ping.db.profile.SelectWarnRace = value
 							end,
 							values = function()
 								local raceOptions = {}
@@ -1693,10 +1693,10 @@ Spy.options = {
 		--								["Earthen"] = L["Earthen"],
 									},
 								}
-								if Spy.EnemyFactionName == "Alliance" then
+								if Ping.EnemyFactionName == "Alliance" then
 									raceOptions = races.Alliance
 								end	
-								if Spy.EnemyFactionName == "Horde" then
+								if Ping.EnemyFactionName == "Horde" then
 									raceOptions = races.Horde
 								end	
 								return raceOptions
@@ -1736,11 +1736,11 @@ Spy.options = {
 									type = "toggle",
 									order = 1,
 									get = function(info)
-										return Spy.db.profile.RemoveUndetected == "OneMinute"
+										return Ping.db.profile.RemoveUndetected == "OneMinute"
 									end,
 									set = function(info, value)
-										Spy.db.profile.RemoveUndetected = "OneMinute"
-										Spy:UpdateTimeoutSettings()
+										Ping.db.profile.RemoveUndetected = "OneMinute"
+										Ping:UpdateTimeoutSettings()
 									end,
 								},
 								TwoMinutes = {
@@ -1749,11 +1749,11 @@ Spy.options = {
 									type = "toggle",
 									order = 2,
 									get = function(info)
-										return Spy.db.profile.RemoveUndetected == "TwoMinutes"
+										return Ping.db.profile.RemoveUndetected == "TwoMinutes"
 									end,
 									set = function(info, value)
-										Spy.db.profile.RemoveUndetected = "TwoMinutes"
-										Spy:UpdateTimeoutSettings()
+										Ping.db.profile.RemoveUndetected = "TwoMinutes"
+										Ping:UpdateTimeoutSettings()
 									end,
 								},
 								FiveMinutes = {
@@ -1762,11 +1762,11 @@ Spy.options = {
 									type = "toggle",
 									order = 3,
 									get = function(info)
-										return Spy.db.profile.RemoveUndetected == "FiveMinutes"
+										return Ping.db.profile.RemoveUndetected == "FiveMinutes"
 									end,
 									set = function(info, value)
-										Spy.db.profile.RemoveUndetected = "FiveMinutes"
-										Spy:UpdateTimeoutSettings()
+										Ping.db.profile.RemoveUndetected = "FiveMinutes"
+										Ping:UpdateTimeoutSettings()
 									end,
 								},
 								TenMinutes = {
@@ -1775,11 +1775,11 @@ Spy.options = {
 									type = "toggle",
 									order = 4,
 									get = function(info)
-										return Spy.db.profile.RemoveUndetected == "TenMinutes"
+										return Ping.db.profile.RemoveUndetected == "TenMinutes"
 									end,
 									set = function(info, value)
-										Spy.db.profile.RemoveUndetected = "TenMinutes"
-										Spy:UpdateTimeoutSettings()
+										Ping.db.profile.RemoveUndetected = "TenMinutes"
+										Ping:UpdateTimeoutSettings()
 									end,
 								},
 								FifteenMinutes = {
@@ -1788,11 +1788,11 @@ Spy.options = {
 									type = "toggle",
 									order = 5,
 									get = function(info)
-										return Spy.db.profile.RemoveUndetected == "FifteenMinutes"
+										return Ping.db.profile.RemoveUndetected == "FifteenMinutes"
 									end,
 									set = function(info, value)
-										Spy.db.profile.RemoveUndetected = "FifteenMinutes"
-										Spy:UpdateTimeoutSettings()
+										Ping.db.profile.RemoveUndetected = "FifteenMinutes"
+										Ping:UpdateTimeoutSettings()
 									end,
 								},
 								Never = {
@@ -1801,11 +1801,11 @@ Spy.options = {
 									type = "toggle",
 									order = 6,
 									get = function(info)
-										return Spy.db.profile.RemoveUndetected == "Never"
+										return Ping.db.profile.RemoveUndetected == "Never"
 									end,
 									set = function(info, value)
-										Spy.db.profile.RemoveUndetected = "Never"
-										Spy:UpdateTimeoutSettings()
+										Ping.db.profile.RemoveUndetected = "Never"
+										Ping:UpdateTimeoutSettings()
 									end,
 								},
 							},
@@ -1822,10 +1822,10 @@ Spy.options = {
 									type = "toggle",
 									order = 1,
 									get = function(info)
-										return Spy.db.profile.PurgeData == "OneDay"
+										return Ping.db.profile.PurgeData == "OneDay"
 									end,
 									set = function(info, value)
-										Spy.db.profile.PurgeData = "OneDay"
+										Ping.db.profile.PurgeData = "OneDay"
 									end,
 								},
 								FiveDays = {
@@ -1834,10 +1834,10 @@ Spy.options = {
 									type = "toggle",
 									order = 2,
 									get = function(info)
-										return Spy.db.profile.PurgeData == "FiveDays"
+										return Ping.db.profile.PurgeData == "FiveDays"
 									end,
 									set = function(info, value)
-										Spy.db.profile.PurgeData = "FiveDays"
+										Ping.db.profile.PurgeData = "FiveDays"
 									end,
 								},
 								TenDays = {
@@ -1846,10 +1846,10 @@ Spy.options = {
 									type = "toggle",
 									order = 3,
 									get = function(info)
-										return Spy.db.profile.PurgeData == "TenDays"
+										return Ping.db.profile.PurgeData == "TenDays"
 									end,
 									set = function(info, value)
-										Spy.db.profile.PurgeData = "TenDays"
+										Ping.db.profile.PurgeData = "TenDays"
 									end,
 								},
 								ThirtyDays = {
@@ -1858,10 +1858,10 @@ Spy.options = {
 									type = "toggle",
 									order = 4,
 									get = function(info)
-										return Spy.db.profile.PurgeData == "ThirtyDays"
+										return Ping.db.profile.PurgeData == "ThirtyDays"
 									end,
 									set = function(info, value)
-										Spy.db.profile.PurgeData = "ThirtyDays"
+										Ping.db.profile.PurgeData = "ThirtyDays"
 									end,
 								},
 								SixtyDays = {
@@ -1870,10 +1870,10 @@ Spy.options = {
 									type = "toggle",
 									order = 5,
 									get = function(info)
-										return Spy.db.profile.PurgeData == "SixtyDays"
+										return Ping.db.profile.PurgeData == "SixtyDays"
 									end,
 									set = function(info, value)
-										Spy.db.profile.PurgeData = "SixtyDays"
+										Ping.db.profile.PurgeData = "SixtyDays"
 									end,
 								},
 								NinetyDays = {
@@ -1882,10 +1882,10 @@ Spy.options = {
 									type = "toggle",
 									order = 6,
 									get = function(info)
-										return Spy.db.profile.PurgeData == "NinetyDays"
+										return Ping.db.profile.PurgeData == "NinetyDays"
 									end,
 									set = function(info, value)
-										Spy.db.profile.PurgeData = "NinetyDays"
+										Ping.db.profile.PurgeData = "NinetyDays"
 									end,
 								},
 							},
@@ -1897,10 +1897,10 @@ Spy.options = {
 							order = 3,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.PurgeKoS
+								return Ping.db.profile.PurgeKoS
 							end,
 							set = function(info, value)
-								Spy.db.profile.PurgeKoS = value
+								Ping.db.profile.PurgeKoS = value
 							end,
 						},
 						PurgeWinLossData = {
@@ -1910,10 +1910,10 @@ Spy.options = {
 							order = 4,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.PurgeWinLossData
+								return Ping.db.profile.PurgeWinLossData
 							end,
 							set = function(info, value)
-								Spy.db.profile.PurgeWinLossData = value
+								Ping.db.profile.PurgeWinLossData = value
 							end,
 						},
 					},
@@ -1931,10 +1931,10 @@ Spy.options = {
 							order = 1,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.ShareData
+								return Ping.db.profile.ShareData
 							end,
 							set = function(info, value)
-								Spy.db.profile.ShareData = value
+								Ping.db.profile.ShareData = value
 							end,
 						},
 						UseData = {
@@ -1944,10 +1944,10 @@ Spy.options = {
 							order = 2,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.UseData
+								return Ping.db.profile.UseData
 							end,
 							set = function(info, value)
-								Spy.db.profile.UseData = value
+								Ping.db.profile.UseData = value
 							end,
 						},
 						ShareKOSBetweenCharacters = {
@@ -1957,12 +1957,12 @@ Spy.options = {
 							order = 3,
 							width = "full",
 							get = function(info)
-								return Spy.db.profile.ShareKOSBetweenCharacters
+								return Ping.db.profile.ShareKOSBetweenCharacters
 							end,
 							set = function(info, value)
-								Spy.db.profile.ShareKOSBetweenCharacters = value
+								Ping.db.profile.ShareKOSBetweenCharacters = value
 								if value then
-									Spy:RegenerateKOSCentralList()
+									Ping:RegenerateKOSCentralList()
 								end
 							end,
 						},
@@ -1986,10 +1986,10 @@ Spy.options = {
 							type = "toggle",
 							order = 2,
 							width = "full",
-							get = function() return Spy.db.profile.DebugMode end,
+							get = function() return Ping.db.profile.DebugMode end,
 							set = function(_, v)
-								Spy.db.profile.DebugMode = v
-								if v then Spy:CaptureDebugEnvironment() end
+								Ping.db.profile.DebugMode = v
+								if v then Ping:CaptureDebugEnvironment() end
 							end,
 						},
 						DebugDump = {
@@ -1997,20 +1997,20 @@ Spy.options = {
 							desc = L["DebugDumpButtonDescription"],
 							type = "execute",
 							order = 3,
-							func = function() Spy:ShowDebugDump() end,
+							func = function() Ping:ShowDebugDump() end,
 						},
 						DebugStatus = {
 							name = L["DebugStatusButton"],
 							desc = L["DebugStatusButtonDescription"],
 							type = "execute",
 							order = 4,
-							func = function() Spy:DebugStatus() end,
+							func = function() Ping:DebugStatus() end,
 						},
 						DebugReset = {
 							name = L["DebugResetButton"],
 							type = "execute",
 							order = 5,
-							func = function() Spy:ResetDebug() Spy:Print(L["DebugWasReset"]) end,
+							func = function() Ping:ResetDebug() Ping:Print(L["DebugWasReset"]) end,
 						},
 					},
 				},
@@ -2019,13 +2019,13 @@ Spy.options = {
 },
 }
 
-Spy.optionsSlash = {
+Ping.optionsSlash = {
 	name = L["SlashCommand"],
 	order = -3,
 	type = "group",
 	args = {
 		intro = {
-			name = L["SpySlashDescription"],
+			name = L["PingSlashDescription"],
 			type = "description",
 			order = 1,
 			cmdHidden = true,
@@ -2042,25 +2042,25 @@ Spy.optionsSlash = {
 				val = strtrim(val or "")
 				local cmd, rest = val:match("^(%S*)%s*(.-)$")
 				cmd = (cmd or ""):lower()
-				if cmd == "on" or (cmd == "" and not Spy.db.profile.DebugMode) then
-					Spy.db.profile.DebugMode = true
-					Spy:CaptureDebugEnvironment()
-					Spy:Print(L["DebugOn"])
+				if cmd == "on" or (cmd == "" and not Ping.db.profile.DebugMode) then
+					Ping.db.profile.DebugMode = true
+					Ping:CaptureDebugEnvironment()
+					Ping:Print(L["DebugOn"])
 				elseif cmd == "off" or cmd == "" then
-					Spy.db.profile.DebugMode = false
-					Spy:Print(L["DebugOff"])
+					Ping.db.profile.DebugMode = false
+					Ping:Print(L["DebugOff"])
 				elseif cmd == "note" then
-					Spy:DebugNote(rest)
-					Spy:Print(L["DebugNoted"])
+					Ping:DebugNote(rest)
+					Ping:Print(L["DebugNoted"])
 				elseif cmd == "dump" then
-					Spy:ShowDebugDump()
+					Ping:ShowDebugDump()
 				elseif cmd == "reset" then
-					Spy:ResetDebug()
-					Spy:Print(L["DebugWasReset"])
+					Ping:ResetDebug()
+					Ping:Print(L["DebugWasReset"])
 				elseif cmd == "status" then
-					Spy:DebugStatus()
+					Ping:DebugStatus()
 				else
-					Spy:Print(L["DebugUsage"])
+					Ping:Print(L["DebugUsage"])
 				end
 			end,
 		},
@@ -2070,7 +2070,7 @@ Spy.optionsSlash = {
 			type = 'execute',
 			order = 2,
 			func = function()
-				Spy:EnableSpy(true, true)
+				Ping:EnablePing(true, true)
 			end,
 			dialogHidden = true
 		},
@@ -2080,7 +2080,7 @@ Spy.optionsSlash = {
 			type = 'execute',
 			order = 3,
 			func = function()
-				Spy:EnableSpy(false, true)
+				Ping:EnablePing(false, true)
 			end,
 			dialogHidden = true
 		},		
@@ -2090,7 +2090,7 @@ Spy.optionsSlash = {
 			type = 'execute',
 			order = 4,
 			func = function()
-				Spy:ResetPositions()
+				Ping:ResetPositions()
 			end,
 			dialogHidden = true
 		},
@@ -2100,7 +2100,7 @@ Spy.optionsSlash = {
 			type = 'execute',
 			order = 5,
 			func = function()
-				Spy:ClearList()
+				Ping:ClearList()
 			end,
 			dialogHidden = true
 		},			
@@ -2110,7 +2110,7 @@ Spy.optionsSlash = {
 			type = 'execute',
 			order = 6,
 			func = function()
-				Spy:ShowConfig()
+				Ping:ShowConfig()
 			end,
 			dialogHidden = true
 		},
@@ -2121,10 +2121,10 @@ Spy.optionsSlash = {
 			order = 7,
 			pattern = ".",	-- Changed so names with special characters can be added
 			set = function(info, value)
-				if Spy_IgnoreList[value] or strmatch(value, "[%s%d]+") then
+				if Ping_IgnoreList[value] or strmatch(value, "[%s%d]+") then
 					DEFAULT_CHAT_FRAME:AddMessage(value .. " - " .. L["InvalidInput"])
 				else
-					Spy:ToggleKOSPlayer(not SpyPerCharDB.KOSData[value], value)
+					Ping:ToggleKOSPlayer(not PingPerCharDB.KOSData[value], value)
 				end	
 			end,
 			dialogHidden = true
@@ -2136,10 +2136,10 @@ Spy.optionsSlash = {
 			order = 8,
 			pattern = ".",
 			set = function(info, value)
-				if Spy_IgnoreList[value] or strmatch(value, "[%s%d]+") then
+				if Ping_IgnoreList[value] or strmatch(value, "[%s%d]+") then
 					DEFAULT_CHAT_FRAME:AddMessage(value .. " - " .. L["InvalidInput"])
 				else
-					Spy:ToggleIgnorePlayer(not SpyPerCharDB.IgnoreData[value], value)
+					Ping:ToggleIgnorePlayer(not PingPerCharDB.IgnoreData[value], value)
 				end
 			end,
 			dialogHidden = true
@@ -2150,7 +2150,7 @@ Spy.optionsSlash = {
 			type = 'execute',
 			order = 9,
 			func = function()
-				SpyStats:Toggle()
+				PingStats:Toggle()
 			end,
 			dialogHidden = true
 		},
@@ -2160,7 +2160,7 @@ Spy.optionsSlash = {
 			type = 'execute',
 			order = 10,
 			func = function()
-				Spy:AlertStealthPlayer("Bazzalan")
+				Ping:AlertStealthPlayer("Bazzalan")
 			end
 		},
 		sanc = {
@@ -2169,10 +2169,10 @@ Spy.optionsSlash = {
 			type = 'execute',
 			order = 11,
 			func = function()
-				Spy.db.profile.EnabledInSanctuaries = not Spy.db.profile.EnabledInSanctuaries
-				Spy:ZoneChangedEvent()
-	--			Spy:UpdateMainWindow()
-	--			Spy:EnableSpy(false, true)
+				Ping.db.profile.EnabledInSanctuaries = not Ping.db.profile.EnabledInSanctuaries
+				Ping:ZoneChangedEvent()
+	--			Ping:UpdateMainWindow()
+	--			Ping:EnablePing(false, true)
 			end,
 			dialogHidden = true
 		},
@@ -2239,7 +2239,7 @@ local Default_Profile = {
 				["UNGROUPED"] = { r = 0.63, g = 0.58, b = 0.24, a = 0.6 },
 			},
 			-- Target-picker (healer marking / window styling) colours.
-			["Spy"] = {
+			["Ping"] = {
 				["Healer Marker"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
 				["Healer Edge"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
 				["KoS Edge"] = { r = 1, g = 0, b = 0, a = 1 },
@@ -2354,19 +2354,19 @@ local Default_Profile = {
 		DisplayOnMap=true,
 		SwitchToZone=false,
 		MapDisplayLimit="SameZone",
-		DisplayTooltipNearSpyWindow=false,
+		DisplayTooltipNearPingWindow=false,
 		TooltipAnchor="ANCHOR_CURSOR",
 		DisplayWinLossStatistics=true,
 		DisplayKOSReason=true,
 		DisplayLastSeen=true,
 		DisplayListData="1NameLevelClass",
 		ShowOnDetection=true,
-		HideSpy=false,
+		HidePing=false,
 --		ShowOnlyPvPFlagged=false,
 		ShowKoSButton=false,
-		InvertSpy=false,
-		ResizeSpy=true,
-		ResizeSpyLimit=15,
+		InvertPing=false,
+		ResizePing=true,
+		ResizePingLimit=15,
 		SoundChannel="SFX",
 		Announce="None",
 		OnlyAnnounceKoS=false,
@@ -2419,157 +2419,157 @@ local Default_Profile = {
 	},
 }
 
-SM:Register("statusbar", "Flat", [[Interface\Addons\Spy\Textures\bar-flat.tga]])
+SM:Register("statusbar", "Flat", [[Interface\Addons\Ping\Textures\bar-flat.tga]])
 
-function Spy:CheckDatabase()
-	if not SpyPerCharDB or not SpyPerCharDB.PlayerData then
-		SpyPerCharDB = {}
+function Ping:CheckDatabase()
+	if not PingPerCharDB or not PingPerCharDB.PlayerData then
+		PingPerCharDB = {}
 	end
-	SpyPerCharDB.version = Spy.DatabaseVersion
-	if not SpyPerCharDB.PlayerData then
-		SpyPerCharDB.PlayerData = {}
+	PingPerCharDB.version = Ping.DatabaseVersion
+	if not PingPerCharDB.PlayerData then
+		PingPerCharDB.PlayerData = {}
 	end
-	if not SpyPerCharDB.IgnoreData then
-		SpyPerCharDB.IgnoreData = {}
+	if not PingPerCharDB.IgnoreData then
+		PingPerCharDB.IgnoreData = {}
 	end
-	if not SpyPerCharDB.KOSData then
-		SpyPerCharDB.KOSData = {}
+	if not PingPerCharDB.KOSData then
+		PingPerCharDB.KOSData = {}
 	end
-	if SpyDB.kosData == nil then SpyDB.kosData = {} end
-	if SpyDB.kosData[Spy.RealmName] == nil then SpyDB.kosData[Spy.RealmName] = {} end
-	if SpyDB.kosData[Spy.RealmName][Spy.FactionName] == nil then SpyDB.kosData[Spy.RealmName][Spy.FactionName] = {} end
-	if SpyDB.kosData[Spy.RealmName][Spy.FactionName][Spy.CharacterName] == nil then SpyDB.kosData[Spy.RealmName][Spy.FactionName][Spy.CharacterName] = {} end
-	if SpyDB.removeKOSData == nil then SpyDB.removeKOSData = {} end
-	if SpyDB.removeKOSData[Spy.RealmName] == nil then SpyDB.removeKOSData[Spy.RealmName] = {} end
-	if SpyDB.removeKOSData[Spy.RealmName][Spy.FactionName] == nil then SpyDB.removeKOSData[Spy.RealmName][Spy.FactionName] = {} end
---[[	if Spy.db.profile == nil then Spy.db.profile = Default_Profile.profile end
-	if Spy.db.profile.Colors == nil then Spy.db.profile.Colors = Default_Profile.profile.Colors end
-	if Spy.db.profile.Colors["Window"] == nil then Spy.db.profile.Colors["Window"] = Default_Profile.profile.Colors["Window"] end
-	if Spy.db.profile.Colors["Window"]["Title"] == nil then Spy.db.profile.Colors["Window"]["Title"] = Default_Profile.profile.Colors["Window"]["Title"] end
-	if Spy.db.profile.Colors["Window"]["Background"] == nil then Spy.db.profile.Colors["Window"]["Background"] = Default_Profile.profile.Colors["Window"]["Background"] end
-	if Spy.db.profile.Colors["Window"]["Title Text"] == nil then Spy.db.profile.Colors["Window"]["Title Text"] = Default_Profile.profile.Colors["Window"]["Title Text"] end
-	if Spy.db.profile.Colors["Other Windows"] == nil then Spy.db.profile.Colors["Other Windows"] = Default_Profile.profile.Colors["Other Windows"] end
-	if Spy.db.profile.Colors["Other Windows"]["Title"] == nil then Spy.db.profile.Colors["Other Windows"]["Title"] = Default_Profile.profile.Colors["Other Windows"]["Title"] end
-	if Spy.db.profile.Colors["Other Windows"]["Background"] == nil then Spy.db.profile.Colors["Other Windows"]["Background"] = Default_Profile.profile.Colors["Other Windows"]["Background"] end
-	if Spy.db.profile.Colors["Other Windows"]["Title Text"] == nil then Spy.db.profile.Colors["Other Windows"]["Title Text"] = Default_Profile.profile.Colors["Other Windows"]["Title Text"] end
-	if Spy.db.profile.Colors["Bar"] == nil then Spy.db.profile.Colors["Bar"] = Default_Profile.profile.Colors["Bar"] end
-	if Spy.db.profile.Colors["Bar"]["Bar Text"] == nil then Spy.db.profile.Colors["Bar"]["Bar Text"] = Default_Profile.profile.Colors["Bar"]["Bar Text"] end
-	if Spy.db.profile.Colors["Warning"] == nil then Spy.db.profile.Colors["Warning"] = Default_Profile.profile.Colors["Warning"] end
-	if Spy.db.profile.Colors["Warning"]["Warning Text"] == nil then Spy.db.profile.Colors["Warning"]["Warning Text"] = Default_Profile.profile.Colors["Warning"]["Warning Text"] end
-	if Spy.db.profile.Colors["Tooltip"] == nil then Spy.db.profile.Colors["Tooltip"] = Default_Profile.profile.Colors["Tooltip"] end
-	if Spy.db.profile.Colors["Tooltip"]["Title Text"] == nil then Spy.db.profile.Colors["Tooltip"]["Title Text"] = Default_Profile.profile.Colors["Tooltip"]["Title Text"] end
-	if Spy.db.profile.Colors["Tooltip"]["Details Text"] == nil then Spy.db.profile.Colors["Tooltip"]["Details Text"] = Default_Profile.profile.Colors["Tooltip"]["Details Text"] end
-	if Spy.db.profile.Colors["Tooltip"]["Location Text"] == nil then Spy.db.profile.Colors["Tooltip"]["Location Text"] = Default_Profile.profile.Colors["Tooltip"]["Location Text"] end
-	if Spy.db.profile.Colors["Tooltip"]["Reason Text"] == nil then Spy.db.profile.Colors["Tooltip"]["Reason Text"] = Default_Profile.profile.Colors["Tooltip"]["Reason Text"] end
-	if Spy.db.profile.Colors["Alert"] == nil then Spy.db.profile.Colors["Alert"] = Default_Profile.profile.Colors["Alert"] end
-	if Spy.db.profile.Colors["Alert"]["Background"] == nil then Spy.db.profile.Colors["Alert"]["Background"] = Default_Profile.profile.Colors["Alert"]["Background"] end
-	if Spy.db.profile.Colors["Alert"]["Icon"] == nil then Spy.db.profile.Colors["Alert"]["Icon"] = Default_Profile.profile.Colors["Alert"]["Icon"] end
-	if Spy.db.profile.Colors["Alert"]["KOS Border"] == nil then Spy.db.profile.Colors["Alert"]["KOS Border"] = Default_Profile.profile.Colors["Alert"]["KOS Border"] end
-	if Spy.db.profile.Colors["Alert"]["KOS Text"] == nil then Spy.db.profile.Colors["Alert"]["KOS Text"] = Default_Profile.profile.Colors["Alert"]["KOS Text"] end
-	if Spy.db.profile.Colors["Alert"]["KOS Guild Border"] == nil then Spy.db.profile.Colors["Alert"]["KOS Guild Border"] = Default_Profile.profile.Colors["Alert"]["KOS Guild Border"] end
-	if Spy.db.profile.Colors["Alert"]["KOS Guild Text"] == nil then Spy.db.profile.Colors["Alert"]["KOS Guild Text"] = Default_Profile.profile.Colors["Alert"]["KOS Guild Text"] end
-	if Spy.db.profile.Colors["Alert"]["Stealth Border"] == nil then Spy.db.profile.Colors["Alert"]["Stealth Border"] = Default_Profile.profile.Colors["Alert"]["Stealth Border"] end
-	if Spy.db.profile.Colors["Alert"]["Stealth Text"] == nil then Spy.db.profile.Colors["Alert"]["Stealth Text"] = Default_Profile.profile.Colors["Alert"]["Stealth Text"] end
-	if Spy.db.profile.Colors["Alert"]["Away Border"] == nil then Spy.db.profile.Colors["Alert"]["Away Border"] = Default_Profile.profile.Colors["Alert"]["Away Border"] end
-	if Spy.db.profile.Colors["Alert"]["Away Text"] == nil then Spy.db.profile.Colors["Alert"]["Away Text"] = Default_Profile.profile.Colors["Alert"]["Away Text"] end
-	if Spy.db.profile.Colors["Alert"]["Location Text"] == nil then Spy.db.profile.Colors["Alert"]["Location Text"] = Default_Profile.profile.Colors["Alert"]["Location Text"] end
-	if Spy.db.profile.Colors["Alert"]["Name Text"] == nil then Spy.db.profile.Colors["Alert"]["Name Text"] = Default_Profile.profile.Colors["Alert"]["Name Text"] end
-	if Spy.db.profile.Colors["Class"] == nil then Spy.db.profile.Colors["Class"] = Default_Profile.profile.Colors["Class"] end
-	if Spy.db.profile.Colors["Class"]["HUNTER"] == nil then Spy.db.profile.Colors["Class"]["HUNTER"] = Default_Profile.profile.Colors["Class"]["HUNTER"] end
-	if Spy.db.profile.Colors["Class"]["WARLOCK"] == nil then Spy.db.profile.Colors["Class"]["WARLOCK"] = Default_Profile.profile.Colors["Class"]["WARLOCK"] end
-	if Spy.db.profile.Colors["Class"]["PRIEST"] == nil then Spy.db.profile.Colors["Class"]["PRIEST"] = Default_Profile.profile.Colors["Class"]["PRIEST"] end
-	if Spy.db.profile.Colors["Class"]["PALADIN"] == nil then Spy.db.profile.Colors["Class"]["PALADIN"] = Default_Profile.profile.Colors["Class"]["PALADIN"] end
-	if Spy.db.profile.Colors["Class"]["MAGE"] == nil then Spy.db.profile.Colors["Class"]["MAGE"] = Default_Profile.profile.Colors["Class"]["MAGE"] end
-	if Spy.db.profile.Colors["Class"]["ROGUE"] == nil then Spy.db.profile.Colors["Class"]["ROGUE"] = Default_Profile.profile.Colors["Class"]["ROGUE"] end
-	if Spy.db.profile.Colors["Class"]["DRUID"] == nil then Spy.db.profile.Colors["Class"]["DRUID"] = Default_Profile.profile.Colors["Class"]["DRUID"] end
-	if Spy.db.profile.Colors["Class"]["SHAMAN"] == nil then Spy.db.profile.Colors["Class"]["SHAMAN"] = Default_Profile.profile.Colors["Class"]["SHAMAN"] end
-	if Spy.db.profile.Colors["Class"]["WARRIOR"] == nil then Spy.db.profile.Colors["Class"]["WARRIOR"] = Default_Profile.profile.Colors["Class"]["WARRIOR"] end
-	if Spy.db.profile.Colors["Class"]["DEATHKNIGHT"] == nil then Spy.db.profile.Colors["Class"]["DEATHKNIGHT"] = Default_Profile.profile.Colors["Class"]["DEATHKNIGHT"] end
-	if Spy.db.profile.Colors["Class"]["MONK"] == nil then Spy.db.profile.Colors["Class"]["MONK"] = Default_Profile.profile.Colors["Class"]["MONK"] end
-	if Spy.db.profile.Colors["Class"]["DEMONHUNTER"] == nil then Spy.db.profile.Colors["Class"]["DEMONHUNTER"] = Default_Profile.profile.Colors["Class"]["DEMONHUNTER"] end	
-	if Spy.db.profile.Colors["Class"]["PET"] == nil then Spy.db.profile.Colors["Class"]["PET"] = Default_Profile.profile.Colors["Class"]["PET"] end
-	if Spy.db.profile.Colors["Class"]["MOB"] == nil then Spy.db.profile.Colors["Class"]["MOB"] = Default_Profile.profile.Colors["Class"]["MOB"] end
-	if Spy.db.profile.Colors["Class"]["UNKNOWN"] == nil then Spy.db.profile.Colors["Class"]["UNKNOWN"] = Default_Profile.profile.Colors["Class"]["UNKNOWN"] end
-	if Spy.db.profile.Colors["Class"]["HOSTILE"] == nil then Spy.db.profile.Colors["Class"]["HOSTILE"] = Default_Profile.profile.Colors["Class"]["HOSTILE"] end
-	if Spy.db.profile.Colors["Class"]["UNGROUPED"] == nil then Spy.db.profile.Colors["Class"]["UNGROUPED"] = Default_Profile.profile.Colors["Class"]["UNGROUPED"] end
-	if Spy.db.profile.MainWindow == nil then Spy.db.profile.MainWindow = Default_Profile.profile.MainWindow end
-	if Spy.db.profile.MainWindow.Buttons == nil then Spy.db.profile.MainWindow.Buttons = Default_Profile.profile.MainWindow.Buttons end
-	if Spy.db.profile.MainWindow.Buttons.ClearButton == nil then Spy.db.profile.MainWindow.Buttons.ClearButton = Default_Profile.profile.MainWindow.Buttons.ClearButton end
-	if Spy.db.profile.MainWindow.Buttons.LeftButton == nil then Spy.db.profile.MainWindow.Buttons.LeftButton = Default_Profile.profile.MainWindow.Buttons.LeftButton end
-	if Spy.db.profile.MainWindow.Buttons.RightButton == nil then Spy.db.profile.MainWindow.Buttons.RightButton = Default_Profile.profile.MainWindow.Buttons.RightButton end
-	if Spy.db.profile.MainWindow.RowHeight == nil then Spy.db.profile.MainWindow.RowHeight = Default_Profile.profile.MainWindow.RowHeight end
-	if Spy.db.profile.MainWindow.RowSpacing == nil then Spy.db.profile.MainWindow.RowSpacing = Default_Profile.profile.MainWindow.RowSpacing end
-	if Spy.db.profile.MainWindow.TextHeight == nil then Spy.db.profile.MainWindow.TextHeight = Default_Profile.profile.MainWindow.TextHeight end
-	if Spy.db.profile.MainWindow.AutoHide == nil then Spy.db.profile.MainWindow.AutoHide = Default_Profile.profile.MainWindow.AutoHide end
-	if Spy.db.profile.MainWindow.BarText == nil then Spy.db.profile.MainWindow.BarText = Default_Profile.profile.MainWindow.BarText end
-	if Spy.db.profile.MainWindow.BarText.RankNum == nil then Spy.db.profile.MainWindow.BarText.RankNum = Default_Profile.profile.MainWindow.BarText.RankNum end
-	if Spy.db.profile.MainWindow.BarText.PerSec == nil then Spy.db.profile.MainWindow.BarText.PerSec = Default_Profile.profile.MainWindow.BarText.PerSec end
-	if Spy.db.profile.MainWindow.BarText.Percent == nil then Spy.db.profile.MainWindow.BarText.Percent = Default_Profile.profile.MainWindow.BarText.Percent end
-	if Spy.db.profile.MainWindow.BarText.NumFormat == nil then Spy.db.profile.MainWindow.BarText.NumFormat = Default_Profile.profile.MainWindow.BarText.NumFormat end
-	if Spy.db.profile.MainWindow.Position == nil then Spy.db.profile.MainWindow.Position = Default_Profile.profile.MainWindow.Position end
-	if Spy.db.profile.MainWindow.Position.x == nil then Spy.db.profile.MainWindow.Position.x = Default_Profile.profile.MainWindow.Position.x end
-	if Spy.db.profile.MainWindow.Position.y == nil then Spy.db.profile.MainWindow.Position.y = Default_Profile.profile.MainWindow.Position.y end
-	if Spy.db.profile.MainWindow.Position.w == nil then Spy.db.profile.MainWindow.Position.w = Default_Profile.profile.MainWindow.Position.w end
-	if Spy.db.profile.MainWindow.Position.h == nil then Spy.db.profile.MainWindow.Position.h = Default_Profile.profile.MainWindow.Position.h end
-	if Spy.db.profile.AlertWindowNameSize == nil then Spy.db.profile.AlertWindowNameSize = Default_Profile.profile.AlertWindowNameSize end
-	if Spy.db.profile.AlertWindowLocationSize == nil then Spy.db.profile.AlertWindowLocationSize = Default_Profile.profile.AlertWindowLocationSize end
-	if Spy.db.profile.BarTexture == nil then Spy.db.profile.BarTexture = Default_Profile.profile.BarTexture end
-	if Spy.db.profile.MainWindowVis == nil then Spy.db.profile.MainWindowVis = Default_Profile.profile.MainWindowVis end
-	if Spy.db.profile.CurrentList == nil then Spy.db.profile.CurrentList = Default_Profile.profile.CurrentList end
-	if Spy.db.profile.Locked == nil then Spy.db.profile.Locked = Default_Profile.profile.Locked end
-	if Spy.db.profile.Font == nil then Spy.db.profile.Font = Default_Profile.profile.Font end
-	if Spy.db.profile.Scaling == nil then Spy.db.profile.Scaling = Default_Profile.profile.Scaling end
-	if Spy.db.profile.Enabled == nil then Spy.db.profile.Enabled = Default_Profile.profile.Enabled end
-	if Spy.db.profile.EnabledInBattlegrounds == nil then Spy.db.profile.EnabledInBattlegrounds = Default_Profile.profile.EnabledInBattlegrounds end
-	if Spy.db.profile.EnabledInSanctuaries == nil then Spy.db.profile.EnabledInSanctuaries = Default_Profile.profile.EnabledInSanctuaries end
-	if Spy.db.profile.EnabledInArenas == nil then Spy.db.profile.EnabledInArenas = Default_Profile.profile.EnabledInArenas end
-	if Spy.db.profile.EnabledInWintergrasp == nil then Spy.db.profile.EnabledInWintergrasp = Default_Profile.profile.EnabledInWintergrasp end
-	if Spy.db.profile.DisableWhenPVPUnflagged == nil then Spy.db.profile.DisableWhenPVPUnflagged = Default_Profile.profile.DisableWhenPVPUnflagged end
-	if Spy.db.profile.MinimapDetection == nil then Spy.db.profile.MinimapDetection = Default_Profile.profile.MinimapDetection end
-	if Spy.db.profile.MinimapDetails == nil then Spy.db.profile.MinimapDetails = Default_Profile.profile.MinimapDetails end
-	if Spy.db.profile.DisplayOnMap == nil then Spy.db.profile.DisplayOnMap = Default_Profile.profile.DisplayOnMap end
-	if Spy.db.profile.SwitchToZone == nil then Spy.db.profile.SwitchToZone = Default_Profile.profile.SwitchToZone end	
-	if Spy.db.profile.MapDisplayLimit == nil then Spy.db.profile.MapDisplayLimit = Default_Profile.profile.MapDisplayLimit end
-	if Spy.db.profile.DisplayTooltipNearSpyWindow == nil then Spy.db.profile.DisplayTooltipNearSpyWindow = Default_Profile.profile.DisplayTooltipNearSpyWindow end	
-	if Spy.db.profile.TooltipAnchor == nil then Spy.db.profile.TooltipAnchor = Default_Profile.profile.TooltipAnchor end	
-	if Spy.db.profile.DisplayWinLossStatistics == nil then Spy.db.profile.DisplayWinLossStatistics = Default_Profile.profile.DisplayWinLossStatistics end
-	if Spy.db.profile.DisplayKOSReason == nil then Spy.db.profile.DisplayKOSReason = Default_Profile.profile.DisplayKOSReason end
-	if Spy.db.profile.DisplayLastSeen == nil then Spy.db.profile.DisplayLastSeen = Default_Profile.profile.DisplayLastSeen end
-	if Spy.db.profile.ShowOnDetection == nil then Spy.db.profile.ShowOnDetection = Default_Profile.profile.ShowOnDetection end
-	if Spy.db.profile.HideSpy == nil then Spy.db.profile.HideSpy = Default_Profile.profile.HideSpy end
---	if Spy.db.profile.ShowOnlyPvPFlagged == nil then Spy.db.profile.ShowOnlyPvPFlagged = Default_Profile.profile.ShowOnlyPvPFlagged end	
-	if Spy.db.profile.ShowKoSButton == nil then Spy.db.profile.ShowKoSButton = Default_Profile.profile.ShowKoSButton end	
-	if Spy.db.profile.InvertSpy == nil then Spy.db.profile.InvertSpy = Default_Profile.profile.InvertSpy end
-	if Spy.db.profile.ResizeSpy == nil then Spy.db.profile.ResizeSpy = Default_Profile.profile.ResizeSpy end
-	if Spy.db.profile.ResizeSpyLimit == nil then Spy.db.profile.ResizeSpyLimit = Default_Profile.profile.ResizeSpyLimit end 
-	if Spy.db.profile.Announce == nil then Spy.db.profile.Announce = Default_Profile.profile.Announce end
-	if Spy.db.profile.OnlyAnnounceKoS == nil then Spy.db.profile.OnlyAnnounceKoS = Default_Profile.profile.OnlyAnnounceKoS end
-	if Spy.db.profile.WarnOnStealth == nil then Spy.db.profile.WarnOnStealth = Default_Profile.profile.WarnOnStealth end
-	if Spy.db.profile.WarnOnKOS == nil then Spy.db.profile.WarnOnKOS = Default_Profile.profile.WarnOnKOS end
-	if Spy.db.profile.WarnOnKOSGuild == nil then Spy.db.profile.WarnOnKOSGuild = Default_Profile.profile.WarnOnKOSGuild end
-	if Spy.db.profile.WarnOnRace == nil then Spy.db.profile.WarnOnRace = Default_Profile.profile.WarnOnRace end
-	if Spy.db.profile.SelectWarnRace == nil then Spy.db.profile.SelectWarnRace = Default_Profile.profile.SelectWarnRace end
-	if Spy.db.profile.DisplayWarningsInErrorsFrame == nil then Spy.db.profile.DisplayWarningsInErrorsFrame = Default_Profile.profile.DisplayWarningsInErrorsFrame end
-	if Spy.db.profile.EnableSound == nil then Spy.db.profile.EnableSound = Default_Profile.profile.EnableSound end
-	if Spy.db.profile.OnlySoundKoS == nil then Spy.db.profile.OnlySoundKoS = Default_Profile.profile.OnlySoundKoS end	
-	if Spy.db.profile.StopAlertsOnTaxi == nil then Spy.db.profile.StopAlertsOnTaxi = Default_Profile.profile.StopAlertsOnTaxi end 	
-	if Spy.db.profile.RemoveUndetected == nil then Spy.db.profile.RemoveUndetected = Default_Profile.profile.RemoveUndetected end
-	if Spy.db.profile.ShowNearbyList == nil then Spy.db.profile.ShowNearbyList = Default_Profile.profile.ShowNearbyList end
-	if Spy.db.profile.PrioritiseKoS == nil then Spy.db.profile.PrioritiseKoS = Default_Profile.profile.PrioritiseKoS end
-	if Spy.db.profile.PurgeData == nil then Spy.db.profile.PurgeData = Default_Profile.profile.PurgeData end
-	if Spy.db.profile.PurgeKoS == nil then Spy.db.profile.PurgeKoS = Default_Profile.profile.PurgeKoSData end	
-	if Spy.db.profile.PurgeWinLossData == nil then Spy.db.profile.PurgeWinLossData = Default_Profile.profile.PurgeWinLossData end	
-	if Spy.db.profile.ShareData == nil then Spy.db.profile.ShareData = Default_Profile.profile.ShareData end
-	if Spy.db.profile.UseData == nil then Spy.db.profile.UseData = Default_Profile.profile.UseData end
-	if Spy.db.profile.ShareKOSBetweenCharacters == nil then Spy.db.profile.ShareKOSBetweenCharacters = Default_Profile.profile.ShareKOSBetweenCharacters end
-	if Spy.db.profile.AppendUnitNameCheck == nil then Spy.db.profile.AppendUnitNameCheck = Default_Profile.profile.AppendUnitNameCheck end
-	if Spy.db.profile.AppendUnitKoSCheck == nil then Spy.db.profile.AppendUnitKoSCheck = Default_Profile.profile.AppendUnitKoSCheck end	]]--
+	if PingDB.kosData == nil then PingDB.kosData = {} end
+	if PingDB.kosData[Ping.RealmName] == nil then PingDB.kosData[Ping.RealmName] = {} end
+	if PingDB.kosData[Ping.RealmName][Ping.FactionName] == nil then PingDB.kosData[Ping.RealmName][Ping.FactionName] = {} end
+	if PingDB.kosData[Ping.RealmName][Ping.FactionName][Ping.CharacterName] == nil then PingDB.kosData[Ping.RealmName][Ping.FactionName][Ping.CharacterName] = {} end
+	if PingDB.removeKOSData == nil then PingDB.removeKOSData = {} end
+	if PingDB.removeKOSData[Ping.RealmName] == nil then PingDB.removeKOSData[Ping.RealmName] = {} end
+	if PingDB.removeKOSData[Ping.RealmName][Ping.FactionName] == nil then PingDB.removeKOSData[Ping.RealmName][Ping.FactionName] = {} end
+--[[	if Ping.db.profile == nil then Ping.db.profile = Default_Profile.profile end
+	if Ping.db.profile.Colors == nil then Ping.db.profile.Colors = Default_Profile.profile.Colors end
+	if Ping.db.profile.Colors["Window"] == nil then Ping.db.profile.Colors["Window"] = Default_Profile.profile.Colors["Window"] end
+	if Ping.db.profile.Colors["Window"]["Title"] == nil then Ping.db.profile.Colors["Window"]["Title"] = Default_Profile.profile.Colors["Window"]["Title"] end
+	if Ping.db.profile.Colors["Window"]["Background"] == nil then Ping.db.profile.Colors["Window"]["Background"] = Default_Profile.profile.Colors["Window"]["Background"] end
+	if Ping.db.profile.Colors["Window"]["Title Text"] == nil then Ping.db.profile.Colors["Window"]["Title Text"] = Default_Profile.profile.Colors["Window"]["Title Text"] end
+	if Ping.db.profile.Colors["Other Windows"] == nil then Ping.db.profile.Colors["Other Windows"] = Default_Profile.profile.Colors["Other Windows"] end
+	if Ping.db.profile.Colors["Other Windows"]["Title"] == nil then Ping.db.profile.Colors["Other Windows"]["Title"] = Default_Profile.profile.Colors["Other Windows"]["Title"] end
+	if Ping.db.profile.Colors["Other Windows"]["Background"] == nil then Ping.db.profile.Colors["Other Windows"]["Background"] = Default_Profile.profile.Colors["Other Windows"]["Background"] end
+	if Ping.db.profile.Colors["Other Windows"]["Title Text"] == nil then Ping.db.profile.Colors["Other Windows"]["Title Text"] = Default_Profile.profile.Colors["Other Windows"]["Title Text"] end
+	if Ping.db.profile.Colors["Bar"] == nil then Ping.db.profile.Colors["Bar"] = Default_Profile.profile.Colors["Bar"] end
+	if Ping.db.profile.Colors["Bar"]["Bar Text"] == nil then Ping.db.profile.Colors["Bar"]["Bar Text"] = Default_Profile.profile.Colors["Bar"]["Bar Text"] end
+	if Ping.db.profile.Colors["Warning"] == nil then Ping.db.profile.Colors["Warning"] = Default_Profile.profile.Colors["Warning"] end
+	if Ping.db.profile.Colors["Warning"]["Warning Text"] == nil then Ping.db.profile.Colors["Warning"]["Warning Text"] = Default_Profile.profile.Colors["Warning"]["Warning Text"] end
+	if Ping.db.profile.Colors["Tooltip"] == nil then Ping.db.profile.Colors["Tooltip"] = Default_Profile.profile.Colors["Tooltip"] end
+	if Ping.db.profile.Colors["Tooltip"]["Title Text"] == nil then Ping.db.profile.Colors["Tooltip"]["Title Text"] = Default_Profile.profile.Colors["Tooltip"]["Title Text"] end
+	if Ping.db.profile.Colors["Tooltip"]["Details Text"] == nil then Ping.db.profile.Colors["Tooltip"]["Details Text"] = Default_Profile.profile.Colors["Tooltip"]["Details Text"] end
+	if Ping.db.profile.Colors["Tooltip"]["Location Text"] == nil then Ping.db.profile.Colors["Tooltip"]["Location Text"] = Default_Profile.profile.Colors["Tooltip"]["Location Text"] end
+	if Ping.db.profile.Colors["Tooltip"]["Reason Text"] == nil then Ping.db.profile.Colors["Tooltip"]["Reason Text"] = Default_Profile.profile.Colors["Tooltip"]["Reason Text"] end
+	if Ping.db.profile.Colors["Alert"] == nil then Ping.db.profile.Colors["Alert"] = Default_Profile.profile.Colors["Alert"] end
+	if Ping.db.profile.Colors["Alert"]["Background"] == nil then Ping.db.profile.Colors["Alert"]["Background"] = Default_Profile.profile.Colors["Alert"]["Background"] end
+	if Ping.db.profile.Colors["Alert"]["Icon"] == nil then Ping.db.profile.Colors["Alert"]["Icon"] = Default_Profile.profile.Colors["Alert"]["Icon"] end
+	if Ping.db.profile.Colors["Alert"]["KOS Border"] == nil then Ping.db.profile.Colors["Alert"]["KOS Border"] = Default_Profile.profile.Colors["Alert"]["KOS Border"] end
+	if Ping.db.profile.Colors["Alert"]["KOS Text"] == nil then Ping.db.profile.Colors["Alert"]["KOS Text"] = Default_Profile.profile.Colors["Alert"]["KOS Text"] end
+	if Ping.db.profile.Colors["Alert"]["KOS Guild Border"] == nil then Ping.db.profile.Colors["Alert"]["KOS Guild Border"] = Default_Profile.profile.Colors["Alert"]["KOS Guild Border"] end
+	if Ping.db.profile.Colors["Alert"]["KOS Guild Text"] == nil then Ping.db.profile.Colors["Alert"]["KOS Guild Text"] = Default_Profile.profile.Colors["Alert"]["KOS Guild Text"] end
+	if Ping.db.profile.Colors["Alert"]["Stealth Border"] == nil then Ping.db.profile.Colors["Alert"]["Stealth Border"] = Default_Profile.profile.Colors["Alert"]["Stealth Border"] end
+	if Ping.db.profile.Colors["Alert"]["Stealth Text"] == nil then Ping.db.profile.Colors["Alert"]["Stealth Text"] = Default_Profile.profile.Colors["Alert"]["Stealth Text"] end
+	if Ping.db.profile.Colors["Alert"]["Away Border"] == nil then Ping.db.profile.Colors["Alert"]["Away Border"] = Default_Profile.profile.Colors["Alert"]["Away Border"] end
+	if Ping.db.profile.Colors["Alert"]["Away Text"] == nil then Ping.db.profile.Colors["Alert"]["Away Text"] = Default_Profile.profile.Colors["Alert"]["Away Text"] end
+	if Ping.db.profile.Colors["Alert"]["Location Text"] == nil then Ping.db.profile.Colors["Alert"]["Location Text"] = Default_Profile.profile.Colors["Alert"]["Location Text"] end
+	if Ping.db.profile.Colors["Alert"]["Name Text"] == nil then Ping.db.profile.Colors["Alert"]["Name Text"] = Default_Profile.profile.Colors["Alert"]["Name Text"] end
+	if Ping.db.profile.Colors["Class"] == nil then Ping.db.profile.Colors["Class"] = Default_Profile.profile.Colors["Class"] end
+	if Ping.db.profile.Colors["Class"]["HUNTER"] == nil then Ping.db.profile.Colors["Class"]["HUNTER"] = Default_Profile.profile.Colors["Class"]["HUNTER"] end
+	if Ping.db.profile.Colors["Class"]["WARLOCK"] == nil then Ping.db.profile.Colors["Class"]["WARLOCK"] = Default_Profile.profile.Colors["Class"]["WARLOCK"] end
+	if Ping.db.profile.Colors["Class"]["PRIEST"] == nil then Ping.db.profile.Colors["Class"]["PRIEST"] = Default_Profile.profile.Colors["Class"]["PRIEST"] end
+	if Ping.db.profile.Colors["Class"]["PALADIN"] == nil then Ping.db.profile.Colors["Class"]["PALADIN"] = Default_Profile.profile.Colors["Class"]["PALADIN"] end
+	if Ping.db.profile.Colors["Class"]["MAGE"] == nil then Ping.db.profile.Colors["Class"]["MAGE"] = Default_Profile.profile.Colors["Class"]["MAGE"] end
+	if Ping.db.profile.Colors["Class"]["ROGUE"] == nil then Ping.db.profile.Colors["Class"]["ROGUE"] = Default_Profile.profile.Colors["Class"]["ROGUE"] end
+	if Ping.db.profile.Colors["Class"]["DRUID"] == nil then Ping.db.profile.Colors["Class"]["DRUID"] = Default_Profile.profile.Colors["Class"]["DRUID"] end
+	if Ping.db.profile.Colors["Class"]["SHAMAN"] == nil then Ping.db.profile.Colors["Class"]["SHAMAN"] = Default_Profile.profile.Colors["Class"]["SHAMAN"] end
+	if Ping.db.profile.Colors["Class"]["WARRIOR"] == nil then Ping.db.profile.Colors["Class"]["WARRIOR"] = Default_Profile.profile.Colors["Class"]["WARRIOR"] end
+	if Ping.db.profile.Colors["Class"]["DEATHKNIGHT"] == nil then Ping.db.profile.Colors["Class"]["DEATHKNIGHT"] = Default_Profile.profile.Colors["Class"]["DEATHKNIGHT"] end
+	if Ping.db.profile.Colors["Class"]["MONK"] == nil then Ping.db.profile.Colors["Class"]["MONK"] = Default_Profile.profile.Colors["Class"]["MONK"] end
+	if Ping.db.profile.Colors["Class"]["DEMONHUNTER"] == nil then Ping.db.profile.Colors["Class"]["DEMONHUNTER"] = Default_Profile.profile.Colors["Class"]["DEMONHUNTER"] end	
+	if Ping.db.profile.Colors["Class"]["PET"] == nil then Ping.db.profile.Colors["Class"]["PET"] = Default_Profile.profile.Colors["Class"]["PET"] end
+	if Ping.db.profile.Colors["Class"]["MOB"] == nil then Ping.db.profile.Colors["Class"]["MOB"] = Default_Profile.profile.Colors["Class"]["MOB"] end
+	if Ping.db.profile.Colors["Class"]["UNKNOWN"] == nil then Ping.db.profile.Colors["Class"]["UNKNOWN"] = Default_Profile.profile.Colors["Class"]["UNKNOWN"] end
+	if Ping.db.profile.Colors["Class"]["HOSTILE"] == nil then Ping.db.profile.Colors["Class"]["HOSTILE"] = Default_Profile.profile.Colors["Class"]["HOSTILE"] end
+	if Ping.db.profile.Colors["Class"]["UNGROUPED"] == nil then Ping.db.profile.Colors["Class"]["UNGROUPED"] = Default_Profile.profile.Colors["Class"]["UNGROUPED"] end
+	if Ping.db.profile.MainWindow == nil then Ping.db.profile.MainWindow = Default_Profile.profile.MainWindow end
+	if Ping.db.profile.MainWindow.Buttons == nil then Ping.db.profile.MainWindow.Buttons = Default_Profile.profile.MainWindow.Buttons end
+	if Ping.db.profile.MainWindow.Buttons.ClearButton == nil then Ping.db.profile.MainWindow.Buttons.ClearButton = Default_Profile.profile.MainWindow.Buttons.ClearButton end
+	if Ping.db.profile.MainWindow.Buttons.LeftButton == nil then Ping.db.profile.MainWindow.Buttons.LeftButton = Default_Profile.profile.MainWindow.Buttons.LeftButton end
+	if Ping.db.profile.MainWindow.Buttons.RightButton == nil then Ping.db.profile.MainWindow.Buttons.RightButton = Default_Profile.profile.MainWindow.Buttons.RightButton end
+	if Ping.db.profile.MainWindow.RowHeight == nil then Ping.db.profile.MainWindow.RowHeight = Default_Profile.profile.MainWindow.RowHeight end
+	if Ping.db.profile.MainWindow.RowSpacing == nil then Ping.db.profile.MainWindow.RowSpacing = Default_Profile.profile.MainWindow.RowSpacing end
+	if Ping.db.profile.MainWindow.TextHeight == nil then Ping.db.profile.MainWindow.TextHeight = Default_Profile.profile.MainWindow.TextHeight end
+	if Ping.db.profile.MainWindow.AutoHide == nil then Ping.db.profile.MainWindow.AutoHide = Default_Profile.profile.MainWindow.AutoHide end
+	if Ping.db.profile.MainWindow.BarText == nil then Ping.db.profile.MainWindow.BarText = Default_Profile.profile.MainWindow.BarText end
+	if Ping.db.profile.MainWindow.BarText.RankNum == nil then Ping.db.profile.MainWindow.BarText.RankNum = Default_Profile.profile.MainWindow.BarText.RankNum end
+	if Ping.db.profile.MainWindow.BarText.PerSec == nil then Ping.db.profile.MainWindow.BarText.PerSec = Default_Profile.profile.MainWindow.BarText.PerSec end
+	if Ping.db.profile.MainWindow.BarText.Percent == nil then Ping.db.profile.MainWindow.BarText.Percent = Default_Profile.profile.MainWindow.BarText.Percent end
+	if Ping.db.profile.MainWindow.BarText.NumFormat == nil then Ping.db.profile.MainWindow.BarText.NumFormat = Default_Profile.profile.MainWindow.BarText.NumFormat end
+	if Ping.db.profile.MainWindow.Position == nil then Ping.db.profile.MainWindow.Position = Default_Profile.profile.MainWindow.Position end
+	if Ping.db.profile.MainWindow.Position.x == nil then Ping.db.profile.MainWindow.Position.x = Default_Profile.profile.MainWindow.Position.x end
+	if Ping.db.profile.MainWindow.Position.y == nil then Ping.db.profile.MainWindow.Position.y = Default_Profile.profile.MainWindow.Position.y end
+	if Ping.db.profile.MainWindow.Position.w == nil then Ping.db.profile.MainWindow.Position.w = Default_Profile.profile.MainWindow.Position.w end
+	if Ping.db.profile.MainWindow.Position.h == nil then Ping.db.profile.MainWindow.Position.h = Default_Profile.profile.MainWindow.Position.h end
+	if Ping.db.profile.AlertWindowNameSize == nil then Ping.db.profile.AlertWindowNameSize = Default_Profile.profile.AlertWindowNameSize end
+	if Ping.db.profile.AlertWindowLocationSize == nil then Ping.db.profile.AlertWindowLocationSize = Default_Profile.profile.AlertWindowLocationSize end
+	if Ping.db.profile.BarTexture == nil then Ping.db.profile.BarTexture = Default_Profile.profile.BarTexture end
+	if Ping.db.profile.MainWindowVis == nil then Ping.db.profile.MainWindowVis = Default_Profile.profile.MainWindowVis end
+	if Ping.db.profile.CurrentList == nil then Ping.db.profile.CurrentList = Default_Profile.profile.CurrentList end
+	if Ping.db.profile.Locked == nil then Ping.db.profile.Locked = Default_Profile.profile.Locked end
+	if Ping.db.profile.Font == nil then Ping.db.profile.Font = Default_Profile.profile.Font end
+	if Ping.db.profile.Scaling == nil then Ping.db.profile.Scaling = Default_Profile.profile.Scaling end
+	if Ping.db.profile.Enabled == nil then Ping.db.profile.Enabled = Default_Profile.profile.Enabled end
+	if Ping.db.profile.EnabledInBattlegrounds == nil then Ping.db.profile.EnabledInBattlegrounds = Default_Profile.profile.EnabledInBattlegrounds end
+	if Ping.db.profile.EnabledInSanctuaries == nil then Ping.db.profile.EnabledInSanctuaries = Default_Profile.profile.EnabledInSanctuaries end
+	if Ping.db.profile.EnabledInArenas == nil then Ping.db.profile.EnabledInArenas = Default_Profile.profile.EnabledInArenas end
+	if Ping.db.profile.EnabledInWintergrasp == nil then Ping.db.profile.EnabledInWintergrasp = Default_Profile.profile.EnabledInWintergrasp end
+	if Ping.db.profile.DisableWhenPVPUnflagged == nil then Ping.db.profile.DisableWhenPVPUnflagged = Default_Profile.profile.DisableWhenPVPUnflagged end
+	if Ping.db.profile.MinimapDetection == nil then Ping.db.profile.MinimapDetection = Default_Profile.profile.MinimapDetection end
+	if Ping.db.profile.MinimapDetails == nil then Ping.db.profile.MinimapDetails = Default_Profile.profile.MinimapDetails end
+	if Ping.db.profile.DisplayOnMap == nil then Ping.db.profile.DisplayOnMap = Default_Profile.profile.DisplayOnMap end
+	if Ping.db.profile.SwitchToZone == nil then Ping.db.profile.SwitchToZone = Default_Profile.profile.SwitchToZone end	
+	if Ping.db.profile.MapDisplayLimit == nil then Ping.db.profile.MapDisplayLimit = Default_Profile.profile.MapDisplayLimit end
+	if Ping.db.profile.DisplayTooltipNearPingWindow == nil then Ping.db.profile.DisplayTooltipNearPingWindow = Default_Profile.profile.DisplayTooltipNearPingWindow end	
+	if Ping.db.profile.TooltipAnchor == nil then Ping.db.profile.TooltipAnchor = Default_Profile.profile.TooltipAnchor end	
+	if Ping.db.profile.DisplayWinLossStatistics == nil then Ping.db.profile.DisplayWinLossStatistics = Default_Profile.profile.DisplayWinLossStatistics end
+	if Ping.db.profile.DisplayKOSReason == nil then Ping.db.profile.DisplayKOSReason = Default_Profile.profile.DisplayKOSReason end
+	if Ping.db.profile.DisplayLastSeen == nil then Ping.db.profile.DisplayLastSeen = Default_Profile.profile.DisplayLastSeen end
+	if Ping.db.profile.ShowOnDetection == nil then Ping.db.profile.ShowOnDetection = Default_Profile.profile.ShowOnDetection end
+	if Ping.db.profile.HidePing == nil then Ping.db.profile.HidePing = Default_Profile.profile.HidePing end
+--	if Ping.db.profile.ShowOnlyPvPFlagged == nil then Ping.db.profile.ShowOnlyPvPFlagged = Default_Profile.profile.ShowOnlyPvPFlagged end	
+	if Ping.db.profile.ShowKoSButton == nil then Ping.db.profile.ShowKoSButton = Default_Profile.profile.ShowKoSButton end	
+	if Ping.db.profile.InvertPing == nil then Ping.db.profile.InvertPing = Default_Profile.profile.InvertPing end
+	if Ping.db.profile.ResizePing == nil then Ping.db.profile.ResizePing = Default_Profile.profile.ResizePing end
+	if Ping.db.profile.ResizePingLimit == nil then Ping.db.profile.ResizePingLimit = Default_Profile.profile.ResizePingLimit end 
+	if Ping.db.profile.Announce == nil then Ping.db.profile.Announce = Default_Profile.profile.Announce end
+	if Ping.db.profile.OnlyAnnounceKoS == nil then Ping.db.profile.OnlyAnnounceKoS = Default_Profile.profile.OnlyAnnounceKoS end
+	if Ping.db.profile.WarnOnStealth == nil then Ping.db.profile.WarnOnStealth = Default_Profile.profile.WarnOnStealth end
+	if Ping.db.profile.WarnOnKOS == nil then Ping.db.profile.WarnOnKOS = Default_Profile.profile.WarnOnKOS end
+	if Ping.db.profile.WarnOnKOSGuild == nil then Ping.db.profile.WarnOnKOSGuild = Default_Profile.profile.WarnOnKOSGuild end
+	if Ping.db.profile.WarnOnRace == nil then Ping.db.profile.WarnOnRace = Default_Profile.profile.WarnOnRace end
+	if Ping.db.profile.SelectWarnRace == nil then Ping.db.profile.SelectWarnRace = Default_Profile.profile.SelectWarnRace end
+	if Ping.db.profile.DisplayWarningsInErrorsFrame == nil then Ping.db.profile.DisplayWarningsInErrorsFrame = Default_Profile.profile.DisplayWarningsInErrorsFrame end
+	if Ping.db.profile.EnableSound == nil then Ping.db.profile.EnableSound = Default_Profile.profile.EnableSound end
+	if Ping.db.profile.OnlySoundKoS == nil then Ping.db.profile.OnlySoundKoS = Default_Profile.profile.OnlySoundKoS end	
+	if Ping.db.profile.StopAlertsOnTaxi == nil then Ping.db.profile.StopAlertsOnTaxi = Default_Profile.profile.StopAlertsOnTaxi end 	
+	if Ping.db.profile.RemoveUndetected == nil then Ping.db.profile.RemoveUndetected = Default_Profile.profile.RemoveUndetected end
+	if Ping.db.profile.ShowNearbyList == nil then Ping.db.profile.ShowNearbyList = Default_Profile.profile.ShowNearbyList end
+	if Ping.db.profile.PrioritiseKoS == nil then Ping.db.profile.PrioritiseKoS = Default_Profile.profile.PrioritiseKoS end
+	if Ping.db.profile.PurgeData == nil then Ping.db.profile.PurgeData = Default_Profile.profile.PurgeData end
+	if Ping.db.profile.PurgeKoS == nil then Ping.db.profile.PurgeKoS = Default_Profile.profile.PurgeKoSData end	
+	if Ping.db.profile.PurgeWinLossData == nil then Ping.db.profile.PurgeWinLossData = Default_Profile.profile.PurgeWinLossData end	
+	if Ping.db.profile.ShareData == nil then Ping.db.profile.ShareData = Default_Profile.profile.ShareData end
+	if Ping.db.profile.UseData == nil then Ping.db.profile.UseData = Default_Profile.profile.UseData end
+	if Ping.db.profile.ShareKOSBetweenCharacters == nil then Ping.db.profile.ShareKOSBetweenCharacters = Default_Profile.profile.ShareKOSBetweenCharacters end
+	if Ping.db.profile.AppendUnitNameCheck == nil then Ping.db.profile.AppendUnitNameCheck = Default_Profile.profile.AppendUnitNameCheck end
+	if Ping.db.profile.AppendUnitKoSCheck == nil then Ping.db.profile.AppendUnitKoSCheck = Default_Profile.profile.AppendUnitKoSCheck end	]]--
 
 	-- Target-picker settings migration. AceDB merges the Default_Profile
 	-- defaults for us, but guard the new keys explicitly so existing profiles
 	-- saved before this version pick them up cleanly (and any partially-saved
 	-- nested Colors table is completed).
-	local p = Spy.db.profile
+	local p = Ping.db.profile
 	if p.MarkHealers == nil then p.MarkHealers = Default_Profile.profile.MarkHealers end
 	if p.HealerDetectBy == nil then p.HealerDetectBy = Default_Profile.profile.HealerDetectBy end
 	if p.HealerMarkerStyle == nil then p.HealerMarkerStyle = Default_Profile.profile.HealerMarkerStyle end
@@ -2639,197 +2639,197 @@ function Spy:CheckDatabase()
 	-- lifesteal, so warlocks (Death Coil / Drain Life) and warriors
 	-- (Bloodthirst / Blood Craze) were wrongly flagged. Clear the bad flags
 	-- once so they get re-learned under the corrected rules.
-	if SpyPerCharDB and SpyPerCharDB.PlayerData and not SpyPerCharDB.healerFlagsReset then
-		for _, data in pairs(SpyPerCharDB.PlayerData) do
+	if PingPerCharDB and PingPerCharDB.PlayerData and not PingPerCharDB.healerFlagsReset then
+		for _, data in pairs(PingPerCharDB.PlayerData) do
 			data.isHealer = nil
 			data.healTotal = nil
 			data.healCount = nil
 		end
-		SpyPerCharDB.healerFlagsReset = true
+		PingPerCharDB.healerFlagsReset = true
 	end
-	if p.Colors["Spy"] == nil then p.Colors["Spy"] = {} end
-	for k, v in pairs(Default_Profile.profile.Colors["Spy"]) do
-		if p.Colors["Spy"][k] == nil then
-			p.Colors["Spy"][k] = { r = v.r, g = v.g, b = v.b, a = v.a }
+	if p.Colors["Ping"] == nil then p.Colors["Ping"] = {} end
+	for k, v in pairs(Default_Profile.profile.Colors["Ping"]) do
+		if p.Colors["Ping"][k] == nil then
+			p.Colors["Ping"][k] = { r = v.r, g = v.g, b = v.b, a = v.a }
 		end
 	end
 end
 
-function Spy:ResetProfile()
-	Spy.db.profile = Default_Profile.profile
---	Spy:CheckDatabase()
+function Ping:ResetProfile()
+	Ping.db.profile = Default_Profile.profile
+--	Ping:CheckDatabase()
 end
 
-function Spy:HandleProfileChanges()
-	Spy:CreateMainWindow()
-	Spy:RestoreMainWindowPosition(Spy.db.profile.MainWindow.Position.x, Spy.db.profile.MainWindow.Position.y, Spy.db.profile.MainWindow.Position.w, 34)
-	Spy:ResizeMainWindow()
-	Spy:UpdateTimeoutSettings()
-	Spy:LockWindows(Spy.db.profile.Locked)
-	Spy:ApplyWindowLocks()
-	Spy:ApplyWindowStyle()
-	Spy:ClampToScreen(Spy.db.profile.ClampToScreen)
+function Ping:HandleProfileChanges()
+	Ping:CreateMainWindow()
+	Ping:RestoreMainWindowPosition(Ping.db.profile.MainWindow.Position.x, Ping.db.profile.MainWindow.Position.y, Ping.db.profile.MainWindow.Position.w, 34)
+	Ping:ResizeMainWindow()
+	Ping:UpdateTimeoutSettings()
+	Ping:LockWindows(Ping.db.profile.Locked)
+	Ping:ApplyWindowLocks()
+	Ping:ApplyWindowStyle()
+	Ping:ClampToScreen(Ping.db.profile.ClampToScreen)
 end
 
-function Spy:RegisterModuleOptions(name, optionTbl, displayName)
-	Spy.options.args[name] = (type(optionTbl) == "function") and optionTbl() or optionTbl
-	self.optionsFrames[name] = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Spy", displayName, L["Spy Option"], name)
+function Ping:RegisterModuleOptions(name, optionTbl, displayName)
+	Ping.options.args[name] = (type(optionTbl) == "function") and optionTbl() or optionTbl
+	self.optionsFrames[name] = LibStub("AceConfigDialog-3.0"):AddToBlizOptions("Ping", displayName, L["Ping Option"], name)
 end
 
-function Spy:SetupOptions()
+function Ping:SetupOptions()
 	self.optionsFrames = {}
 
- 	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Spy", Spy.options)
-	LibStub("AceConfig-3.0"):RegisterOptionsTable("Spy Commands", Spy.optionsSlash, "spy")
+ 	LibStub("AceConfigRegistry-3.0"):RegisterOptionsTable("Ping", Ping.options)
+	LibStub("AceConfig-3.0"):RegisterOptionsTable("Ping Commands", Ping.optionsSlash, "ping")
 
 	-- One Blizzard sub-panel per page. The second level lives in tabs inside
 	-- each page rather than as more entries here, which is the whole point of
 	-- the layout: seven rows in the sidebar instead of ten.
 	local ACD3 = LibStub("AceConfigDialog-3.0")
-	self.optionsFrames.Spy = ACD3:AddToBlizOptions("Spy", L["Spy Option"], nil, "SpyGroup")
-	self.optionsFrames.About = ACD3:AddToBlizOptions("Spy", L["About"], L["Spy Option"], "About")
-	self.optionsFrames.Targeting = ACD3:AddToBlizOptions("Spy", L["TPageTargeting"], L["Spy Option"], "Targeting")
-	self.optionsFrames.Finding = ACD3:AddToBlizOptions("Spy", L["TPageFinding"], L["Spy Option"], "Finding")
-	self.optionsFrames.Look = ACD3:AddToBlizOptions("Spy", L["TPageLook"], L["Spy Option"], "Look")
-	self.optionsFrames.Alerts = ACD3:AddToBlizOptions("Spy", L["TPageAlerts"], L["Spy Option"], "Alerts")
-	self.optionsFrames.Data = ACD3:AddToBlizOptions("Spy", L["TPageData"], L["Spy Option"], "Data")
+	self.optionsFrames.Ping = ACD3:AddToBlizOptions("Ping", L["Ping Option"], nil, "PingGroup")
+	self.optionsFrames.About = ACD3:AddToBlizOptions("Ping", L["About"], L["Ping Option"], "About")
+	self.optionsFrames.Targeting = ACD3:AddToBlizOptions("Ping", L["TPageTargeting"], L["Ping Option"], "Targeting")
+	self.optionsFrames.Finding = ACD3:AddToBlizOptions("Ping", L["TPageFinding"], L["Ping Option"], "Finding")
+	self.optionsFrames.Look = ACD3:AddToBlizOptions("Ping", L["TPageLook"], L["Ping Option"], "Look")
+	self.optionsFrames.Alerts = ACD3:AddToBlizOptions("Ping", L["TPageAlerts"], L["Ping Option"], "Alerts")
+	self.optionsFrames.Data = ACD3:AddToBlizOptions("Ping", L["TPageData"], L["Ping Option"], "Data")
 
 	self:RegisterModuleOptions("Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), L["Profiles"])
-	Spy.options.args.Profiles.order = -2
+	Ping.options.args.Profiles.order = -2
 end
 
-function Spy:UpdateTimeoutSettings()
-	if not Spy.db.profile.RemoveUndetected or Spy.db.profile.RemoveUndetected == "OneMinute" then
-		Spy.ActiveTimeout = 30
-		Spy.InactiveTimeout = 60
-	elseif Spy.db.profile.RemoveUndetected == "TwoMinutes" then
-		Spy.ActiveTimeout = 60
-		Spy.InactiveTimeout = 120
-	elseif Spy.db.profile.RemoveUndetected == "FiveMinutes" then
-		Spy.ActiveTimeout = 150
-		Spy.InactiveTimeout = 300
-	elseif Spy.db.profile.RemoveUndetected == "TenMinutes" then
-		Spy.ActiveTimeout = 300
-		Spy.InactiveTimeout = 600
-	elseif Spy.db.profile.RemoveUndetected == "FifteenMinutes" then
-		Spy.ActiveTimeout = 450
-		Spy.InactiveTimeout = 900
-	elseif Spy.db.profile.RemoveUndetected == "Never" then
-		Spy.ActiveTimeout = 30
-		Spy.InactiveTimeout = -1
+function Ping:UpdateTimeoutSettings()
+	if not Ping.db.profile.RemoveUndetected or Ping.db.profile.RemoveUndetected == "OneMinute" then
+		Ping.ActiveTimeout = 30
+		Ping.InactiveTimeout = 60
+	elseif Ping.db.profile.RemoveUndetected == "TwoMinutes" then
+		Ping.ActiveTimeout = 60
+		Ping.InactiveTimeout = 120
+	elseif Ping.db.profile.RemoveUndetected == "FiveMinutes" then
+		Ping.ActiveTimeout = 150
+		Ping.InactiveTimeout = 300
+	elseif Ping.db.profile.RemoveUndetected == "TenMinutes" then
+		Ping.ActiveTimeout = 300
+		Ping.InactiveTimeout = 600
+	elseif Ping.db.profile.RemoveUndetected == "FifteenMinutes" then
+		Ping.ActiveTimeout = 450
+		Ping.InactiveTimeout = 900
+	elseif Ping.db.profile.RemoveUndetected == "Never" then
+		Ping.ActiveTimeout = 30
+		Ping.InactiveTimeout = -1
 	else
-		Spy.ActiveTimeout = 150
-		Spy.InactiveTimeout = 300
+		Ping.ActiveTimeout = 150
+		Ping.InactiveTimeout = 300
 	end
 end
 
-function Spy:ResetMainWindow() -- not used
-	Spy:EnableSpy(true, true)
-	Spy:CreateMainWindow()
-	Spy:RestoreMainWindowPosition(Default_Profile.profile.MainWindow.Position.x, Default_Profile.profile.MainWindow.Position.y, Default_Profile.profile.MainWindow.Position.w, 34)
-	Spy:RefreshCurrentList()
+function Ping:ResetMainWindow() -- not used
+	Ping:EnablePing(true, true)
+	Ping:CreateMainWindow()
+	Ping:RestoreMainWindowPosition(Default_Profile.profile.MainWindow.Position.x, Default_Profile.profile.MainWindow.Position.y, Default_Profile.profile.MainWindow.Position.w, 34)
+	Ping:RefreshCurrentList()
 end
 
-function Spy:ResetPositions()
-	Spy:ResetPositionAllWindows()
+function Ping:ResetPositions()
+	Ping:ResetPositionAllWindows()
 end
 
-function Spy:ShowConfig()
-	-- Open the top-level Spy category. NOTE: on the modern Settings API,
+function Ping:ShowConfig()
+	-- Open the top-level Ping category. NOTE: on the modern Settings API,
 	-- AceConfigDialog gives sub-categories (e.g. "Profiles") a generated
 	-- numeric ID, so passing the string "Profiles" to Settings.OpenToCategory
 	-- errors ("outside of expected range"). Only the top-level category keeps
 	-- a string ID, so open that via the frame name AceConfigDialog stored.
-	local spyCategory = self.optionsFrames and self.optionsFrames.Spy and self.optionsFrames.Spy.name or "Spy"
+	local spyCategory = self.optionsFrames and self.optionsFrames.Ping and self.optionsFrames.Ping.name or "Ping"
 	if Settings and Settings.OpenToCategory then
 		Settings.OpenToCategory(spyCategory)
 	elseif InterfaceOptionsFrame_OpenToCategory then
 		-- Older clients need the call twice to actually land on the panel.
-		InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Spy)
-		InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Spy)
+		InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Ping)
+		InterfaceOptionsFrame_OpenToCategory(self.optionsFrames.Ping)
 	end
 end
 
-function Spy:OnEnable(first)
+function Ping:OnEnable(first)
 	-- Resolve the healer spell whitelist to localised names, and merge any
 	-- user-added cooldowns into the runtime lookup. Done here rather than at
 	-- file scope because GetSpellInfo is not reliable until the addon is enabled.
-	Spy:BuildHealerSpellNames()
-	Spy:BuildCooldownLookup()
-	Spy.timeid = Spy:ScheduleRepeatingTimer("ManageExpirations", 10, true)
-	Spy:RegisterEvent("ZONE_CHANGED", "ZoneChangedEvent")
-	Spy:RegisterEvent("ZONE_CHANGED_INDOORS", "ZoneChangedEvent")
---	Spy:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZoneChangedEvent")
-	Spy:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZoneChangedNewAreaEvent")
---	Spy:RegisterEvent("PLAYER_ENTERING_WORLD", "ZoneChangedEvent")
-	Spy:RegisterEvent("PLAYER_ENTERING_WORLD", "PlayerEnteringWorldEvent")
-	Spy:RegisterEvent("UNIT_FACTION", "ZoneChangedEvent")
-	Spy:RegisterEvent("PLAYER_TARGET_CHANGED", "PlayerTargetEvent")
-	Spy:RegisterEvent("UPDATE_MOUSEOVER_UNIT", "PlayerMouseoverEvent")
-	Spy:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "CombatLogEvent")
-	Spy:RegisterEvent("UNIT_PET", "UnitPets")
-	Spy:RegisterEvent("PLAYER_REGEN_ENABLED", "LeftCombatEvent")
-	Spy:RegisterEvent("PLAYER_DEAD", "PlayerDeadEvent")
-	Spy:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE", "ChannelNoticeEvent")
-	Spy:RegisterEvent("NAME_PLATE_UNIT_ADDED", "NamePlateEvent")
-	Spy:RegisterEvent("NAME_PLATE_UNIT_REMOVED", "NamePlateEvent")
+	Ping:BuildHealerSpellNames()
+	Ping:BuildCooldownLookup()
+	Ping.timeid = Ping:ScheduleRepeatingTimer("ManageExpirations", 10, true)
+	Ping:RegisterEvent("ZONE_CHANGED", "ZoneChangedEvent")
+	Ping:RegisterEvent("ZONE_CHANGED_INDOORS", "ZoneChangedEvent")
+--	Ping:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZoneChangedEvent")
+	Ping:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZoneChangedNewAreaEvent")
+--	Ping:RegisterEvent("PLAYER_ENTERING_WORLD", "ZoneChangedEvent")
+	Ping:RegisterEvent("PLAYER_ENTERING_WORLD", "PlayerEnteringWorldEvent")
+	Ping:RegisterEvent("UNIT_FACTION", "ZoneChangedEvent")
+	Ping:RegisterEvent("PLAYER_TARGET_CHANGED", "PlayerTargetEvent")
+	Ping:RegisterEvent("UPDATE_MOUSEOVER_UNIT", "PlayerMouseoverEvent")
+	Ping:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "CombatLogEvent")
+	Ping:RegisterEvent("UNIT_PET", "UnitPets")
+	Ping:RegisterEvent("PLAYER_REGEN_ENABLED", "LeftCombatEvent")
+	Ping:RegisterEvent("PLAYER_DEAD", "PlayerDeadEvent")
+	Ping:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE", "ChannelNoticeEvent")
+	Ping:RegisterEvent("NAME_PLATE_UNIT_ADDED", "NamePlateEvent")
+	Ping:RegisterEvent("NAME_PLATE_UNIT_REMOVED", "NamePlateEvent")
 	-- Enemy defensive cooldowns (PvP trinket, immunities) are NOT emitted by the
 	-- combat log - they only surface through the spellcast events.
-	Spy:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "UnitSpellcastEvent")
-	Spy:RegisterComm(Spy.Signature, "CommReceived")
-	if Spy.HookDebugErrors then Spy:HookDebugErrors() end
-	if Spy:IsDebugging() then Spy:CaptureDebugEnvironment() end
-	Spy.IsEnabled = true
---	Spy:RefreshCurrentList()
+	Ping:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "UnitSpellcastEvent")
+	Ping:RegisterComm(Ping.Signature, "CommReceived")
+	if Ping.HookDebugErrors then Ping:HookDebugErrors() end
+	if Ping:IsDebugging() then Ping:CaptureDebugEnvironment() end
+	Ping.IsEnabled = true
+--	Ping:RefreshCurrentList()
 end
 
-function Spy:OnDisable()
-	if not Spy.IsEnabled then
+function Ping:OnDisable()
+	if not Ping.IsEnabled then
 		return
 	end
-	if Spy.timeid then
-		Spy:CancelTimer(Spy.timeid)
-		Spy.timeid = nil
+	if Ping.timeid then
+		Ping:CancelTimer(Ping.timeid)
+		Ping.timeid = nil
 	end
-	Spy:UnregisterEvent("ZONE_CHANGED")
-	Spy:UnregisterEvent("ZONE_CHANGED_NEW_AREA")
-	Spy:UnregisterEvent("ZONE_CHANGED_INDOORS")
-	Spy:UnregisterEvent("PLAYER_ENTERING_WORLD")
-	Spy:UnregisterEvent("UNIT_FACTION")
-	Spy:UnregisterEvent("PLAYER_TARGET_CHANGED")
-	Spy:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
-	Spy:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-	Spy:UnregisterEvent("PLAYER_REGEN_ENABLED")
-	Spy:UnregisterEvent("PLAYER_DEAD")
-	Spy:UnregisterEvent("CHAT_MSG_CHANNEL_NOTICE")
-	Spy:UnregisterEvent("NAME_PLATE_UNIT_ADDED")
-	Spy:UnregisterEvent("NAME_PLATE_UNIT_REMOVED")
-	Spy:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
-	Spy:UnregisterComm(Spy.Signature)
-	Spy.IsEnabled = false
+	Ping:UnregisterEvent("ZONE_CHANGED")
+	Ping:UnregisterEvent("ZONE_CHANGED_NEW_AREA")
+	Ping:UnregisterEvent("ZONE_CHANGED_INDOORS")
+	Ping:UnregisterEvent("PLAYER_ENTERING_WORLD")
+	Ping:UnregisterEvent("UNIT_FACTION")
+	Ping:UnregisterEvent("PLAYER_TARGET_CHANGED")
+	Ping:UnregisterEvent("UPDATE_MOUSEOVER_UNIT")
+	Ping:UnregisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+	Ping:UnregisterEvent("PLAYER_REGEN_ENABLED")
+	Ping:UnregisterEvent("PLAYER_DEAD")
+	Ping:UnregisterEvent("CHAT_MSG_CHANNEL_NOTICE")
+	Ping:UnregisterEvent("NAME_PLATE_UNIT_ADDED")
+	Ping:UnregisterEvent("NAME_PLATE_UNIT_REMOVED")
+	Ping:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
+	Ping:UnregisterComm(Ping.Signature)
+	Ping.IsEnabled = false
 end
 
-function Spy:EnableSpy(value, changeDisplay, hideEnabledMessage)
-	Spy.db.profile.Enabled = value
+function Ping:EnablePing(value, changeDisplay, hideEnabledMessage)
+	Ping.db.profile.Enabled = value
 	if value then
 		if changeDisplay and not InCombatLockdown() then
-			Spy.MainWindow:Show()
+			Ping.MainWindow:Show()
 		end
-		Spy:OnEnable()
+		Ping:OnEnable()
 		if not hideEnabledMessage then
-			DEFAULT_CHAT_FRAME:AddMessage(L["SpyEnabled"])
+			DEFAULT_CHAT_FRAME:AddMessage(L["PingEnabled"])
 		end
 	else
 		if changeDisplay and not InCombatLockdown() then
-			Spy.MainWindow:Hide()
+			Ping.MainWindow:Hide()
 		end
-		Spy:OnDisable()
-		DEFAULT_CHAT_FRAME:AddMessage(L["SpyDisabled"])
+		Ping:OnDisable()
+		DEFAULT_CHAT_FRAME:AddMessage(L["PingDisabled"])
 	end
 end
 
-function Spy:EnableSound(value)
-	Spy.db.profile.EnableSound = value
+function Ping:EnableSound(value)
+	Ping.db.profile.EnableSound = value
 	if value then
 		DEFAULT_CHAT_FRAME:AddMessage(L["SoundEnabled"]) 
 	else
@@ -2837,22 +2837,22 @@ function Spy:EnableSound(value)
 	end
 end
 
-function Spy:OnInitialize()
+function Ping:OnInitialize()
 --	WorldMapFrame:Show()
 --	WorldMapFrame:Hide()
 
-	Spy.RealmName = GetRealmName()
-    Spy.FactionName = select(1, UnitFactionGroup("player"))
-	if Spy.FactionName == "Alliance" then
-		Spy.EnemyFactionName = "Horde"
-	elseif Spy.FactionName == "Horde" then
-		Spy.EnemyFactionName = "Alliance"
+	Ping.RealmName = GetRealmName()
+    Ping.FactionName = select(1, UnitFactionGroup("player"))
+	if Ping.FactionName == "Alliance" then
+		Ping.EnemyFactionName = "Horde"
+	elseif Ping.FactionName == "Horde" then
+		Ping.EnemyFactionName = "Alliance"
 	else
-		Spy.EnemyFactionName = "None"
+		Ping.EnemyFactionName = "None"
 	end
-	Spy.CharacterName = UnitName("player")
+	Ping.CharacterName = UnitName("player")
 
-	Spy.ValidClasses = {
+	Ping.ValidClasses = {
 		["DRUID"] = true,
 		["HUNTER"] = true,
 		["MAGE"] = true,
@@ -2868,7 +2868,7 @@ function Spy:OnInitialize()
 --		["EVOKER"] = true,
 	}
 
-	Spy.ValidRaces = {
+	Ping.ValidRaces = {
 		["Human"] = true,
 		["Orc"] = true,
 		["Dwarf"] = true,
@@ -2898,8 +2898,8 @@ function Spy:OnInitialize()
 
 	local acedb = LibStub:GetLibrary("AceDB-3.0")
 
-	Spy.db = acedb:New("SpyDB", Default_Profile)
-	Spy:CheckDatabase()
+	Ping.db = acedb:New("PingDB", Default_Profile)
+	Ping:CheckDatabase()
 
 --	self.db.RegisterCallback(self, "OnNewProfile", "ResetProfile")
 	self.db.RegisterCallback(self, "OnNewProfile", "HandleProfileChanges")
@@ -2909,124 +2909,124 @@ function Spy:OnInitialize()
 	self.db.RegisterCallback(self, "OnProfileCopied", "HandleProfileChanges")
 	self:SetupOptions()
 
-	SpyTempTooltip = CreateFrame("GameTooltip", "SpyTempTooltip", nil, "GameTooltipTemplate")
-	SpyTempTooltip:SetOwner(UIParent, "ANCHOR_NONE")
+	PingTempTooltip = CreateFrame("GameTooltip", "PingTempTooltip", nil, "GameTooltipTemplate")
+	PingTempTooltip:SetOwner(UIParent, "ANCHOR_NONE")
 
-	Spy:RegenerateKOSGuildList()
-	if Spy.db.profile.ShareKOSBetweenCharacters then
-		Spy:RemoveLocalKOSPlayers()
-		Spy:RegenerateKOSCentralList()
-		Spy:RegenerateKOSListFromCentral()
+	Ping:RegenerateKOSGuildList()
+	if Ping.db.profile.ShareKOSBetweenCharacters then
+		Ping:RemoveLocalKOSPlayers()
+		Ping:RegenerateKOSCentralList()
+		Ping:RegenerateKOSListFromCentral()
 	end
-	Spy:PurgeUndetectedData()
-	Spy:CreateMainWindow()
-	Spy:CreateKoSButton()
-	Spy:UpdateTimeoutSettings()
+	Ping:PurgeUndetectedData()
+	Ping:CreateMainWindow()
+	Ping:CreateKoSButton()
+	Ping:UpdateTimeoutSettings()
 
-	SM.RegisterCallback(Spy, "LibSharedMedia_Registered", "UpdateBarTextures")
-	SM.RegisterCallback(Spy, "LibSharedMedia_SetGlobal", "UpdateBarTextures")
-	if Spy.db.profile.BarTexture then
-		Spy:SetBarTextures(Spy.db.profile.BarTexture)
+	SM.RegisterCallback(Ping, "LibSharedMedia_Registered", "UpdateBarTextures")
+	SM.RegisterCallback(Ping, "LibSharedMedia_SetGlobal", "UpdateBarTextures")
+	if Ping.db.profile.BarTexture then
+		Ping:SetBarTextures(Ping.db.profile.BarTexture)
 	end
 
-	Spy:LockWindows(Spy.db.profile.Locked)
-	Spy:ClampToScreen(Spy.db.profile.ClampToScreen)	
-	ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", Spy.FilterNotInParty)
-	Spy.WoWBuildInfo = select(4, GetBuildInfo())
-	if Spy.WoWBuildInfo < 20000 or Spy.WoWBuildInfo > 30000 then
+	Ping:LockWindows(Ping.db.profile.Locked)
+	Ping:ClampToScreen(Ping.db.profile.ClampToScreen)	
+	ChatFrame_AddMessageEventFilter("CHAT_MSG_SYSTEM", Ping.FilterNotInParty)
+	Ping.WoWBuildInfo = select(4, GetBuildInfo())
+	if Ping.WoWBuildInfo < 20000 or Ping.WoWBuildInfo > 30000 then
 		DEFAULT_CHAT_FRAME:AddMessage(L["VersionCheck"])
 	end
 end
 
-function Spy:ChannelNoticeEvent(_, chStatus, _, _, Channel)
+function Ping:ChannelNoticeEvent(_, chStatus, _, _, Channel)
 	if chStatus ~= "SUSPENDED" then
-		Spy.ChnlTime = time()
+		Ping.ChnlTime = time()
 		local channel, zone = string.match(Channel, "(.+) %- (.+)")
 --		local subZone = GetSubZoneText()
-		local InFilteredZone = Spy:InFilteredZone(zone)
+		local InFilteredZone = Ping:InFilteredZone(zone)
 		if InFilteredZone then
-			Spy.EnabledInZone = false
+			Ping.EnabledInZone = false
 		end
 	end
 end
 
-function Spy:PlayerEnteringWorldEvent()
-	Spy.EnabledInZone = false
+function Ping:PlayerEnteringWorldEvent()
+	Ping.EnabledInZone = false
 	local now = time()
-	if Spy.ChnlTime > (now - 6) then
+	if Ping.ChnlTime > (now - 6) then
 		self:ScheduleTimer("PlayerEnteringWorldEvent",6)
 		return	
 	else 
-		Spy:ZoneChanged()
+		Ping:ZoneChanged()
 	end
 end
 
-function Spy:ZoneChangedEvent()
+function Ping:ZoneChangedEvent()
 	local now = time()
-	if Spy.ChnlTime > (now - 6) then
+	if Ping.ChnlTime > (now - 6) then
 		self:ScheduleTimer("ZoneChangedEvent",6)
 		return
 	else 
-		Spy:ZoneChanged()
+		Ping:ZoneChanged()
 	end
 end
 
-function Spy:ZoneChangedNewAreaEvent()
+function Ping:ZoneChangedNewAreaEvent()
 	local now = time()
-	if Spy.ChnlTime > (now - 6) then
+	if Ping.ChnlTime > (now - 6) then
 		self:ScheduleTimer("ZoneChangedNewAreaEvent",6)
 		return
 	else 
-		Spy:ZoneChanged()
+		Ping:ZoneChanged()
 	end
 end
 
-function Spy:ZoneChanged()
-	Spy.InInstance = false
+function Ping:ZoneChanged()
+	Ping.InInstance = false
 	local pvpType = GetZonePVPInfo()
  	local zone = GetZoneText()
 	local subZone = GetSubZoneText()
-	local InFilteredZone = Spy:InFilteredZone(zone, subZone)
-	if pvpType == "sanctuary" and not Spy.db.profile.EnabledInSanctuaries then
-		Spy.EnabledInZone = false
+	local InFilteredZone = Ping:InFilteredZone(zone, subZone)
+	if pvpType == "sanctuary" and not Ping.db.profile.EnabledInSanctuaries then
+		Ping.EnabledInZone = false
 	else
-		Spy.EnabledInZone = true
+		Ping.EnabledInZone = true
 		if zone == "" or InFilteredZone then
-			Spy.EnabledInZone = false
+			Ping.EnabledInZone = false
 		else
-			Spy.EnabledInZone = true
+			Ping.EnabledInZone = true
 		local inInstance, instanceType = IsInInstance()
 		if inInstance then
-			Spy.InInstance = true
-			if instanceType == "party" or instanceType == "raid" or (not Spy.db.profile.EnabledInBattlegrounds and instanceType == "pvp") or (not Spy.db.profile.EnabledInArenas and instanceType == "arena") then
-				Spy.EnabledInZone = false
+			Ping.InInstance = true
+			if instanceType == "party" or instanceType == "raid" or (not Ping.db.profile.EnabledInBattlegrounds and instanceType == "pvp") or (not Ping.db.profile.EnabledInArenas and instanceType == "arena") then
+				Ping.EnabledInZone = false
 			end
 		elseif pvpType == "combat" then
-			if not Spy.db.profile.EnabledInWintergrasp then
-				Spy.EnabledInZone = false
+			if not Ping.db.profile.EnabledInWintergrasp then
+				Ping.EnabledInZone = false
 			end
 --		elseif (pvpType == "friendly" or pvpType == nil) then
-			elseif UnitIsPVP("player") == false and Spy.db.profile.DisableWhenPVPUnflagged then
-				Spy.EnabledInZone = false
+			elseif UnitIsPVP("player") == false and Ping.db.profile.DisableWhenPVPUnflagged then
+				Ping.EnabledInZone = false
 --				end
 			end
 		end
 	end
 
-	if Spy.EnabledInZone then
-		if not Spy.db.profile.HideSpy then
-			if not InCombatLockdown() then Spy.MainWindow:Show() end
-			Spy:RefreshCurrentList()
+	if Ping.EnabledInZone then
+		if not Ping.db.profile.HidePing then
+			if not InCombatLockdown() then Ping.MainWindow:Show() end
+			Ping:RefreshCurrentList()
 		end
 	else
-		if not InCombatLockdown() then Spy.MainWindow:Hide() end
+		if not InCombatLockdown() then Ping.MainWindow:Hide() end
 	end
-	Spy:UpdateMainWindow()
+	Ping:UpdateMainWindow()
 end
 
-function Spy:InFilteredZone(zone, subzone)
+function Ping:InFilteredZone(zone, subzone)
 	local InFilteredZone = false
-	for filteredZone, value in pairs(Spy.db.profile.FilteredZones) do
+	for filteredZone, value in pairs(Ping.db.profile.FilteredZones) do
 		if zone == filteredZone and value then
 			InFilteredZone = true
 		elseif subzone == filteredZone and value then
@@ -3037,10 +3037,10 @@ function Spy:InFilteredZone(zone, subzone)
 	return InFilteredZone
 end
 
-function Spy:PlayerTargetEvent()
+function Ping:PlayerTargetEvent()
 	local name = GetUnitName("target", true)
-	if name and UnitIsPlayer("target") and not SpyPerCharDB.IgnoreData[name] then
-		local playerData = SpyPerCharDB.PlayerData[name]
+	if name and UnitIsPlayer("target") and not PingPerCharDB.IgnoreData[name] then
+		local playerData = PingPerCharDB.PlayerData[name]
 		if UnitIsEnemy("player", "target") then
 			name = string.gsub(name, " %- ", "-")
 
@@ -3053,12 +3053,12 @@ function Spy:PlayerTargetEvent()
 			local guild = GetGuildInfo("target")
 			local faction = select(1,UnitFactionGroup("target"))
 			local guess = false
-			if level == Spy.Skull then
+			if level == Ping.Skull then
 				if playerData and playerData.level then
-					if playerData.level > (UnitLevel("player") + 10) and playerData.level < Spy.MaximumPlayerLevel then	
+					if playerData.level > (UnitLevel("player") + 10) and playerData.level < Ping.MaximumPlayerLevel then	
 						guess = true
 						level = nil
-					elseif UnitLevel("player") < Spy.MaximumPlayerLevel - 9 then
+					elseif UnitLevel("player") < Ping.MaximumPlayerLevel - 9 then
 						guess = true
 						level = UnitLevel("player") + 10
 					end	
@@ -3071,20 +3071,20 @@ function Spy:PlayerTargetEvent()
 --				level = nil
 			end
 			
-			Spy:UpdatePlayerData(name, class, level, race, guild, faction, true, guess)
-			if Spy.EnabledInZone then
-				Spy:AddDetected(name, time(), learnt)
+			Ping:UpdatePlayerData(name, class, level, race, guild, faction, true, guess)
+			if Ping.EnabledInZone then
+				Ping:AddDetected(name, time(), learnt)
 			end
 		elseif playerData then
-			Spy:RemovePlayerData(name)
+			Ping:RemovePlayerData(name)
 		end
 	end
 end
 
-function Spy:PlayerMouseoverEvent()
+function Ping:PlayerMouseoverEvent()
 	local name = GetUnitName("mouseover", true)
-	if name and UnitIsPlayer("mouseover") and not SpyPerCharDB.IgnoreData[name] then
-		local playerData = SpyPerCharDB.PlayerData[name]
+	if name and UnitIsPlayer("mouseover") and not PingPerCharDB.IgnoreData[name] then
+		local playerData = PingPerCharDB.PlayerData[name]
 		if UnitIsEnemy("player", "mouseover") then
 			name = string.gsub(name, " %- ", "-")
 
@@ -3097,12 +3097,12 @@ function Spy:PlayerMouseoverEvent()
 			local guild = GetGuildInfo("mouseover")
 			local faction = select(1,UnitFactionGroup("mouseover"))
 			local guess = false
-			if level == Spy.Skull then
+			if level == Ping.Skull then
 				if playerData and playerData.level then
-					if playerData.level > (UnitLevel("player") + 10) and playerData.level < Spy.MaximumPlayerLevel then	
+					if playerData.level > (UnitLevel("player") + 10) and playerData.level < Ping.MaximumPlayerLevel then	
 						guess = true
 						level = nil
-					elseif UnitLevel("player") < Spy.MaximumPlayerLevel - 9 then
+					elseif UnitLevel("player") < Ping.MaximumPlayerLevel - 9 then
 						guess = true
 						level = UnitLevel("player") + 10
 					end	
@@ -3115,20 +3115,20 @@ function Spy:PlayerMouseoverEvent()
 --				level = nil
 			end
 
-			Spy:UpdatePlayerData(name, class, level, race, guild, faction, true, guess)
-			if Spy.EnabledInZone then
-				Spy:AddDetected(name, time(), learnt)
+			Ping:UpdatePlayerData(name, class, level, race, guild, faction, true, guess)
+			if Ping.EnabledInZone then
+				Ping:AddDetected(name, time(), learnt)
 			end
 		elseif playerData then 
-			Spy:RemovePlayerData(name)
+			Ping:RemovePlayerData(name)
 		end
 	end
 end
 
-function Spy:NamePlateEvent(_, unit)
+function Ping:NamePlateEvent(_, unit)
 	local name = GetUnitName(unit, true)
-	if name and UnitIsPlayer(unit) and not SpyPerCharDB.IgnoreData[name] then
-		local playerData = SpyPerCharDB.PlayerData[name]
+	if name and UnitIsPlayer(unit) and not PingPerCharDB.IgnoreData[name] then
+		local playerData = PingPerCharDB.PlayerData[name]
 		if UnitIsEnemy("player", unit) then
 			name = string.gsub(name, " %- ", "-")
 
@@ -3141,12 +3141,12 @@ function Spy:NamePlateEvent(_, unit)
 			local guild = GetGuildInfo(unit)
 			local faction = select(1,UnitFactionGroup(unit))
 			local guess = false
-			if level == Spy.Skull then
+			if level == Ping.Skull then
 				if playerData and playerData.level then
-					if playerData.level > (UnitLevel("player") + 10) and playerData.level < Spy.MaximumPlayerLevel then	
+					if playerData.level > (UnitLevel("player") + 10) and playerData.level < Ping.MaximumPlayerLevel then	
 						guess = true
 						level = nil
-					elseif UnitLevel("player") < Spy.MaximumPlayerLevel - 9 then
+					elseif UnitLevel("player") < Ping.MaximumPlayerLevel - 9 then
 						guess = true
 						level = UnitLevel("player") + 10
 					end	
@@ -3159,12 +3159,12 @@ function Spy:NamePlateEvent(_, unit)
 --				level = nil
 			end
 
-			Spy:UpdatePlayerData(name, class, level, race, guild, faction, true, guess)
-			if Spy.EnabledInZone then
-				Spy:AddDetected(name, time(), learnt)
+			Ping:UpdatePlayerData(name, class, level, race, guild, faction, true, guess)
+			if Ping.EnabledInZone then
+				Ping:AddDetected(name, time(), learnt)
 			end
 		elseif playerData then 
-			Spy:RemovePlayerData(name)
+			Ping:RemovePlayerData(name)
 		end
 	end
 end
@@ -3177,7 +3177,7 @@ end
 -- events. They DO fire UNIT_SPELLCAST_SUCCEEDED on any unit we have a token
 -- for (target / focus / nameplate), which is how this is caught.
 -- ============================================================
-Spy.TrackedCooldowns = {
+Ping.TrackedCooldowns = {
 	[42292] = { name = "PvP Trinket", cd = 120, short = "Trink" },	-- Insignia / Medallion
 	[7744]  = { name = "Will of the Forsaken", cd = 120, short = "WotF" },
 	[20594] = { name = "Stoneform", cd = 180, short = "Stone" },
@@ -3196,9 +3196,9 @@ Spy.TrackedCooldowns = {
 -- live in a separate profile text list instead and are merged into this lookup
 -- at runtime - the table actually read by UnitSpellcastEvent never mutates the
 -- base list, so a bad user entry can't corrupt the built-in one.
-Spy.CooldownLookup = {}
-Spy.CooldownListAdded = 0
-Spy.CooldownListUnresolved = 0
+Ping.CooldownLookup = {}
+Ping.CooldownListAdded = 0
+Ping.CooldownListUnresolved = 0
 
 -- The cooldown length cannot be observed for an enemy the way it can for our
 -- own bars - there is no "how long until their trinket is back up" API - so a
@@ -3231,17 +3231,17 @@ local defaultCooldownListTextCache = nil
 local function defaultCooldownListText()
 	if defaultCooldownListTextCache then return defaultCooldownListTextCache end
 	local ids = {}
-	for id in pairs(Spy.TrackedCooldowns) do ids[#ids + 1] = id end
+	for id in pairs(Ping.TrackedCooldowns) do ids[#ids + 1] = id end
 	-- Sorted by cooldown length then name, so the list reads in a stable order
 	-- rather than pairs() order, which differs between sessions.
 	table.sort(ids, function(a, b)
-		local ia, ib = Spy.TrackedCooldowns[a], Spy.TrackedCooldowns[b]
+		local ia, ib = Ping.TrackedCooldowns[a], Ping.TrackedCooldowns[b]
 		if ia.cd ~= ib.cd then return ia.cd < ib.cd end
 		return ia.name < ib.name
 	end)
 	local lines = {}
 	for _, id in ipairs(ids) do
-		local info = Spy.TrackedCooldowns[id]
+		local info = Ping.TrackedCooldowns[id]
 		local mins = info.cd / 60
 		local pretty = (mins >= 1) and (format("%gm", mins)) or (format("%ds", info.cd))
 		lines[#lines + 1] = format("%d  -- %s (%s)", id, info.name, pretty)
@@ -3254,15 +3254,15 @@ end
 -- running underneath it. Deleting a line genuinely stops that cooldown being
 -- tracked, which is the whole point of showing the list instead of describing
 -- it. TrackedCooldowns is now only reference data: the researched durations for
--- the spells Spy ships with, used when the client cannot supply one.
+-- the spells Ping ships with, used when the client cannot supply one.
 --
 -- A line needs a resolvable spell id, unlike the healer list which matches on
 -- name: UnitSpellcastEvent is handed the numeric id by
 -- UNIT_SPELLCAST_SUCCEEDED, so a bare name could never match. Unresolvable
 -- lines are counted and surfaced rather than silently ignored.
-function Spy:BuildCooldownLookup()
-	wipe(Spy.CooldownLookup)
-	local p = Spy.db and Spy.db.profile
+function Ping:BuildCooldownLookup()
+	wipe(Ping.CooldownLookup)
+	local p = Ping.db and Ping.db.profile
 	if not p then return end
 	if not p.CooldownListSeeded then
 		p.CooldownListText = defaultCooldownListText()
@@ -3280,13 +3280,13 @@ function Spy:BuildCooldownLookup()
 		if trimmed ~= "" and trimmed:sub(1, 2) ~= "--" then
 			local id = tonumber(trimmed:match("spell:(%d+)")) or tonumber(trimmed:match("^(%d+)"))
 			if id then
-				local known = Spy.TrackedCooldowns[id]
+				local known = Ping.TrackedCooldowns[id]
 				if known then
-					Spy.CooldownLookup[id] = known
+					Ping.CooldownLookup[id] = known
 				else
 					local ok, name = pcall(GetSpellInfo, id)
 					name = (ok and type(name) == "string" and name ~= "") and name or ("Spell "..id)
-					Spy.CooldownLookup[id] = {
+					Ping.CooldownLookup[id] = {
 						name = name,
 						cd = resolveCooldownSeconds(id) or 120,
 						short = (#name <= 6) and name or name:sub(1, 6),
@@ -3297,20 +3297,20 @@ function Spy:BuildCooldownLookup()
 			end
 		end
 	end
-	Spy.CooldownListUnresolved = unresolved
+	Ping.CooldownListUnresolved = unresolved
 end
 
 -- Restores the ten researched defaults, discarding any edits.
-function Spy:ResetCooldownList()
-	Spy.db.profile.CooldownListText = defaultCooldownListText()
-	Spy.db.profile.CooldownListSeeded = true
-	Spy:BuildCooldownLookup()
+function Ping:ResetCooldownList()
+	Ping.db.profile.CooldownListText = defaultCooldownListText()
+	Ping.db.profile.CooldownListSeeded = true
+	Ping:BuildCooldownLookup()
 end
 
-function Spy:UnitSpellcastEvent(_, unit, _, spellId)
-	if not Spy.db.profile.TrackCooldowns then return end
+function Ping:UnitSpellcastEvent(_, unit, _, spellId)
+	if not Ping.db.profile.TrackCooldowns then return end
 	if not unit or not spellId then return end
-	local info = Spy.CooldownLookup[spellId]
+	local info = Ping.CooldownLookup[spellId]
 	if not info then return end
 	-- only care about hostile players
 	if not UnitExists(unit) or not UnitIsPlayer(unit) then return end
@@ -3319,7 +3319,7 @@ function Spy:UnitSpellcastEvent(_, unit, _, spellId)
 	local name = GetUnitName(unit, true)
 	if not name then return end
 	name = gsub(name, " %- ", "-")
-	local playerData = SpyPerCharDB.PlayerData[name]
+	local playerData = PingPerCharDB.PlayerData[name]
 	if not playerData then return end
 
 	playerData.cdSpell = info.short
@@ -3327,21 +3327,21 @@ function Spy:UnitSpellcastEvent(_, unit, _, spellId)
 	playerData.cdUsed = GetTime()
 	playerData.cdExpires = GetTime() + info.cd
 
-	if Spy.db.profile.AnnounceCooldowns then
+	if Ping.db.profile.AnnounceCooldowns then
 		DEFAULT_CHAT_FRAME:AddMessage(format(L["CooldownUsed"], name, info.name))
 	end
-	Spy:RefreshCurrentList()
+	Ping:RefreshCurrentList()
 end
 
 -- Redraws the list once per second while any displayed enemy has a cooldown
 -- running, so the countdown actually ticks. No-op the rest of the time.
-function Spy:TickCooldowns()
-	if not Spy.db.profile.TrackCooldowns then return end
-	if not Spy.MainWindow or not Spy.MainWindow:IsShown() then return end
+function Ping:TickCooldowns()
+	if not Ping.db.profile.TrackCooldowns then return end
+	if not Ping.MainWindow or not Ping.MainWindow:IsShown() then return end
 	local active = false
-	for i = 1, (Spy.ListAmountDisplayed or 0) do
-		local name = Spy.ButtonName[i]
-		local playerData = name and SpyPerCharDB.PlayerData[name]
+	for i = 1, (Ping.ListAmountDisplayed or 0) do
+		local name = Ping.ButtonName[i]
+		local playerData = name and PingPerCharDB.PlayerData[name]
 		if playerData and playerData.cdExpires then
 			if playerData.cdExpires > GetTime() then
 				active = true
@@ -3354,11 +3354,11 @@ function Spy:TickCooldowns()
 			end
 		end
 	end
-	if active then Spy:RefreshCurrentList() end
+	if active then Ping:RefreshCurrentList() end
 end
 
 -- Remaining seconds on a tracked enemy cooldown, or nil when nothing is active.
-function Spy:GetCooldownRemaining(playerData)
+function Ping:GetCooldownRemaining(playerData)
 	if not playerData or not playerData.cdExpires then return nil end
 	local left = playerData.cdExpires - GetTime()
 	if left <= 0 then return nil end
@@ -3368,9 +3368,9 @@ end
 -- ============================================================
 -- Zone level floors.
 --
--- Spy guesses levels from which spells it has seen an enemy cast, which
+-- Ping guesses levels from which spells it has seen an enemy cast, which
 -- produces nonsense in Outland: a capture of two sessions there had EVERY
--- hostile at level 70, while Spy was displaying "16+" and "30+". Nobody can
+-- hostile at level 70, while Ping was displaying "16+" and "30+". Nobody can
 -- reach these zones below the entry level, so a guessed level is clamped to
 -- the minimum for the zone it was seen in. Keyed by UiMapID rather than zone
 -- name so it works in every locale.
@@ -3385,7 +3385,7 @@ end
 -- floor silently did nothing, which is why the level guesses stayed bad after
 -- being "fixed". Per-zone refinement lives below and is now a bonus rather than
 -- the mechanism.
-Spy.ContinentLevelFloor = {
+Ping.ContinentLevelFloor = {
 	[530] = 58,	-- Outland - Dark Portal, so Hellfire's entry level
 	[571] = 68,	-- Northrend, harmless here and correct if ever used
 }
@@ -3394,7 +3394,7 @@ Spy.ContinentLevelFloor = {
 -- same addon runs on both, and a wrong floor is worse than no floor - so only
 -- ids that have been confirmed against a real client are here. Anything absent
 -- falls back to the continent floor above.
-Spy.ZoneLevelFloor = {
+Ping.ZoneLevelFloor = {
 	-- TBC Classic (2.5.x). Confirmed from a live client:
 	[1952] = 62,	-- Terokkar Forest
 	-- Retail, for the same zones:
@@ -3419,32 +3419,32 @@ end
 -- Floor for a given map, or for where the player is standing when omitted.
 -- Takes the higher of the zone floor and the continent floor, so a known zone
 -- refines the continent rather than being overridden by it.
-function Spy:GetZoneLevelFloor(mapID)
-	if not Spy.db.profile.UseZoneLevelFloor then return nil end
+function Ping:GetZoneLevelFloor(mapID)
+	if not Ping.db.profile.UseZoneLevelFloor then return nil end
 	if not mapID and C_Map and C_Map.GetBestMapForUnit then
 		mapID = C_Map.GetBestMapForUnit("player")
 	end
 
-	local floor = (type(mapID) == "number") and Spy.ZoneLevelFloor[mapID] or nil
+	local floor = (type(mapID) == "number") and Ping.ZoneLevelFloor[mapID] or nil
 
 	local instanceID = currentInstanceID()
-	local continent = instanceID and Spy.ContinentLevelFloor[instanceID] or nil
+	local continent = instanceID and Ping.ContinentLevelFloor[instanceID] or nil
 	if continent and (not floor or continent > floor) then floor = continent end
 
-	if floor and floor > Spy.MaximumPlayerLevel then floor = Spy.MaximumPlayerLevel end
+	if floor and floor > Ping.MaximumPlayerLevel then floor = Ping.MaximumPlayerLevel end
 	return floor
 end
 
 -- Applies the floor to a stored record. Only ever raises a GUESSED level -
 -- a level read directly off a unit is authoritative and left alone.
-function Spy:ApplyZoneLevelFloor(playerData)
+function Ping:ApplyZoneLevelFloor(playerData)
 	if not playerData or playerData.isGuess == false then return end
 	-- mapID is only recorded on a first sighting where coordinates resolved, so
 	-- it's nil for most records. Detection always happens near us, so fall back
 	-- to the zone we're standing in.
-	local floor = Spy:GetZoneLevelFloor(playerData.mapID) or Spy:GetZoneLevelFloor()
-	if Spy.DebugZone then
-		Spy:DebugZone(playerData.mapID or (C_Map and C_Map.GetBestMapForUnit
+	local floor = Ping:GetZoneLevelFloor(playerData.mapID) or Ping:GetZoneLevelFloor()
+	if Ping.DebugZone then
+		Ping:DebugZone(playerData.mapID or (C_Map and C_Map.GetBestMapForUnit
 			and C_Map.GetBestMapForUnit("player")))
 	end
 	if not floor then return end
@@ -3479,7 +3479,7 @@ end
 -- patch can add a spell, or the researched list can simply be wrong for someone.
 -- One id per spell is enough - all ranks of a spell share a name.
 -- ============================================================
-local Spy_HealerSpellIDs = {
+local Ping_HealerSpellIDs = {
 	-- Priest
 	2050,	-- Lesser Heal
 	2054,	-- Heal
@@ -3519,7 +3519,7 @@ local function defaultHealerListText()
 	if defaultHealerListTextCache then return defaultHealerListTextCache end
 	if not GetSpellInfo then return "" end
 	local names = {}
-	for _, id in ipairs(Spy_HealerSpellIDs) do
+	for _, id in ipairs(Ping_HealerSpellIDs) do
 		local ok, name = pcall(GetSpellInfo, id)
 		if ok and type(name) == "string" and name ~= "" then
 			names[#names + 1] = name
@@ -3533,7 +3533,7 @@ end
 -- A line in the editable list is a plain spell name (what the seeded defaults
 -- look like), a bare spell id, or a full spell link. Shift-clicking a spell or
 -- spellbook entry into the box while it has keyboard focus inserts a link
--- automatically - the easiest way to add one Spy does not already know about,
+-- automatically - the easiest way to add one Ping does not already know about,
 -- since there is no in-game way to type an exact spell name from memory and be
 -- sure it matches.
 local function parseSpellListLine(line)
@@ -3550,59 +3550,59 @@ local function parseSpellListLine(line)
 end
 
 -- name -> true, rebuilt from the profile's text list whenever it changes.
-Spy.HealerSpellNames = {}
-Spy.HealerSpellCount = 0
+Ping.HealerSpellNames = {}
+Ping.HealerSpellCount = 0
 
-function Spy:BuildHealerSpellNames()
-	local p = Spy.db and Spy.db.profile
+function Ping:BuildHealerSpellNames()
+	local p = Ping.db and Ping.db.profile
 	if not p then return 0 end
 	if not p.HealerSpellListSeeded then
 		p.HealerSpellListText = defaultHealerListText()
 		p.HealerSpellListSeeded = true
 	end
-	wipe(Spy.HealerSpellNames)
+	wipe(Ping.HealerSpellNames)
 	local n = 0
 	for line in (p.HealerSpellListText or ""):gmatch("[^\n]+") do
 		local name = parseSpellListLine(line)
-		if name and not Spy.HealerSpellNames[name] then
-			Spy.HealerSpellNames[name] = true
+		if name and not Ping.HealerSpellNames[name] then
+			Ping.HealerSpellNames[name] = true
 			n = n + 1
 		end
 	end
-	Spy.HealerSpellCount = n
+	Ping.HealerSpellCount = n
 	return n
 end
 
 -- Restores the researched TBC list, discarding any edits.
-function Spy:ResetHealerSpellList()
-	Spy.db.profile.HealerSpellListText = defaultHealerListText()
-	Spy.db.profile.HealerSpellListSeeded = true
-	Spy:BuildHealerSpellNames()
+function Ping:ResetHealerSpellList()
+	Ping.db.profile.HealerSpellListText = defaultHealerListText()
+	Ping.db.profile.HealerSpellListSeeded = true
+	Ping:BuildHealerSpellNames()
 end
 
 -- Only these four classes can actually heal another player as a role. Used as a
 -- second gate when the class is known - the spell alone already implies it, but
 -- a contradiction means we misidentified somebody and should not mark them.
-local Spy_HealerCapableClasses = {
+local Ping_HealerCapableClasses = {
 	DRUID = true, PALADIN = true, PRIEST = true, SHAMAN = true,
 }
 
 -- True when this heal is evidence of a healer rather than incidental healing.
-function Spy:IsHealerEvidence(spellName, class)
-	if Spy.db.profile.StrictHealerDetection ~= false then
+function Ping:IsHealerEvidence(spellName, class)
+	if Ping.db.profile.StrictHealerDetection ~= false then
 		-- If the whitelist is empty - never built, or the user cleared it on
 		-- purpose - fall back to the old exclusion list rather than detecting
 		-- nobody at all.
-		if (Spy.HealerSpellCount or 0) > 0 then
-			if not Spy.HealerSpellNames[spellName] then return false end
-			if class and not Spy_HealerCapableClasses[class] then return false end
+		if (Ping.HealerSpellCount or 0) > 0 then
+			if not Ping.HealerSpellNames[spellName] then return false end
+			if class and not Ping_HealerCapableClasses[class] then return false end
 			return true
 		end
 	end
-	return not Spy_NonHealerHeals[spellName]
+	return not Ping_NonHealerHeals[spellName]
 end
 
-local Spy_NonHealerHeals = {
+local Ping_NonHealerHeals = {
 	-- warlock leech / pet
 	["Death Coil"] = true, ["Drain Life"] = true, ["Siphon Life"] = true,
 	["Health Funnel"] = true, ["Fel Armor"] = true, ["Healthstone"] = true,
@@ -3632,16 +3632,16 @@ local Spy_NonHealerHeals = {
 -- Defined once at file scope rather than rebuilt on every combat-log event
 -- (this fires many times per second in a crowd). Used only to gate the
 -- pet-kill win-tracking below.
-local Spy_CombatEvents = {
+local Ping_CombatEvents = {
 	["SWING_DAMAGE"] = true,
 	["RANGE_DAMAGE"] = true,
 	["SPELL_DAMAGE"] = true,
 	["SPELL_PERIODIC_DAMAGE"] = true,
 }
 
-function Spy:CombatLogEvent(info, timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGUID, dstName, dstFlags, destRaidFlags, ...)
+function Ping:CombatLogEvent(info, timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGUID, dstName, dstFlags, destRaidFlags, ...)
 timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGUID, dstName, dstFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16 = CombatLogGetCurrentEventInfo()
-	if Spy.EnabledInZone then
+	if Ping.EnabledInZone then
 
 		--PetKill code start
 		local spellID, spellName, spellSchool, amount, overkill
@@ -3650,66 +3650,66 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 		overkill = 0;		--PetKill code end
 	
 		-- analyse the source unit
-		if bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE and srcGUID and srcName and not SpyPerCharDB.IgnoreData[srcName] then
+		if bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE and srcGUID and srcName and not PingPerCharDB.IgnoreData[srcName] then
 			local srcType = strsub(srcGUID, 1,6)
 			if srcType == "Player" then
 				local _, class, race, raceFile, _, name = GetPlayerInfoByGUID(srcGUID)
-				if not Spy.ValidClasses[class] then
+				if not Ping.ValidClasses[class] then
 					class = nil
 				end	
-				if not Spy.ValidRaces[raceFile] then
+				if not Ping.ValidRaces[raceFile] then
 					race = nil
 				end
 				local learnt = false
 				local detected = true
-				local playerData = SpyPerCharDB.PlayerData[srcName]
+				local playerData = PingPerCharDB.PlayerData[srcName]
 				if not playerData or playerData.isGuess then
-					learnt, playerData = Spy:ParseUnitAbility(true, event, srcName, class, race, arg12, arg13)
+					learnt, playerData = Ping:ParseUnitAbility(true, event, srcName, class, race, arg12, arg13)
 				end
 				if not learnt then
-					detected = Spy:UpdatePlayerData(srcName, class, nil, race, nil, nil, true, nil)
+					detected = Ping:UpdatePlayerData(srcName, class, nil, race, nil, nil, true, nil)
 				end
 
 				if detected then
-					Spy:AddDetected(srcName, timestamp, learnt)
+					Ping:AddDetected(srcName, timestamp, learnt)
 					if event == "SPELL_AURA_APPLIED" and (arg13 == L["Stealth"]) then
-						Spy:AlertStealthPlayer(srcName)
+						Ping:AlertStealthPlayer(srcName)
 					end	
 					if event == "SPELL_AURA_APPLIED" and (arg13 == L["Prowl"]) then
-						Spy:AlertProwlPlayer(srcName)
+						Ping:AlertProwlPlayer(srcName)
 					end
 				end
 			end
 
 			if dstGUID == UnitGUID("player") then
-				Spy.LastAttack = srcName
-				Spy.LastAttackTime = GetTime()
---				print(Spy.LastAttackTime, " ", Spy.LastAttack)
+				Ping.LastAttack = srcName
+				Ping.LastAttackTime = GetTime()
+--				print(Ping.LastAttackTime, " ", Ping.LastAttack)
 			end
 		end
 
 		-- analyse the destination unit
-		if bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE and dstGUID and dstName and not SpyPerCharDB.IgnoreData[dstName] then
+		if bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE and dstGUID and dstName and not PingPerCharDB.IgnoreData[dstName] then
 			local dstType = strsub(dstGUID, 1,6)
 			if dstType == "Player" then
 				local _, class, race, raceFile, _, name = GetPlayerInfoByGUID(dstGUID)
-				if not Spy.ValidClasses[class] then
+				if not Ping.ValidClasses[class] then
 					class = nil
 				end	
-				if not Spy.ValidRaces[raceFile] then
+				if not Ping.ValidRaces[raceFile] then
 					race = nil
 				end				
 				local learnt = false
 				local detected = true
-				local playerData = SpyPerCharDB.PlayerData[dstName]
+				local playerData = PingPerCharDB.PlayerData[dstName]
 				if not playerData or playerData.isGuess then
-					learnt, playerData = Spy:ParseUnitAbility(false, event, dstName, class, race, arg12, arg13)
+					learnt, playerData = Ping:ParseUnitAbility(false, event, dstName, class, race, arg12, arg13)
 				end
 				if not learnt then
-					detected = Spy:UpdatePlayerData(dstName, class, nil, race, nil, nil, true, nil)
+					detected = Ping:UpdatePlayerData(dstName, class, nil, race, nil, nil, true, nil)
 				end
 				if detected then
-					Spy:AddDetected(dstName, timestamp, learnt)
+					Ping:AddDetected(dstName, timestamp, learnt)
 				end
 			end
 		end
@@ -3732,18 +3732,18 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 				and bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE then
 				local amount = arg15
 				if type(amount) == "number" and amount > 0 then
-					local playerData = SpyPerCharDB.PlayerData[srcName]
-					if playerData and Spy:IsHealerEvidence(arg13, playerData.class) then
+					local playerData = PingPerCharDB.PlayerData[srcName]
+					if playerData and Ping:IsHealerEvidence(arg13, playerData.class) then
 						playerData.healTotal = (playerData.healTotal or 0) + amount
 						playerData.healCount = (playerData.healCount or 0) + 1
 						playerData.lastHeal = time()
 						-- meaningful = a big single heal, or sustained healing
-						local big = amount >= (Spy.db.profile.HealerMinHeal or 400)
-						local enough = playerData.healCount >= (Spy.db.profile.HealerMinHeals or 2)
+						local big = amount >= (Ping.db.profile.HealerMinHeal or 400)
+						local enough = playerData.healCount >= (Ping.db.profile.HealerMinHeals or 2)
 						if (big or enough) and not playerData.isHealer then
 							playerData.isHealer = true
-							if Spy.db.profile.MarkHealers then Spy:RefreshCurrentList() end
-							Spy:UpdateActiveCount()
+							if Ping.db.profile.MarkHealers then Ping:RefreshCurrentList() end
+							Ping:UpdateActiveCount()
 						end
 					end
 				end
@@ -3753,7 +3753,7 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 		-- update win stats
 		if event == "PARTY_KILL" then
 			if srcGUID == UnitGUID("player") and dstName then
-				local playerData = SpyPerCharDB.PlayerData[dstName]
+				local playerData = PingPerCharDB.PlayerData[dstName]
 				if playerData then
 					if not playerData.wins then
 						playerData.wins = 0
@@ -3764,7 +3764,7 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 		end
 
 		-- adds pet kills to the win stats
-		if Spy_CombatEvents[event] then
+		if Ping_CombatEvents[event] then
 			if event == "SWING_DAMAGE" then
 				if arg13 == nil then
 					overkill = 0
@@ -3779,41 +3779,41 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 				end
 			end
 			if (overkill > 1) and dstName then
-				if Spy.PetGUID[srcGUID] then
-					local playerData = SpyPerCharDB.PlayerData[dstName]
+				if Ping.PetGUID[srcGUID] then
+					local playerData = PingPerCharDB.PlayerData[dstName]
 					if playerData then
 						if not playerData.wins then playerData.wins = 0 end
 							playerData.wins = playerData.wins + 1
---							PlaySoundFile("Interface\\AddOns\\Spy\\Sounds\\neck-snap.mp3", Spy.db.profile.SoundChannel)
+--							PlaySoundFile("Interface\\AddOns\\Ping\\Sounds\\neck-snap.mp3", Ping.db.profile.SoundChannel)
 --							DEFAULT_CHAT_FRAME:AddMessage("Your pet/guardian killed " .. dstName);
 					end
 				end
 			end
 		end
-		if event == "SPELL_SUMMON" and srcName == Spy.CharacterName then
+		if event == "SPELL_SUMMON" and srcName == Ping.CharacterName then
 			local petGUID = dstGUID
-			Spy.PetGUID[petGUID] = time()
+			Ping.PetGUID[petGUID] = time()
 		end
 		if event == "ENVIRONMENTAL_DAMAGE" and dstGUID == UnitGUID("player") then
 			local environmentalType = arg12
 			local amount = arg13
-			Spy.LastAttack = nil		
+			Ping.LastAttack = nil		
 --			print(timestamp, "Ouch ", environmentalType, amount, " hurts!")
 		end		
 	end
 end
 
-function Spy:LeftCombatEvent()
-	Spy.LastAttack = nil
-	Spy:RefreshCurrentList()
+function Ping:LeftCombatEvent()
+	Ping.LastAttack = nil
+	Ping:RefreshCurrentList()
 end
 
-function Spy:PlayerDeadEvent()
-	if Spy.LastAttack then
-		local timeDiff = GetTime() - Spy.LastAttackTime
+function Ping:PlayerDeadEvent()
+	if Ping.LastAttack then
+		local timeDiff = GetTime() - Ping.LastAttackTime
 		if (timeDiff < .5 ) then
---			print("Killed by ", Spy.LastAttack, " ", timeDiff, " seconds ago")
-			local playerData = SpyPerCharDB.PlayerData[Spy.LastAttack]
+--			print("Killed by ", Ping.LastAttack, " ", timeDiff, " seconds ago")
+			local playerData = PingPerCharDB.PlayerData[Ping.LastAttack]
 			if playerData then
 				if not playerData.loses then
 					playerData.loses = 0
@@ -3824,7 +3824,7 @@ function Spy:PlayerDeadEvent()
 	end
 end
 
-function Spy:UnitPets(event, unit)
+function Ping:UnitPets(event, unit)
 	local petUnit
 	if unit == "player" then
 		petUnit = "pet"
@@ -3832,35 +3832,35 @@ function Spy:UnitPets(event, unit)
 	if petUnit and UnitExists(petUnit) then
 		local guid = UnitGUID(unit)
 		local petGUID = UnitGUID(petUnit)
-		Spy.PetGUID[petGUID] = time()
+		Ping.PetGUID[petGUID] = time()
 		local petCount = 0
-		for k, v in pairs(Spy.PetGUID) do
+		for k, v in pairs(Ping.PetGUID) do
 			petCount = petCount + 1
 			if petCount > 50 then
 				if (time() - 9000) > v then
-					Spy.PetGUID[k] = nil
+					Ping.PetGUID[k] = nil
 				end	
 			end
 		end	
 	end
 end
 
-function Spy:CommReceived(prefix, message, distribution, source)
-	if Spy.EnabledInZone and Spy.db.profile.UseData then
-		if prefix == Spy.Signature and message and source ~= Spy.CharacterName then
+function Ping:CommReceived(prefix, message, distribution, source)
+	if Ping.EnabledInZone and Ping.db.profile.UseData then
+		if prefix == Ping.Signature and message and source ~= Ping.CharacterName then
 			local version, player, class, level, race, zone, subZone, mapX, mapY, guild, mapID = strsplit("|", message)
 			if mapID == nil then
 				mapID = ""
 			end	
-			if player ~= nil and (not Spy.InInstance or zone == GetZoneText()) then
-				if not Spy.PlayerCommList[player] then
-					local upgrade = Spy:VersionCheck(Spy.Version, version)
-					if upgrade and not Spy.UpgradeMessageSent then
+			if player ~= nil and (not Ping.InInstance or zone == GetZoneText()) then
+				if not Ping.PlayerCommList[player] then
+					local upgrade = Ping:VersionCheck(Ping.Version, version)
+					if upgrade and not Ping.UpgradeMessageSent then
 						DEFAULT_CHAT_FRAME:AddMessage(L["UpgradeAvailable"])
-						Spy.UpgradeMessageSent = true
+						Ping.UpgradeMessageSent = true
 					end
 					if strlen(class) > 0 then
-						if not Spy.ValidClasses[class] then
+						if not Ping.ValidClasses[class] then
 							return
 						end
 					else
@@ -3869,7 +3869,7 @@ function Spy:CommReceived(prefix, message, distribution, source)
 					if strlen(level) > 0 then
 						level = tonumber(level)
 						if type(level) == "number" then
-							if level < 1 or level > Spy.MaximumPlayerLevel or math.floor(level) ~= level then
+							if level < 1 or level > Ping.MaximumPlayerLevel or math.floor(level) ~= level then
 								return
 							end
 						else
@@ -3879,7 +3879,7 @@ function Spy:CommReceived(prefix, message, distribution, source)
 						level = nil
 					end
 					if strlen(race) > 0 then
-						if not Spy.ValidRaces[race] then
+						if not Ping.ValidRaces[race] then
 							return
 						end
 					else
@@ -3924,13 +3924,13 @@ function Spy:CommReceived(prefix, message, distribution, source)
 						guild = nil
 					end
 
-					local learnt, playerData = Spy:ParseUnitDetails(player, class, level, race, zone, subZone, mapX, mapY, guild, mapID)
-					if playerData and playerData.isEnemy and not SpyPerCharDB.IgnoreData[player] then
-						Spy.PlayerCommList[player] = Spy.CurrentMapNote
-						Spy:AddDetected(player, time(), learnt, source)
+					local learnt, playerData = Ping:ParseUnitDetails(player, class, level, race, zone, subZone, mapX, mapY, guild, mapID)
+					if playerData and playerData.isEnemy and not PingPerCharDB.IgnoreData[player] then
+						Ping.PlayerCommList[player] = Ping.CurrentMapNote
+						Ping:AddDetected(player, time(), learnt, source)
 						-- test for nil or 0 mapID
-						if Spy.db.profile.DisplayOnMap and mapID > 0 then
-							Spy:ShowMapNote(player)
+						if Ping.db.profile.DisplayOnMap and mapID > 0 then
+							Ping:ShowMapNote(player)
 						end
 					end
 				end
@@ -3939,7 +3939,7 @@ function Spy:CommReceived(prefix, message, distribution, source)
 	end
 end
 
-function Spy:VersionCheck(version1, version2)
+function Ping:VersionCheck(version1, version2)
 	local major1, minor1, update1 = strsplit(".", version1)
 	local major2, minor2, update2 = strsplit(".", version2)
 	major1, minor1, update1 = tonumber(major1), tonumber(minor1), tonumber(update1)
@@ -3955,27 +3955,27 @@ function Spy:VersionCheck(version1, version2)
 	end
 end
 
-function Spy:TrackHumanoids()
+function Ping:TrackHumanoids()
 	local tooltip = GameTooltipTextLeft1:GetText()
-	if tooltip and tooltip ~= Spy.LastTooltip then
-		tooltip = Spy:ParseMinimapTooltip(tooltip)
-		if Spy.db.profile.MinimapDetails then
+	if tooltip and tooltip ~= Ping.LastTooltip then
+		tooltip = Ping:ParseMinimapTooltip(tooltip)
+		if Ping.db.profile.MinimapDetails then
 			GameTooltipTextLeft1:SetText(tooltip)
-			Spy.LastTooltip = tooltip
+			Ping.LastTooltip = tooltip
 		end
 		GameTooltip:Show()
 	end
 end
 
-function Spy:FilterNotInParty(frame, event, message)
+function Ping:FilterNotInParty(frame, event, message)
 	if (event == ERR_NOT_IN_GROUP or event == ERR_NOT_IN_RAID) then
 		return true
 	end
 	return false
 end
 
-function Spy:ShowMapNote(player)
-	local playerData = SpyPerCharDB.PlayerData[player]
+function Ping:ShowMapNote(player)
+	local playerData = PingPerCharDB.PlayerData[player]
 	if playerData then
 		local currentMapID, TOP_MOST = C_Map.GetBestMapForUnit('player'), true
 		local currentContinentInfo = MapUtil.GetMapParentInfo(currentMapID, Enum.UIMapType.Continent, true)
@@ -3991,47 +3991,47 @@ function Spy:ShowMapNote(player)
 		else
 			continentID = mapID
 		end
-		if continentID ~= nil and mapID ~= nil and type(playerData.mapX) == "number" and type(playerData.mapY) == "number" and (Spy.db.profile.MapDisplayLimit == "None" or (Spy.db.profile.MapDisplayLimit == "SameZone" and mapID == currentMapID) or (Spy.db.profile.MapDisplayLimit == "SameContinent" and continentID == currentContinentID)) then
-			local note = Spy.MapNoteList[Spy.CurrentMapNote]
+		if continentID ~= nil and mapID ~= nil and type(playerData.mapX) == "number" and type(playerData.mapY) == "number" and (Ping.db.profile.MapDisplayLimit == "None" or (Ping.db.profile.MapDisplayLimit == "SameZone" and mapID == currentMapID) or (Ping.db.profile.MapDisplayLimit == "SameContinent" and continentID == currentContinentID)) then
+			local note = Ping.MapNoteList[Ping.CurrentMapNote]
 			note.displayed = true
 			note.continentID = continentID
 			note.mapID = mapID
 			note.mapX = mapX
 			note.mapY = mapY
 
-			if Spy.db.profile.MapDisplayLimit == "SameZone" then
+			if Ping.db.profile.MapDisplayLimit == "SameZone" then
 				HBDP:AddWorldMapIconMap(WorldMapFrame, note.worldIcon, mapID, mapX, mapY, 1)
-			elseif Spy.db.profile.MapDisplayLimit == "SameContinent" then
+			elseif Ping.db.profile.MapDisplayLimit == "SameContinent" then
 				HBDP:AddWorldMapIconMap(WorldMapFrame, note.worldIcon, mapID, mapX, mapY, 2)
 			else
 				HBDP:AddWorldMapIconMap(WorldMapFrame, note.worldIcon, mapID, mapX, mapY, 3)
 			end	
 			HBDP:AddMinimapIconMap(self, note.miniIcon, note.mapID, note.mapX, note.mapY, false, false)
 
-			for i = 1, Spy.MapNoteLimit do
-				if i ~= Spy.CurrentMapNote and Spy.MapNoteList[i].displayed then
-					if continentID == Spy.MapNoteList[i].continentID and mapID == Spy.MapNoteList[i].mapID and abs(mapX - Spy.MapNoteList[i].mapX) < Spy.MapProximityThreshold and abs(mapY - Spy.MapNoteList[i].mapY) < Spy.MapProximityThreshold then
-						Spy.MapNoteList[i].displayed = false
-						Spy.MapNoteList[i].worldIcon:Hide()
-							HBDP:RemoveMinimapIcon(self, Spy.MapNoteList[i].miniIcon)
-						for player in pairs(Spy.PlayerCommList) do
-							if Spy.PlayerCommList[player] == i then
-								Spy.PlayerCommList[player] = Spy.CurrentMapNote
+			for i = 1, Ping.MapNoteLimit do
+				if i ~= Ping.CurrentMapNote and Ping.MapNoteList[i].displayed then
+					if continentID == Ping.MapNoteList[i].continentID and mapID == Ping.MapNoteList[i].mapID and abs(mapX - Ping.MapNoteList[i].mapX) < Ping.MapProximityThreshold and abs(mapY - Ping.MapNoteList[i].mapY) < Ping.MapProximityThreshold then
+						Ping.MapNoteList[i].displayed = false
+						Ping.MapNoteList[i].worldIcon:Hide()
+							HBDP:RemoveMinimapIcon(self, Ping.MapNoteList[i].miniIcon)
+						for player in pairs(Ping.PlayerCommList) do
+							if Ping.PlayerCommList[player] == i then
+								Ping.PlayerCommList[player] = Ping.CurrentMapNote
 							end
 						end
 					end
 				end
 			end
 
-			Spy.CurrentMapNote = Spy.CurrentMapNote + 1
-			if Spy.CurrentMapNote > Spy.MapNoteLimit then
-				Spy.CurrentMapNote = 1
+			Ping.CurrentMapNote = Ping.CurrentMapNote + 1
+			if Ping.CurrentMapNote > Ping.MapNoteLimit then
+				Ping.CurrentMapNote = 1
 			end
 		end
 	end
 end
 
-function Spy:GetPlayerLocation(playerData)
+function Ping:GetPlayerLocation(playerData)
 	local location = playerData.zone
 	local mapX = playerData.mapX
 	local mapY = playerData.mapY
@@ -4044,17 +4044,17 @@ function Spy:GetPlayerLocation(playerData)
 	return location
 end
 
-function Spy:HideSpyCombatCheck()
+function Ping:HidePingCombatCheck()
 	if InCombatLockdown() then
 		-- MainWindow did not Hide while in combat, try again in 10 seconds.
-		self:ScheduleTimer("HideSpyCombatCheck",10)
+		self:ScheduleTimer("HidePingCombatCheck",10)
 		return
 	else
-		Spy.MainWindow:Hide()
+		Ping.MainWindow:Hide()
 	end
 end
 
-function Spy:FormatTime(timestamp)
+function Ping:FormatTime(timestamp)
     if timestamp == 0 then return "Long " end
 
     local age = time() - timestamp
@@ -4084,7 +4084,7 @@ function Spy:FormatTime(timestamp)
     return strtrim(text)
 end
 
--- recieves pointer to SpyData Spy_db
-function Spy:SetDataDb(val)
-    Spy_db = val
+-- recieves pointer to PingData Ping_db
+function Ping:SetDataDb(val)
+    Ping_db = val
 end

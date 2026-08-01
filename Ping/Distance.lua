@@ -1,5 +1,5 @@
 --[[--------------------------------------------------------------------------
-  Spy Distance -- see enemies sooner.
+  Ping Distance -- see enemies sooner.
 
   Two console variables decide how far away an enemy can be before the client
   stops telling you about them at all:
@@ -8,7 +8,7 @@
     farclip                how far the world itself is drawn
 
   Both ship well below their maximum, and in world PvP that is the difference
-  between spotting a group forming and walking into it. Spy pushes each to the
+  between spotting a group forming and walking into it. Ping pushes each to the
   highest value the client accepts.
 
   Writing a CVar is ordinary addon behaviour, so none of this can be refused
@@ -18,15 +18,15 @@
 
   Re-applied on login and on zone change, because other addons write these too -
   Platynator sets nameplateMaxDistance itself - and whoever writes last wins.
-  Spy never lowers a value: if something else has already set a higher one than
+  Ping never lowers a value: if something else has already set a higher one than
   we would, that one stands.
 ----------------------------------------------------------------------------]]
 
 local AceLocale = LibStub("AceLocale-3.0")
-local L = AceLocale:GetLocale("Spy")
+local L = AceLocale:GetLocale("Ping")
 
-Spy.Distance = Spy.Distance or {}
-local Distance = Spy.Distance
+Ping.Distance = Ping.Distance or {}
+local Distance = Ping.Distance
 
 -- Candidate values, highest first. The accepted maximum differs between
 -- clients - and between builds of the same client - so rather than hardcode one
@@ -99,28 +99,28 @@ local function findCeiling(cvar, steps)
 	return best
 end
 
-function Spy:GetNameplateCeiling()
+function Ping:GetNameplateCeiling()
 	return findCeiling("nameplateMaxDistance", NAMEPLATE_STEPS)
 end
 
-function Spy:GetViewCeiling()
+function Ping:GetViewCeiling()
 	return findCeiling("farclip", FARCLIP_STEPS)
 end
 
-function Spy:GetNameplateDistance()
+function Ping:GetNameplateDistance()
 	return getNumber("nameplateMaxDistance")
 end
 
-function Spy:GetViewDistance()
+function Ping:GetViewDistance()
 	return getNumber("farclip")
 end
 
 ------------------------------------------------------------------------------
 -- applying
 ------------------------------------------------------------------------------
-function Spy:ApplyDistanceSettings(announce)
-	if not Spy.db or not Spy.db.profile then return end
-	local p = Spy.db.profile
+function Ping:ApplyDistanceSettings(announce)
+	if not Ping.db or not Ping.db.profile then return end
+	local p = Ping.db.profile
 	local plates, view
 
 	-- "max" raises to the ceiling and never reduces; "custom" writes exactly what
@@ -145,17 +145,17 @@ function Spy:ApplyDistanceSettings(announce)
 	Distance.lastView = view
 
 	if announce then
-		if plates then Spy:Print(format(L["DistanceNameplateSet"], plates)) end
-		if view then Spy:Print(format(L["DistanceViewSet"], view)) end
-		if not plates and not view then Spy:Print(L["DistanceNothingToDo"]) end
+		if plates then Ping:Print(format(L["DistanceNameplateSet"], plates)) end
+		if view then Ping:Print(format(L["DistanceViewSet"], view)) end
+		if not plates and not view then Ping:Print(L["DistanceNothingToDo"]) end
 	end
 	return plates, view
 end
 
 -- What the client is actually using right now, for the options page to show.
-function Spy:GetDistanceStatus()
-	local plates = Spy:GetNameplateDistance()
-	local view = Spy:GetViewDistance()
+function Ping:GetDistanceStatus()
+	local plates = Ping:GetNameplateDistance()
+	local view = Ping:GetViewDistance()
 	return plates, view
 end
 
@@ -166,13 +166,13 @@ local watcher = CreateFrame("Frame")
 watcher:RegisterEvent("PLAYER_ENTERING_WORLD")
 watcher:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 watcher:SetScript("OnEvent", function()
-	if not Spy.db or not Spy.db.profile then return end
+	if not Ping.db or not Ping.db.profile then return end
 	-- Deferred a moment: other addons apply their own CVars on these same
 	-- events, and the last write is the one that counts.
 	if C_Timer and C_Timer.After then
-		C_Timer.After(2, function() Spy:ApplyDistanceSettings(false) end)
+		C_Timer.After(2, function() Ping:ApplyDistanceSettings(false) end)
 	else
-		Spy:ApplyDistanceSettings(false)
+		Ping:ApplyDistanceSettings(false)
 	end
 end)
 
@@ -190,7 +190,7 @@ local NAMEPLATE_ADDONS = {
 	"NeatPlates", "ElvUI", "NamePlateSCT", "BetterBlizzPlates",
 }
 
-function Spy:GetNameplateDriver()
+function Ping:GetNameplateDriver()
 	if not isAddOnLoaded then return "unknown" end
 	for _, addon in ipairs(NAMEPLATE_ADDONS) do
 		local ok, loaded = pcall(isAddOnLoaded, addon)

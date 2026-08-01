@@ -2,18 +2,18 @@ local SM = LibStub:GetLibrary("LibSharedMedia-3.0")
 local HBDP = LibStub("HereBeDragons-Pins-2.0")
 local Events = LibStub("AceEvent-3.0")
 local AceLocale = LibStub("AceLocale-3.0")
-local L = AceLocale:GetLocale("Spy")
+local L = AceLocale:GetLocale("Ping")
 local _
 
 --++ Local FrameFlash functions derived from Blizzard code ++--
-local SpyFrameFlashManager = CreateFrame("FRAME");
+local PingFrameFlashManager = CreateFrame("FRAME");
 local SPYFADEFRAMES = {};
 local SPYFLASHFRAMES = {};
-local SpyFrameFlashTimers = {};
-local SpyFrameFlashTimerRefCount = {};
+local PingFrameFlashTimers = {};
+local PingFrameFlashTimerRefCount = {};
 
 -- Fucntion to see if a frame is fading
-function SpyFrameIsFading(frame)
+function PingFrameIsFading(frame)
 	for index, value in pairs(SPYFADEFRAMES) do
 		if ( value == frame ) then
 			return 1;
@@ -23,15 +23,15 @@ function SpyFrameIsFading(frame)
 end
 
 -- Function to stop flashing --
-local function SpyFrameFlashStop(frame)
+local function PingFrameFlashStop(frame)
     tDeleteItem(SPYFLASHFRAMES, frame);
     frame:SetAlpha(1.0);
     frame.flashTimer = nil;
     if (frame.syncId) then
-        SpyFrameFlashTimerRefCount[frame.syncId] = SpyFrameFlashTimerRefCount[frame.syncId]-1;
-        if (SpyFrameFlashTimerRefCount[frame.syncId] == 0) then
-            SpyFrameFlashTimers[frame.syncId] = nil;
-            SpyFrameFlashTimerRefCount[frame.syncId] = nil;
+        PingFrameFlashTimerRefCount[frame.syncId] = PingFrameFlashTimerRefCount[frame.syncId]-1;
+        if (PingFrameFlashTimerRefCount[frame.syncId] == 0) then
+            PingFrameFlashTimers[frame.syncId] = nil;
+            PingFrameFlashTimerRefCount[frame.syncId] = nil;
         end
         frame.syncId = nil;
     end
@@ -43,25 +43,25 @@ local function SpyFrameFlashStop(frame)
 end
 
 -- Call every frame to update flashing frames  --
-local function SpyFrameFlash_OnUpdate(self, elapsed)
+local function PingFrameFlash_OnUpdate(self, elapsed)
     local frame;
     local index = #SPYFLASHFRAMES;
      
     -- Update timers for all synced frames
-    for syncId, timer in pairs(SpyFrameFlashTimers) do
-        SpyFrameFlashTimers[syncId] = timer + elapsed;
+    for syncId, timer in pairs(PingFrameFlashTimers) do
+        PingFrameFlashTimers[syncId] = timer + elapsed;
     end
      
     while SPYFLASHFRAMES[index] do
         frame = SPYFLASHFRAMES[index];
         frame.flashTimer = frame.flashTimer + elapsed;
         if ( (frame.flashTimer > frame.flashDuration) and frame.flashDuration ~= -1 ) then
-            SpyFrameFlashStop(frame);
+            PingFrameFlashStop(frame);
         else
             local flashTime = frame.flashTimer;
             local alpha;
             if (frame.syncId) then
-                flashTime = SpyFrameFlashTimers[frame.syncId];
+                flashTime = PingFrameFlashTimers[frame.syncId];
             end
             flashTime = flashTime%(frame.fadeInTime+frame.fadeOutTime+(frame.flashInHoldTime or 0)+(frame.flashOutHoldTime or 0));
             if (flashTime < frame.fadeInTime) then
@@ -85,7 +85,7 @@ local function SpyFrameFlash_OnUpdate(self, elapsed)
 end
 
 -- Function to start a frame flashing
-local function SpyFrameFlash(frame, fadeInTime, fadeOutTime, flashDuration, showWhenDone, flashInHoldTime, flashOutHoldTime, syncId)
+local function PingFrameFlash(frame, fadeInTime, fadeOutTime, flashDuration, showWhenDone, flashInHoldTime, flashOutHoldTime, syncId)
     if ( frame ) then
         local index = 1;
         -- If frame is already set to flash then return
@@ -97,11 +97,11 @@ local function SpyFrameFlash(frame, fadeInTime, fadeOutTime, flashDuration, show
         end
         if (syncId) then
             frame.syncId = syncId;
-            if (SpyFrameFlashTimers[syncId] == nil) then
-                SpyFrameFlashTimers[syncId] = 0;
-                SpyFrameFlashTimerRefCount[syncId] = 0;
+            if (PingFrameFlashTimers[syncId] == nil) then
+                PingFrameFlashTimers[syncId] = 0;
+                PingFrameFlashTimerRefCount[syncId] = 0;
             end
-            SpyFrameFlashTimerRefCount[syncId] = SpyFrameFlashTimerRefCount[syncId]+1;
+            PingFrameFlashTimerRefCount[syncId] = PingFrameFlashTimerRefCount[syncId]+1;
         else
             frame.syncId = nil;
         end
@@ -122,95 +122,95 @@ local function SpyFrameFlash(frame, fadeInTime, fadeOutTime, flashDuration, show
          
         tinsert(SPYFLASHFRAMES, frame);		
          
-       SpyFrameFlashManager:SetScript("OnUpdate", SpyFrameFlash_OnUpdate);
+       PingFrameFlashManager:SetScript("OnUpdate", PingFrameFlash_OnUpdate);
     end
 end
 
-function Spy:SetFontSize(string, size)
+function Ping:SetFontSize(string, size)
 	local Font, Height, Flags = string:GetFont()
 	string:SetFont(Font, size, Flags)
 end
 
-function Spy:CreateMapNote(num)
+function Ping:CreateMapNote(num)
 	local notemin = 1
-	if num < notemin or Spy.MapNoteList[num] then
+	if num < notemin or Ping.MapNoteList[num] then
 		return
 	end
 
-	local worldIcon = CreateFrame("Button", "Spy_MapNoteList_world"..num, WorldMapFrame)
+	local worldIcon = CreateFrame("Button", "Ping_MapNoteList_world"..num, WorldMapFrame)
 	worldIcon:SetFrameStrata(WorldMapFrame:GetFrameStrata())
 	worldIcon:SetParent(WorldMapFrame)
 	worldIcon:SetFrameLevel(WorldMapFrame:GetFrameLevel() + 5)	
 	worldIcon:SetScript("OnEnter", function(self)
-		Spy:ShowMapTooltip(self, true)
+		Ping:ShowMapTooltip(self, true)
 	end)
 	worldIcon:SetScript("OnLeave", function(self)
-		Spy:ShowMapTooltip(self, false)
+		Ping:ShowMapTooltip(self, false)
 	end)
 	worldIcon:SetWidth(18)
 	worldIcon:SetHeight(18)
 	worldIcon.id = num
 
 	local worldTexture = worldIcon:CreateTexture(nil, "OVERLAY")
-	worldTexture:SetTexture("Interface\\WorldStateFrame\\"..Spy.EnemyFactionName.."Icon.blp")
+	worldTexture:SetTexture("Interface\\WorldStateFrame\\"..Ping.EnemyFactionName.."Icon.blp")
 	worldTexture:SetAllPoints(worldIcon)
 	worldIcon.texture = worldTexture
 
-	local miniIcon = CreateFrame("Button", "Spy_MapNoteList_mini"..num, Minimap)
+	local miniIcon = CreateFrame("Button", "Ping_MapNoteList_mini"..num, Minimap)
 	miniIcon:SetFrameStrata(Minimap:GetFrameStrata())
 	miniIcon:SetParent(Minimap)
 	miniIcon:SetFrameLevel(Minimap:GetFrameLevel() + 5)
 	miniIcon:SetScript("OnEnter", function(self)
-		Spy:ShowMapTooltip(self, true)
+		Ping:ShowMapTooltip(self, true)
 	end)
 	miniIcon:SetScript("OnLeave", function(self)
-		Spy:ShowMapTooltip(self, false)
+		Ping:ShowMapTooltip(self, false)
 	end)
 	miniIcon:SetWidth(14)
 	miniIcon:SetHeight(14)
 	miniIcon.id = num
 
 	local miniTexture = miniIcon:CreateTexture(nil, "OVERLAY")
-	miniTexture:SetTexture("Interface\\WorldStateFrame\\"..Spy.EnemyFactionName.."Icon.blp")
+	miniTexture:SetTexture("Interface\\WorldStateFrame\\"..Ping.EnemyFactionName.."Icon.blp")
 	miniTexture:SetAllPoints(miniIcon)
 	miniIcon.texture = worldTexture
 
-	Spy.MapNoteList[num] = {}
-	Spy.MapNoteList[num].displayed = false
-	Spy.MapNoteList[num].continentID = 0
-	Spy.MapNoteList[num].MapID = 0
-	Spy.MapNoteList[num].mapX = 0
-	Spy.MapNoteList[num].mapY = 0
-	Spy.MapNoteList[num].worldIcon = worldIcon
-	Spy.MapNoteList[num].worldIcon:Hide()
-	Spy.MapNoteList[num].miniIcon = miniIcon
-	Spy.MapNoteList[num].miniIcon:Hide()
+	Ping.MapNoteList[num] = {}
+	Ping.MapNoteList[num].displayed = false
+	Ping.MapNoteList[num].continentID = 0
+	Ping.MapNoteList[num].MapID = 0
+	Ping.MapNoteList[num].mapX = 0
+	Ping.MapNoteList[num].mapY = 0
+	Ping.MapNoteList[num].worldIcon = worldIcon
+	Ping.MapNoteList[num].worldIcon:Hide()
+	Ping.MapNoteList[num].miniIcon = miniIcon
+	Ping.MapNoteList[num].miniIcon:Hide()
 end
 
-function Spy:CreateRow(num)
+function Ping:CreateRow(num)
 	local rowmin = 1
-	if num < rowmin or Spy.MainWindow.Rows[num] then
+	if num < rowmin or Ping.MainWindow.Rows[num] then
 		return
 	end
 
-	local row = CreateFrame("Button", "Spy_MainWindow_Bar"..num, Spy.MainWindow, "SpySecureActionButtonTemplate")
-	row:SetPoint("TOPLEFT", Spy.MainWindow, "TOPLEFT", 2, -34 - (Spy.db.profile.MainWindow.RowHeight + Spy.db.profile.MainWindow.RowSpacing) * (num - 1))
-	row:SetHeight(Spy.db.profile.MainWindow.RowHeight)
-	row:SetWidth(Spy.MainWindow:GetWidth() - 4)
+	local row = CreateFrame("Button", "Ping_MainWindow_Bar"..num, Ping.MainWindow, "PingSecureActionButtonTemplate")
+	row:SetPoint("TOPLEFT", Ping.MainWindow, "TOPLEFT", 2, -34 - (Ping.db.profile.MainWindow.RowHeight + Ping.db.profile.MainWindow.RowSpacing) * (num - 1))
+	row:SetHeight(Ping.db.profile.MainWindow.RowHeight)
+	row:SetWidth(Ping.MainWindow:GetWidth() - 4)
 
-	Spy:SetupBar(row)
-	Spy.MainWindow.Rows[num] = row
-	Spy.MainWindow.Rows[num]:Hide()
+	Ping:SetupBar(row)
+	Ping.MainWindow.Rows[num] = row
+	Ping.MainWindow.Rows[num]:Hide()
 	row.id = num
 end
 
-function Spy:SetupBar(row)
+function Ping:SetupBar(row)
 	row.StatusBar = CreateFrame("StatusBar", nil, row)
 	row.StatusBar:SetAllPoints(row)
 
 	local BarTexture
 	if not BarTexture then
-		BarTexture = Spy.db.profile.BarTexture
+		BarTexture = Ping.db.profile.BarTexture
 	end
 
 	if not BarTexture then
@@ -227,27 +227,27 @@ function Spy:SetupBar(row)
 	row.LeftText = row.StatusBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	row.LeftText:SetPoint("LEFT", row.StatusBar, "LEFT", 2, 0)
 	row.LeftText:SetJustifyH("LEFT")
-	row.LeftText:SetHeight(Spy.db.profile.MainWindow.TextHeight)
+	row.LeftText:SetHeight(Ping.db.profile.MainWindow.TextHeight)
 	row.LeftText:SetTextColor(1, 1, 1, 1)
-	Spy:SetFontSize(row.LeftText, math.max(Spy.db.profile.MainWindow.RowHeight * 0.75, Spy.db.profile.MainWindow.RowHeight - 3))
-	Spy:AddFontString(row.LeftText)
+	Ping:SetFontSize(row.LeftText, math.max(Ping.db.profile.MainWindow.RowHeight * 0.75, Ping.db.profile.MainWindow.RowHeight - 3))
+	Ping:AddFontString(row.LeftText)
 
 	row.RightText = row.StatusBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	row.RightText:SetPoint("RIGHT", row.StatusBar, "RIGHT", -2, 0)	
 	row.RightText:SetJustifyH("RIGHT")
 	row.RightText:SetTextColor(1, 1, 1, 1)
-	Spy:SetFontSize(row.RightText, math.max(Spy.db.profile.MainWindow.RowHeight * 0.65, Spy.db.profile.MainWindow.RowHeight - 12))		
-	Spy:AddFontString(row.RightText)
+	Ping:SetFontSize(row.RightText, math.max(Ping.db.profile.MainWindow.RowHeight * 0.65, Ping.db.profile.MainWindow.RowHeight - 12))		
+	Ping:AddFontString(row.RightText)
 
-	Spy.Colors:RegisterFont("Bar", "Bar Text", row.LeftText)
-	Spy.Colors:RegisterFont("Bar", "Bar Text", row.RightText)
+	Ping.Colors:RegisterFont("Bar", "Bar Text", row.LeftText)
+	Ping.Colors:RegisterFont("Bar", "Bar Text", row.RightText)
 
 	-- Healer marker: a small independent glyph whose colour is driven by
-	-- Spy:ApplyRowText (not the Bar Text colour), so it can stay green.
+	-- Ping:ApplyRowText (not the Bar Text colour), so it can stay green.
 	row.HealerMarker = row.StatusBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-	row.HealerMarker:SetHeight(Spy.db.profile.MainWindow.TextHeight)
-	Spy:SetFontSize(row.HealerMarker, math.max(Spy.db.profile.MainWindow.RowHeight * 0.9, Spy.db.profile.MainWindow.RowHeight - 2))
-	Spy:AddFontString(row.HealerMarker)
+	row.HealerMarker:SetHeight(Ping.db.profile.MainWindow.TextHeight)
+	Ping:SetFontSize(row.HealerMarker, math.max(Ping.db.profile.MainWindow.RowHeight * 0.9, Ping.db.profile.MainWindow.RowHeight - 2))
+	Ping:AddFontString(row.HealerMarker)
 	row.HealerMarker:Hide()
 
 	-- Thin left-edge accent (green for healers, red for KoS).
@@ -259,25 +259,25 @@ function Spy:SetupBar(row)
 	row.RowEdge:Hide()
 end
 
-function Spy:UpdateBarTextures()
-	for k, v in pairs(Spy.MainWindow.Rows) do
-		v.StatusBar:SetStatusBarTexture(SM:Fetch(SM.MediaType.STATUSBAR, Spy.db.profile.BarTexture))
+function Ping:UpdateBarTextures()
+	for k, v in pairs(Ping.MainWindow.Rows) do
+		v.StatusBar:SetStatusBarTexture(SM:Fetch(SM.MediaType.STATUSBAR, Ping.db.profile.BarTexture))
 	end
-	if Spy.db.profile.Font then
-		Spy:SetFont(Spy.db.profile.Font)
+	if Ping.db.profile.Font then
+		Ping:SetFont(Ping.db.profile.Font)
 	end
 end
 
-function Spy:SetBarTextures(handle)
+function Ping:SetBarTextures(handle)
 	local Texture = SM:Fetch(SM.MediaType.STATUSBAR,handle)
-	Spy.db.profile.BarTexture=handle
-	for k, v in pairs(Spy.MainWindow.Rows) do
+	Ping.db.profile.BarTexture=handle
+	for k, v in pairs(Ping.MainWindow.Rows) do
 		v.StatusBar:SetStatusBarTexture(Texture)
 	end
 end
 
 local info = {}
-function Spy_CreateBarDropdown(self, level)
+function Ping_CreateBarDropdown(self, level)
 	if not level then return end
 	for k in pairs(info) do info[k] = nil end
 	if self and self.relativeTo.LeftText then
@@ -290,7 +290,7 @@ function Spy_CreateBarDropdown(self, level)
 
 			info = UIDropDownMenu_CreateInfo()
 
-			if Spy.db.profile.CurrentList == 1 or Spy.db.profile.CurrentList == 2 then
+			if Ping.db.profile.CurrentList == 1 or Ping.db.profile.CurrentList == 2 then
 				info.isTitle = nil
 				info.notCheckable = true
 				info.hasArrow = true
@@ -301,25 +301,25 @@ function Spy_CreateBarDropdown(self, level)
 				UIDropDownMenu_AddButton(info, level)
 			end
 
-			if Spy.db.profile.TomTomOnAltClick then
+			if Ping.db.profile.TomTomOnAltClick then
 				info.isTitle = nil
 				info.notCheckable = true
 				info.hasArrow = false
-				info.disabled = not Spy:HasTomTom()
+				info.disabled = not Ping:HasTomTom()
 				info.text = L["TomTomWaypoint"]
-				info.func = function() Spy:SetTomTomWaypoint(player) end
+				info.func = function() Ping:SetTomTomWaypoint(player) end
 				info.value = nil
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
 			end
 
-			if not SpyPerCharDB.KOSData[player] then
+			if not PingPerCharDB.KOSData[player] then
 				info.isTitle = nil
 				info.notCheckable = true
 				info.hasArrow = false
 				info.disabled = nil
 				info.text = L["AddToKOSList"]
-				info.func = function() Spy:ToggleKOSPlayer(true, player) end
+				info.func = function() Ping:ToggleKOSPlayer(true, player) end
 				info.value = nil
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
@@ -338,18 +338,18 @@ function Spy_CreateBarDropdown(self, level)
 				info.hasArrow = false
 				info.disabled = nil
 				info.text = L["RemoveFromKOSList"]
-				info.func = function() Spy:ToggleKOSPlayer(false, player) end
+				info.func = function() Ping:ToggleKOSPlayer(false, player) end
 				info.value = nil
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
 			end
-			if not SpyPerCharDB.IgnoreData[player] then
+			if not PingPerCharDB.IgnoreData[player] then
 				info.isTitle = nil
 				info.notCheckable = true
 				info.hasArrow = false
 				info.disabled = nil
 				info.text = L["AddToIgnoreList"]
-				info.func = function() Spy:ToggleIgnorePlayer(true, player) end
+				info.func = function() Ping:ToggleIgnorePlayer(true, player) end
 				info.value = nil
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
@@ -359,18 +359,18 @@ function Spy_CreateBarDropdown(self, level)
 				info.hasArrow = false
 				info.disabled = nil
 				info.text = L["RemoveFromIgnoreList"]
-				info.func = function() Spy:ToggleIgnorePlayer(false, player) end
+				info.func = function() Ping:ToggleIgnorePlayer(false, player) end
 				info.value = nil
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
 			end
 
-			if Spy.db.profile.CurrentList == 1 then
+			if Ping.db.profile.CurrentList == 1 then
 				info.isTitle = nil
 				info.notCheckable = true
 				info.disabled = nil
 				info.text = L["Clear"]
-				info.func = function() Spy:RemovePlayerFromList(player) end
+				info.func = function() Ping:RemovePlayerFromList(player) end
 				info.value = nil
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
@@ -379,13 +379,13 @@ function Spy_CreateBarDropdown(self, level)
 			local key = UIDROPDOWNMENU_MENU_VALUE["Key"]
 			info = UIDropDownMenu_CreateInfo()
 
-			if key == L["AnnounceDropDownMenu"] and (Spy.db.profile.CurrentList == 1 or Spy.db.profile.CurrentList == 2) then
+			if key == L["AnnounceDropDownMenu"] and (Ping.db.profile.CurrentList == 1 or Ping.db.profile.CurrentList == 2) then
 				info.isTitle = nil
 				info.notCheckable = true
 				info.hasArrow = false
 				info.disabled = nil
 				info.text = L["PartyDropDownMenu"]
-				info.func = function() Spy:AnnouncePlayer(player, "PARTY") end
+				info.func = function() Ping:AnnouncePlayer(player, "PARTY") end
 				info.value = { ["Key"] = key; ["Subkey"] = 1; }
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
@@ -395,7 +395,7 @@ function Spy_CreateBarDropdown(self, level)
 				info.hasArrow = false
 				info.disabled = nil
 				info.text = L["RaidDropDownMenu"]
-				info.func = function() Spy:AnnouncePlayer(player, "RAID") end
+				info.func = function() Ping:AnnouncePlayer(player, "RAID") end
 				info.value = { ["Key"] = key; ["Subkey"] = 2; }
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
@@ -405,7 +405,7 @@ function Spy_CreateBarDropdown(self, level)
 				info.hasArrow = false
 				info.disabled = nil
 				info.text = L["GuildDropDownMenu"]
-				info.func = function() Spy:AnnouncePlayer(player, "GUILD") end
+				info.func = function() Ping:AnnouncePlayer(player, "GUILD") end
 				info.value = { ["Key"] = key; ["Subkey"] = 3; }
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
@@ -415,15 +415,15 @@ function Spy_CreateBarDropdown(self, level)
 				info.hasArrow = false
 				info.disabled = nil
 				info.text = L["LocalDefenseDropDownMenu"]
-				info.func = function() Spy:AnnouncePlayer(player, "LOCAL") end
+				info.func = function() Ping:AnnouncePlayer(player, "LOCAL") end
 				info.value = { ["Key"] = key; ["Subkey"] = 4; }
 				info.arg1 = self.relativeTo.name
 				UIDropDownMenu_AddButton(info, level)
 			end
 
 			if key == L["KOSReasonDropDownMenu"] then
-				for i = 1, Spy_KOSReasonListLength do
-					local reason = Spy_KOSReasonList[i]
+				for i = 1, Ping_KOSReasonListLength do
+					local reason = Ping_KOSReasonList[i]
 					info.isTitle = nil
 					info.notCheckable = true
 					info.hasArrow = true
@@ -440,7 +440,7 @@ function Spy_CreateBarDropdown(self, level)
 				info.disabled = nil
 				info.text = L["KOSReasonClear"]
 				info.func = function()
-					Spy:SetKOSReason(player, nil)
+					Ping:SetKOSReason(player, nil)
 					CloseDropDownMenus(1)
 				end
 				info.value = nil
@@ -451,16 +451,16 @@ function Spy_CreateBarDropdown(self, level)
 			local key = UIDROPDOWNMENU_MENU_VALUE["Key"]
 			local subkey = UIDROPDOWNMENU_MENU_VALUE["Subkey"]
 			local index = UIDROPDOWNMENU_MENU_VALUE["Index"]
-			local playerData = SpyPerCharDB.PlayerData[player]
+			local playerData = PingPerCharDB.PlayerData[player]
 			if key == L["KOSReasonDropDownMenu"] then
-				for v, reason in pairs(Spy_KOSReasonList[index].content) do
+				for v, reason in pairs(Ping_KOSReasonList[index].content) do
 					info.isTitle = nil
 					info.notCheckable = false
 					info.hasArrow = false
 					info.disabled = nil
 					info.text = reason
 					info.func = function()
-						Spy:SetKOSReason(player, reason)
+						Ping:SetKOSReason(player, reason)
 						CloseDropDownMenus(1)
 					end
 					info.checked = nil
@@ -476,10 +476,10 @@ function Spy_CreateBarDropdown(self, level)
 	end
 end
 
-function Spy:BarDropDownOpen(myframe)
-	Spy_BarDropDownMenu = CreateFrame("Frame", "Spy_BarDropDownMenu", myframe)
-	Spy_BarDropDownMenu.displayMode = "MENU"
-	Spy_BarDropDownMenu.initialize	= Spy_CreateBarDropdown
+function Ping:BarDropDownOpen(myframe)
+	Ping_BarDropDownMenu = CreateFrame("Frame", "Ping_BarDropDownMenu", myframe)
+	Ping_BarDropDownMenu.displayMode = "MENU"
+	Ping_BarDropDownMenu.initialize	= Ping_CreateBarDropdown
 
 	local leftPos = myframe:GetLeft()
 	local rightPos = myframe:GetRight()
@@ -501,34 +501,34 @@ function Spy:BarDropDownOpen(myframe)
 		side = "TOPRIGHT"
 		oside = "TOPLEFT"
 	end
-	UIDropDownMenu_SetAnchor(Spy_BarDropDownMenu, 0, 0, oside, myframe, side)
+	UIDropDownMenu_SetAnchor(Ping_BarDropDownMenu, 0, 0, oside, myframe, side)
 end
 
-function Spy:SetupMainWindowButtons()
-	for k, v in pairs(Spy.db.profile.MainWindow.Buttons) do
+function Ping:SetupMainWindowButtons()
+	for k, v in pairs(Ping.db.profile.MainWindow.Buttons) do
 		if v then
-			Spy.MainWindow[k]:Show()
-			Spy.MainWindow[k]:SetWidth(16)
+			Ping.MainWindow[k]:Show()
+			Ping.MainWindow[k]:SetWidth(16)
 		else
-			Spy.MainWindow[k]:SetWidth(1)
-			Spy.MainWindow[k]:Hide()
+			Ping.MainWindow[k]:SetWidth(1)
+			Ping.MainWindow[k]:Hide()
 		end
 	end
 end
 
-function Spy:CreateMainWindow()
-	if not Spy.MainWindow then
-		Spy.MainWindow = Spy:CreateFrame("Spy_MainWindow", L["Nearby"], 34, 200,
+function Ping:CreateMainWindow()
+	if not Ping.MainWindow then
+		Ping.MainWindow = Ping:CreateFrame("Ping_MainWindow", L["Nearby"], 34, 200,
 		function()
-			Spy.db.profile.MainWindowVis = true
+			Ping.db.profile.MainWindowVis = true
 		end,
 		function()
-			Spy.db.profile.MainWindowVis = false
+			Ping.db.profile.MainWindowVis = false
 		end)
 
-		Spy:UpdateMainWindow()
+		Ping:UpdateMainWindow()
 	
-		local theFrame = Spy.MainWindow
+		local theFrame = Ping.MainWindow
 		theFrame:SetResizable(true)
 --		theFrame:SetMinResize(90, 34)
 --		theFrame:SetMaxResize(300, 264)
@@ -536,13 +536,13 @@ function Spy:CreateMainWindow()
 		theFrame:SetScript("OnSizeChanged",
 		function(self)
 			if (self.isResizing) then
-				Spy:ResizeMainWindow()
+				Ping:ResizeMainWindow()
 			end
 		end)
 		theFrame:SetMovable(true)
         theFrame:EnableMouseWheel(true)	
 		theFrame:SetScript("OnMouseWheel", function(self, delta)
-			Spy:MainWindowScroll(delta)
+			Ping:MainWindowScroll(delta)
 		end)
 		theFrame.TitleClick = CreateFrame("FRAME", nil, theFrame)
 		theFrame.TitleClick:SetAllPoints(theFrame.Title)
@@ -550,7 +550,7 @@ function Spy:CreateMainWindow()
 		theFrame.TitleClick:SetScript("OnMouseDown", function(self, button) 
 			local parent = self:GetParent()
 			if (((not parent.isLocked) or (parent.isLocked == 0)) and (button == "LeftButton")) then
-				Spy:SetWindowTop(parent)
+				Ping:SetWindowTop(parent)
 				parent:StartMoving();
 				parent.isMoving = true;
 			end
@@ -560,7 +560,7 @@ function Spy:CreateMainWindow()
 			if (parent.isMoving) then
 				parent:StopMovingOrSizing();
 				parent.isMoving = false;
-				Spy:SaveMainWindowPosition()
+				Ping:SaveMainWindowPosition()
 			end
 		end)
         theFrame.TitleClick:EnableMouseWheel(true)		
@@ -569,18 +569,18 @@ function Spy:CreateMainWindow()
 				return
 			end
 			if delta > 0 then
-				Spy:MainWindowPrevMode()
+				Ping:MainWindowPrevMode()
 			else
-				Spy:MainWindowNextMode()
+				Ping:MainWindowNextMode()
 			end
 		end)
 
-		if not Spy.db.profile.InvertSpy then
-			theFrame.DragBottomRight = CreateFrame("Button", "SpyResizeGripRight", theFrame)
+		if not Ping.db.profile.InvertPing then
+			theFrame.DragBottomRight = CreateFrame("Button", "PingResizeGripRight", theFrame)
 			theFrame.DragBottomRight:Show()
 			theFrame.DragBottomRight:SetFrameLevel(theFrame:GetFrameLevel() + 10)
-			theFrame.DragBottomRight:SetNormalTexture("Interface\\AddOns\\Spy\\Textures\\resize-bottomright.tga")
-			theFrame.DragBottomRight:SetHighlightTexture("Interface\\AddOns\\Spy\\Textures\\resize-bottomright.tga")
+			theFrame.DragBottomRight:SetNormalTexture("Interface\\AddOns\\Ping\\Textures\\resize-bottomright.tga")
+			theFrame.DragBottomRight:SetHighlightTexture("Interface\\AddOns\\Ping\\Textures\\resize-bottomright.tga")
 			theFrame.DragBottomRight:SetWidth(16)
 			theFrame.DragBottomRight:SetHeight(16)
 			theFrame.DragBottomRight:SetAlpha(0)
@@ -598,8 +598,8 @@ function Spy:CreateMainWindow()
 			theFrame.DragBottomRight:SetScript("OnMouseUp", function(self, button)
 				if self:GetParent().isResizing == true then
 					self:GetParent():StopMovingOrSizing();
-					Spy:SaveMainWindowPosition();
-					Spy:RefreshCurrentList();
+					Ping:SaveMainWindowPosition();
+					Ping:RefreshCurrentList();
 					self:GetParent().isResizing = false;
 				end
 			end)
@@ -607,11 +607,11 @@ function Spy:CreateMainWindow()
 				theFrame.DragBottomRight:SetAlpha(0)
 			end)
 		
-			theFrame.DragBottomLeft = CreateFrame("Button", "SpyResizeGripLeft", theFrame)
+			theFrame.DragBottomLeft = CreateFrame("Button", "PingResizeGripLeft", theFrame)
 			theFrame.DragBottomLeft:Show()
 			theFrame.DragBottomLeft:SetFrameLevel(theFrame:GetFrameLevel() + 10)
-			theFrame.DragBottomLeft:SetNormalTexture("Interface\\AddOns\\Spy\\Textures\\resize-bottomleft.tga")
-			theFrame.DragBottomLeft:SetHighlightTexture("Interface\\AddOns\\Spy\\Textures\\resize-bottomleft.tga")
+			theFrame.DragBottomLeft:SetNormalTexture("Interface\\AddOns\\Ping\\Textures\\resize-bottomleft.tga")
+			theFrame.DragBottomLeft:SetHighlightTexture("Interface\\AddOns\\Ping\\Textures\\resize-bottomleft.tga")
 			theFrame.DragBottomLeft:SetWidth(16)
 			theFrame.DragBottomLeft:SetHeight(16)
 			theFrame.DragBottomLeft:SetAlpha(0)		
@@ -629,8 +629,8 @@ function Spy:CreateMainWindow()
 			theFrame.DragBottomLeft:SetScript("OnMouseUp", function(self, button)
 				if self:GetParent().isResizing == true then
 					self:GetParent():StopMovingOrSizing();
-					Spy:SaveMainWindowPosition();
-					Spy:RefreshCurrentList();
+					Ping:SaveMainWindowPosition();
+					Ping:RefreshCurrentList();
 					self:GetParent().isResizing = false;
 				end
 			end)
@@ -638,11 +638,11 @@ function Spy:CreateMainWindow()
 				theFrame.DragBottomLeft:SetAlpha(0)
 			end)
 		else
-			theFrame.DragTopRight = CreateFrame("Button", "SpyResizeGripRight", theFrame)
+			theFrame.DragTopRight = CreateFrame("Button", "PingResizeGripRight", theFrame)
 			theFrame.DragTopRight:Show()
 			theFrame.DragTopRight:SetFrameLevel(theFrame:GetFrameLevel() + 10)
-			theFrame.DragTopRight:SetNormalTexture("Interface\\AddOns\\Spy\\Textures\\resize-topright.tga")
-			theFrame.DragTopRight:SetHighlightTexture("Interface\\AddOns\\Spy\\Textures\\resize-topright.tga")
+			theFrame.DragTopRight:SetNormalTexture("Interface\\AddOns\\Ping\\Textures\\resize-topright.tga")
+			theFrame.DragTopRight:SetHighlightTexture("Interface\\AddOns\\Ping\\Textures\\resize-topright.tga")
 			theFrame.DragTopRight:SetWidth(16)
 			theFrame.DragTopRight:SetHeight(16)
 			theFrame.DragTopRight:SetAlpha(0)
@@ -660,8 +660,8 @@ function Spy:CreateMainWindow()
 			theFrame.DragTopRight:SetScript("OnMouseUp", function(self, button)
 				if self:GetParent().isResizing == true then
 					self:GetParent():StopMovingOrSizing();
-					Spy:SaveMainWindowPosition();
-					Spy:RefreshCurrentList();
+					Ping:SaveMainWindowPosition();
+					Ping:RefreshCurrentList();
 					self:GetParent().isResizing = false;
 				end
 			end)
@@ -669,11 +669,11 @@ function Spy:CreateMainWindow()
 				theFrame.DragTopRight:SetAlpha(0)
 			end)
 		
-			theFrame.DragTopLeft = CreateFrame("Button", "SpyResizeGripLeft", theFrame)
+			theFrame.DragTopLeft = CreateFrame("Button", "PingResizeGripLeft", theFrame)
 			theFrame.DragTopLeft:Show()
 			theFrame.DragTopLeft:SetFrameLevel(theFrame:GetFrameLevel() + 10)
-			theFrame.DragTopLeft:SetNormalTexture("Interface\\AddOns\\Spy\\Textures\\resize-topleft.tga")
-			theFrame.DragTopLeft:SetHighlightTexture("Interface\\AddOns\\Spy\\Textures\\resize-topleft.tga")
+			theFrame.DragTopLeft:SetNormalTexture("Interface\\AddOns\\Ping\\Textures\\resize-topleft.tga")
+			theFrame.DragTopLeft:SetHighlightTexture("Interface\\AddOns\\Ping\\Textures\\resize-topleft.tga")
 			theFrame.DragTopLeft:SetWidth(16)
 			theFrame.DragTopLeft:SetHeight(16)
 			theFrame.DragTopLeft:SetAlpha(0)		
@@ -691,8 +691,8 @@ function Spy:CreateMainWindow()
 			theFrame.DragTopLeft:SetScript("OnMouseUp", function(self, button)
 				if self:GetParent().isResizing == true then
 					self:GetParent():StopMovingOrSizing();
-					Spy:SaveMainWindowPosition();
-					Spy:RefreshCurrentList();
+					Ping:SaveMainWindowPosition();
+					Ping:RefreshCurrentList();
 					self:GetParent().isResizing = false;
 				end
 			end)
@@ -702,12 +702,12 @@ function Spy:CreateMainWindow()
 		end
 
 		theFrame.RightButton = CreateFrame("Button", nil, theFrame)
-		theFrame.RightButton:SetNormalTexture("Interface\\AddOns\\Spy\\Textures\\button-right.tga")
-		theFrame.RightButton:SetPushedTexture("Interface\\AddOns\\Spy\\Textures\\button-right.tga")
-		theFrame.RightButton:SetHighlightTexture("Interface\\AddOns\\Spy\\Textures\\button-highlight.tga")
+		theFrame.RightButton:SetNormalTexture("Interface\\AddOns\\Ping\\Textures\\button-right.tga")
+		theFrame.RightButton:SetPushedTexture("Interface\\AddOns\\Ping\\Textures\\button-right.tga")
+		theFrame.RightButton:SetHighlightTexture("Interface\\AddOns\\Ping\\Textures\\button-highlight.tga")
 		theFrame.RightButton:SetWidth(16)
 		theFrame.RightButton:SetHeight(16)
-		if not Spy.db.profile.InvertSpy then 		
+		if not Ping.db.profile.InvertPing then 		
 			theFrame.RightButton:SetPoint("TOPRIGHT", theFrame, "TOPRIGHT", -23, -14.5)
 		else
 			theFrame.RightButton:SetPoint("BOTTOMRIGHT", theFrame, "BOTTOMRIGHT", -23, -16.5)
@@ -722,14 +722,14 @@ function Spy:CreateMainWindow()
 			GameTooltip:Hide()
 		end)
 		theFrame.RightButton:SetScript("OnClick", function()
-			Spy:MainWindowNextMode()
+			Ping:MainWindowNextMode()
 		end)
 		theFrame.RightButton:SetFrameLevel(theFrame.RightButton:GetFrameLevel() + 1)
 
 		theFrame.LeftButton = CreateFrame("Button", nil, theFrame)
-		theFrame.LeftButton:SetNormalTexture("Interface\\AddOns\\Spy\\Textures\\button-left.tga")
-		theFrame.LeftButton:SetPushedTexture("Interface\\AddOns\\Spy\\Textures\\button-left.tga")
-		theFrame.LeftButton:SetHighlightTexture("Interface\\AddOns\\Spy\\Textures\\button-highlight.tga")
+		theFrame.LeftButton:SetNormalTexture("Interface\\AddOns\\Ping\\Textures\\button-left.tga")
+		theFrame.LeftButton:SetPushedTexture("Interface\\AddOns\\Ping\\Textures\\button-left.tga")
+		theFrame.LeftButton:SetHighlightTexture("Interface\\AddOns\\Ping\\Textures\\button-highlight.tga")
 		theFrame.LeftButton:SetWidth(16)
 		theFrame.LeftButton:SetHeight(16)
 		theFrame.LeftButton:SetPoint("RIGHT", theFrame.RightButton, "LEFT", 0, 0)
@@ -743,14 +743,14 @@ function Spy:CreateMainWindow()
 			GameTooltip:Hide()
 		end)
 		theFrame.LeftButton:SetScript("OnClick", function()
-			Spy:MainWindowPrevMode()
+			Ping:MainWindowPrevMode()
 		end)
 		theFrame.LeftButton:SetFrameLevel(theFrame.LeftButton:GetFrameLevel() + 1)
 
 		theFrame.ClearButton = CreateFrame("Button", nil, theFrame)
-		theFrame.ClearButton:SetNormalTexture("Interface\\AddOns\\Spy\\Textures\\button-clear.tga")
-		theFrame.ClearButton:SetPushedTexture("Interface\\AddOns\\Spy\\Textures\\button-clear.tga")
-		theFrame.ClearButton:SetHighlightTexture("Interface\\AddOns\\Spy\\Textures\\button-highlight.tga")
+		theFrame.ClearButton:SetNormalTexture("Interface\\AddOns\\Ping\\Textures\\button-clear.tga")
+		theFrame.ClearButton:SetPushedTexture("Interface\\AddOns\\Ping\\Textures\\button-clear.tga")
+		theFrame.ClearButton:SetHighlightTexture("Interface\\AddOns\\Ping\\Textures\\button-highlight.tga")
 		theFrame.ClearButton:SetWidth(16)
 		theFrame.ClearButton:SetHeight(16)
 		theFrame.ClearButton:SetPoint("RIGHT", theFrame.LeftButton,"LEFT", 0, 0)
@@ -764,14 +764,14 @@ function Spy:CreateMainWindow()
 			GameTooltip:Hide()
 		end)
 		theFrame.ClearButton:SetScript("OnClick", function()
-			Spy:ClearList()
+			Ping:ClearList()
 		end)
 		theFrame.ClearButton:SetFrameLevel(theFrame.ClearButton:GetFrameLevel() + 1)
 		
 		theFrame.StatsButton = CreateFrame("Button", nil, theFrame)
-		theFrame.StatsButton:SetNormalTexture("Interface\\AddOns\\Spy\\Textures\\button-file.tga")
-		theFrame.StatsButton:SetPushedTexture("Interface\\AddOns\\Spy\\Textures\\button-file.tga")
-		theFrame.StatsButton:SetHighlightTexture("Interface\\AddOns\\Spy\\Textures\\button-highlight.tga")
+		theFrame.StatsButton:SetNormalTexture("Interface\\AddOns\\Ping\\Textures\\button-file.tga")
+		theFrame.StatsButton:SetPushedTexture("Interface\\AddOns\\Ping\\Textures\\button-file.tga")
+		theFrame.StatsButton:SetHighlightTexture("Interface\\AddOns\\Ping\\Textures\\button-highlight.tga")
 		theFrame.StatsButton:SetWidth(12)
 		theFrame.StatsButton:SetHeight(12)
 		theFrame.StatsButton:SetPoint("RIGHT", theFrame.ClearButton,"LEFT", -4, 0)
@@ -785,16 +785,19 @@ function Spy:CreateMainWindow()
 			GameTooltip:Hide()
 		end)
 		theFrame.StatsButton:SetScript("OnClick", function()
-			SpyStats:Toggle()
+			PingStats:Toggle()
 		end)
 		theFrame.StatsButton:SetFrameLevel(theFrame.StatsButton:GetFrameLevel() + 1)
 		
-		theFrame.CountFrame = CreateFrame("Frame", "CountFrame", theFrame)
+		-- Global frame names are shared across every addon, so a generic one like
+		-- "CountFrame" would collide with the original Spy the moment both are
+		-- loaded. Prefixed for the same reason every other frame here is.
+		theFrame.CountFrame = CreateFrame("Frame", "PingCountFrame", theFrame)
 		theFrame.CountFrame:SetPoint("RIGHT", theFrame.StatsButton,"LEFT", -4, 0)
-		theFrame.CountFrame:SetHeight(Spy.db.profile.MainWindow.RowHeight)
+		theFrame.CountFrame:SetHeight(Ping.db.profile.MainWindow.RowHeight)
 		theFrame.CountFrame.Text = CountFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		theFrame.CountFrame.Text:SetPoint("RIGHT", theFrame.StatsButton,"LEFT", -4, 0)
-		theFrame.CountFrame.Text:SetFont(select(1, GameFontNormal:GetFont()) or STANDARD_TEXT_FONT or "Fonts\FRIZQT.TTF", Spy.db.profile.MainWindow.RowHeight * 0.85, "OUTLINE")
+		theFrame.CountFrame.Text:SetFont(select(1, GameFontNormal:GetFont()) or STANDARD_TEXT_FONT or "Fonts\FRIZQT.TTF", Ping.db.profile.MainWindow.RowHeight * 0.85, "OUTLINE")
 		theFrame.CountFrame.Text:SetJustifyH("RIGHT")
 		theFrame.CountFrame.Text:SetJustifyV("MIDDLE")
 		theFrame.CountFrame.Text:SetTextColor(1, 1, 1, 1)
@@ -802,9 +805,9 @@ function Spy:CreateMainWindow()
 		theFrame.CountFrame.Text:SetScale(1)
 	
 		theFrame.CountButton = CreateFrame("Button", nil, theFrame)
-		theFrame.CountButton:SetNormalTexture("Interface\\AddOns\\Spy\\Textures\\button-crosshairs.tga")
-		theFrame.CountButton:SetPushedTexture("Interface\\AddOns\\Spy\\Textures\\button-crosshairs.tga")
-		theFrame.CountButton:SetHighlightTexture("Interface\\AddOns\\Spy\\Textures\\button-highlight.tga")
+		theFrame.CountButton:SetNormalTexture("Interface\\AddOns\\Ping\\Textures\\button-crosshairs.tga")
+		theFrame.CountButton:SetPushedTexture("Interface\\AddOns\\Ping\\Textures\\button-crosshairs.tga")
+		theFrame.CountButton:SetHighlightTexture("Interface\\AddOns\\Ping\\Textures\\button-highlight.tga")
 		theFrame.CountButton:SetWidth(12)
 		theFrame.CountButton:SetHeight(12)
 		theFrame.CountButton:SetAlpha(.0)		
@@ -820,96 +823,96 @@ function Spy:CreateMainWindow()
 		end)
 		theFrame.CountButton:SetFrameLevel(theFrame.CountButton:GetFrameLevel() + 1)
 		
-		Spy.MainWindow.Rows = {}
-		Spy.MainWindow.CurRows = 0
+		Ping.MainWindow.Rows = {}
+		Ping.MainWindow.CurRows = 0
 
-		for i = 1, Spy.db.profile.ResizeSpyLimit do
-			Spy:CreateRow(i)
+		for i = 1, Ping.db.profile.ResizePingLimit do
+			Ping:CreateRow(i)
 		end
 
-		Spy:RestoreMainWindowPosition(Spy.db.profile.MainWindow.Position.x, Spy.db.profile.MainWindow.Position.y, Spy.db.profile.MainWindow.Position.w, 34)
-		Spy:SetupMainWindowButtons()
-		Spy:ResizeMainWindow()
-		Spy:ScheduleRepeatingTimer("ManageExpirations", 10, true)
+		Ping:RestoreMainWindowPosition(Ping.db.profile.MainWindow.Position.x, Ping.db.profile.MainWindow.Position.y, Ping.db.profile.MainWindow.Position.w, 34)
+		Ping:SetupMainWindowButtons()
+		Ping:ResizeMainWindow()
+		Ping:ScheduleRepeatingTimer("ManageExpirations", 10, true)
 		-- Ticks the enemy cooldown countdowns. Only redraws while at least one
 		-- tracked cooldown is actually running, so it idles at zero cost.
-		Spy:ScheduleRepeatingTimer("TickCooldowns", 1)
-		Spy:InitOrder()
+		Ping:ScheduleRepeatingTimer("TickCooldowns", 1)
+		Ping:InitOrder()
 
-		Spy:ApplyWindowLocks()
-		Spy:ApplyWindowStyle()
+		Ping:ApplyWindowLocks()
+		Ping:ApplyWindowStyle()
 	end
 
-	if not Spy.AlertWindow then
-		Spy.AlertWindow = CreateFrame("Frame", "Spy_AlertWindow", UIParent, "BackdropTemplate")
-		Spy.AlertWindow:ClearAllPoints()
---		Spy.AlertWindow:SetPoint("TOP", UIParent, "TOP", 0, -140)
-		Spy.AlertWindow:SetClampedToScreen(true)
-		Spy:UpdateAlertWindow()
-		Spy.AlertWindow:SetHeight(42)
-		Spy.AlertWindow:SetBackdrop({
---			bgFile = "Interface\\AddOns\\Spy\\Textures\\alert-background.tga", tile = true, tileSize = 8,
---			edgeFile = "Interface\\AddOns\\Spy\\Textures\\alert-industrial.tga", edgeSize = 8,
+	if not Ping.AlertWindow then
+		Ping.AlertWindow = CreateFrame("Frame", "Ping_AlertWindow", UIParent, "BackdropTemplate")
+		Ping.AlertWindow:ClearAllPoints()
+--		Ping.AlertWindow:SetPoint("TOP", UIParent, "TOP", 0, -140)
+		Ping.AlertWindow:SetClampedToScreen(true)
+		Ping:UpdateAlertWindow()
+		Ping.AlertWindow:SetHeight(42)
+		Ping.AlertWindow:SetBackdrop({
+--			bgFile = "Interface\\AddOns\\Ping\\Textures\\alert-background.tga", tile = true, tileSize = 8,
+--			edgeFile = "Interface\\AddOns\\Ping\\Textures\\alert-industrial.tga", edgeSize = 8,
 --			insets = { left = 8, right = 8, top = 8, bottom = 8 },
 			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 8,edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 8,
 			insets = { left = 2, right = 2, top = 2, bottom = 2 },
 		})
-		Spy.Colors:RegisterBackground("Alert", "Background", Spy.AlertWindow)
+		Ping.Colors:RegisterBackground("Alert", "Background", Ping.AlertWindow)
 
-		Spy.AlertWindow.Icon = CreateFrame("Frame", nil, Spy.AlertWindow, "BackdropTemplate")
-		Spy.AlertWindow.Icon:ClearAllPoints()
-		Spy.AlertWindow.Icon:SetPoint("TOPLEFT", Spy.AlertWindow, "TOPLEFT", 6, -5)
-		Spy.AlertWindow.Icon:SetWidth(32)
-		Spy.AlertWindow.Icon:SetHeight(32)
+		Ping.AlertWindow.Icon = CreateFrame("Frame", nil, Ping.AlertWindow, "BackdropTemplate")
+		Ping.AlertWindow.Icon:ClearAllPoints()
+		Ping.AlertWindow.Icon:SetPoint("TOPLEFT", Ping.AlertWindow, "TOPLEFT", 6, -5)
+		Ping.AlertWindow.Icon:SetWidth(32)
+		Ping.AlertWindow.Icon:SetHeight(32)
 
-		Spy.AlertWindow.Title = Spy.AlertWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		Spy.AlertWindow.Title:SetPoint("TOPLEFT", Spy.AlertWindow, "TOPLEFT", 42, -3)
---		Spy.AlertWindow.Title:SetJustifyH("LEFT")
-		Spy.AlertWindow.Title:SetHeight(Spy.db.profile.MainWindow.TextHeight)
-		Spy:AddFontString(Spy.AlertWindow.Title)
+		Ping.AlertWindow.Title = Ping.AlertWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		Ping.AlertWindow.Title:SetPoint("TOPLEFT", Ping.AlertWindow, "TOPLEFT", 42, -3)
+--		Ping.AlertWindow.Title:SetJustifyH("LEFT")
+		Ping.AlertWindow.Title:SetHeight(Ping.db.profile.MainWindow.TextHeight)
+		Ping:AddFontString(Ping.AlertWindow.Title)
 
-		Spy.AlertWindow.Name = Spy.AlertWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		Spy.AlertWindow.Name:SetPoint("TOPLEFT", Spy.AlertWindow, "TOPLEFT", 42, -15)
---		Spy.AlertWindow.Name:SetJustifyH("LEFT")
-		Spy.AlertWindow.Name:SetHeight(Spy.db.profile.MainWindow.TextHeight)
-		Spy:AddFontString(Spy.AlertWindow.Name)
-		Spy:SetFontSize(Spy.AlertWindow.Name, Spy.db.profile.AlertWindow.NameSize)
+		Ping.AlertWindow.Name = Ping.AlertWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		Ping.AlertWindow.Name:SetPoint("TOPLEFT", Ping.AlertWindow, "TOPLEFT", 42, -15)
+--		Ping.AlertWindow.Name:SetJustifyH("LEFT")
+		Ping.AlertWindow.Name:SetHeight(Ping.db.profile.MainWindow.TextHeight)
+		Ping:AddFontString(Ping.AlertWindow.Name)
+		Ping:SetFontSize(Ping.AlertWindow.Name, Ping.db.profile.AlertWindow.NameSize)
 
-		Spy.AlertWindow.Location = Spy.AlertWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-		Spy.AlertWindow.Location:SetPoint("TOPLEFT", Spy.AlertWindow, "TOPLEFT", 42, -26)
---		Spy.AlertWindow.Location:SetJustifyH("LEFT")
-		Spy.AlertWindow.Location:SetHeight(Spy.db.profile.MainWindow.TextHeight)
-		Spy:AddFontString(Spy.AlertWindow.Location)
-		Spy:SetFontSize(Spy.AlertWindow.Location, Spy.db.profile.AlertWindow.LocationSize)
+		Ping.AlertWindow.Location = Ping.AlertWindow:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		Ping.AlertWindow.Location:SetPoint("TOPLEFT", Ping.AlertWindow, "TOPLEFT", 42, -26)
+--		Ping.AlertWindow.Location:SetJustifyH("LEFT")
+		Ping.AlertWindow.Location:SetHeight(Ping.db.profile.MainWindow.TextHeight)
+		Ping:AddFontString(Ping.AlertWindow.Location)
+		Ping:SetFontSize(Ping.AlertWindow.Location, Ping.db.profile.AlertWindow.LocationSize)
 
-		Spy.AlertWindow:Hide()
+		Ping.AlertWindow:Hide()
 	end
 
-	if not Spy.MapNoteList then
-		Spy.MapNoteList = {}
-		for i = 1, Spy.MapNoteLimit do
-			Spy:CreateMapNote(i)
+	if not Ping.MapNoteList then
+		Ping.MapNoteList = {}
+		for i = 1, Ping.MapNoteLimit do
+			Ping:CreateMapNote(i)
 		end
 	end
 
-	if not Spy.MapTooltip then
-		Spy.MapTooltip = CreateFrame("GameTooltip", "Spy_GameTooltip", nil, "GameTooltipTemplate")
+	if not Ping.MapTooltip then
+		Ping.MapTooltip = CreateFrame("GameTooltip", "Ping_GameTooltip", nil, "GameTooltipTemplate")
 	end
 
-	Spy:SetCurrentList(1)
-	if not Spy.db.profile.Enabled or not Spy.db.profile.MainWindowVis then
-		Spy.MainWindow:Hide()
+	Ping:SetCurrentList(1)
+	if not Ping.db.profile.Enabled or not Ping.db.profile.MainWindowVis then
+		Ping.MainWindow:Hide()
 	end
 end
 
-function Spy:SetBar(num, name, desc, value, colorgroup, colorclass, tooltipData, opacity)
+function Ping:SetBar(num, name, desc, value, colorgroup, colorclass, tooltipData, opacity)
 	local rowmin = 1
 
-	if num < rowmin or not Spy.MainWindow.Rows[num] then
+	if num < rowmin or not Ping.MainWindow.Rows[num] then
 		return
 	end
 
-	local Row = Spy.MainWindow.Rows[num]
+	local Row = Ping.MainWindow.Rows[num]
 	Row.StatusBar:SetValue(value)
 	Row.Name = name
 	Row.BaseDesc = desc
@@ -917,47 +920,47 @@ function Spy:SetBar(num, name, desc, value, colorgroup, colorclass, tooltipData,
 	Row.TooltipData = tooltipData
 
 	if colorgroup and colorclass and type(colorclass) == "string" then
-		Spy.Colors:UnregisterItem(Row.StatusBar)
+		Ping.Colors:UnregisterItem(Row.StatusBar)
 		-- BarOpacity lets a look preset hide the class-coloured fill entirely
 		-- (flat preset) while keeping the name/level text.
-		local barOpacity = Spy.db.profile.BarOpacity
+		local barOpacity = Ping.db.profile.BarOpacity
 		if barOpacity == nil then barOpacity = 1 end
 		local Multi = { r = 1, b = 1, g = 1, a = (opacity or 1) * barOpacity }
-		Spy.Colors:RegisterTexture(colorgroup, colorclass, Row.StatusBar, Multi)
+		Ping.Colors:RegisterTexture(colorgroup, colorclass, Row.StatusBar, Multi)
 	end
 
-	Spy:ApplyRowText(Row)
+	Ping:ApplyRowText(Row)
 end
 
 -- Renders a row's text, name colour, healer marker, left-edge accent and
 -- non-healer dimming from the stored Row.Name / Row.BaseDesc. Called on every
 -- SetBar so all target-picker styling stays live with the profile settings.
-function Spy:ApplyRowText(Row)
+function Ping:ApplyRowText(Row)
 	local name = Row.Name or ""
 	local desc = Row.BaseDesc or ""
 	local opacity = Row.Opacity or 1
-	local playerData = SpyPerCharDB.PlayerData[name]
-	local isHealer = Spy:IsHealer(playerData)
-	local isKoS = SpyPerCharDB.KOSData[name] ~= nil
+	local playerData = PingPerCharDB.PlayerData[name]
+	local isHealer = Ping:IsHealer(playerData)
+	local isKoS = PingPerCharDB.KOSData[name] ~= nil
 
 	-- Decide the left-edge accent up front (green for healers, red for KoS) so
 	-- the name and any left marker can be inset to clear the 3px stripe.
 	local edgeColor
-	if isHealer and Spy.db.profile.MarkHealers and Spy.db.profile.HealerGreenEdge then
-		edgeColor = Spy.Colors:GetColor("Spy", "Healer Edge")
-	elseif isKoS and Spy.db.profile.PrioritiseKoS then
-		edgeColor = Spy.Colors:GetColor("Spy", "KoS Edge")
+	if isHealer and Ping.db.profile.MarkHealers and Ping.db.profile.HealerGreenEdge then
+		edgeColor = Ping.Colors:GetColor("Ping", "Healer Edge")
+	elseif isKoS and Ping.db.profile.PrioritiseKoS then
+		edgeColor = Ping.Colors:GetColor("Ping", "KoS Edge")
 	end
 	local leftInset = edgeColor and 7 or 2
 
 	-- Enemy defensive cooldown countdown, appended to the right-hand text so it
 	-- sits just right of the level/class without touching the nameplate.
-	local cdLeft, cdShort = Spy:GetCooldownRemaining(playerData)
-	if cdLeft and Spy.db.profile.TrackCooldowns then
+	local cdLeft, cdShort = Ping:GetCooldownRemaining(playerData)
+	if cdLeft and Ping.db.profile.TrackCooldowns then
 		local mins = math.floor(cdLeft / 60)
 		local secs = math.floor(cdLeft % 60)
 		local clock = (mins > 0) and format("%d:%02d", mins, secs) or format("%ds", secs)
-		local cc = Spy.Colors:GetColor("Spy", "Cooldown")
+		local cc = Ping.Colors:GetColor("Ping", "Cooldown")
 		local hex = cc and format("%02x%02x%02x", cc.r * 255, cc.g * 255, cc.b * 255) or "ffd200"
 		desc = desc .. format("  |cff%s%s %s|r", hex, cdShort or "CD", clock)
 	end
@@ -966,10 +969,10 @@ function Spy:ApplyRowText(Row)
 	Row.RightText:SetText(desc)
 
 	-- Name colour: class-coloured (flat/compact look) or the Bar Text colour.
-	local barText = Spy.db.profile.Colors.Bar["Bar Text"]
-	if Spy.db.profile.ClassColoredNames then
+	local barText = Ping.db.profile.Colors.Bar["Bar Text"]
+	if Ping.db.profile.ClassColoredNames then
 		local class = playerData and playerData.class
-		local cc = class and Spy.Colors:GetColor("Class", class)
+		local cc = class and Ping.Colors:GetColor("Class", class)
 		if cc then
 			Row.LeftText:SetTextColor(cc.r, cc.g, cc.b, opacity)
 		else
@@ -983,12 +986,12 @@ function Spy:ApplyRowText(Row)
 	Row.RightText:SetTextColor(barText.r, barText.g, barText.b, opacity)
 
 	-- Healer marker.
-	local showMarker = isHealer and Spy.db.profile.MarkHealers
-	local markerSide = Spy.db.profile.HealerMarkerSide or "right"
+	local showMarker = isHealer and Ping.db.profile.MarkHealers
+	local markerSide = Ping.db.profile.HealerMarkerSide or "right"
 	local markerReserve = 0
 	if Row.HealerMarker then
 		if showMarker then
-			local style = Spy.db.profile.HealerMarkerStyle or "cross"
+			local style = Ping.db.profile.HealerMarkerStyle or "cross"
 			local glyph = "+"
 			if style == "asterisk" then
 				glyph = "*"
@@ -996,7 +999,7 @@ function Spy:ApplyRowText(Row)
 				glyph = "\226\151\143" -- ● U+25CF
 			end
 			Row.HealerMarker:SetText(glyph)
-			local mc = Spy.Colors:GetColor("Spy", "Healer Marker")
+			local mc = Ping.Colors:GetColor("Ping", "Healer Marker")
 			if mc then Row.HealerMarker:SetTextColor(mc.r, mc.g, mc.b, 1) end
 			Row.HealerMarker:ClearAllPoints()
 			if markerSide == "left" then
@@ -1045,7 +1048,7 @@ function Spy:ApplyRowText(Row)
 	-- Dim non-healers so the healers you want to focus stand out. Never dims
 	-- KoS rows. Applied to the whole StatusBar (its children inherit alpha).
 	local rowAlpha = 1
-	if Spy.db.profile.DimNonHealers and Spy.db.profile.MarkHealers and not isHealer and not isKoS then
+	if Ping.db.profile.DimNonHealers and Ping.db.profile.MarkHealers and not isHealer and not isKoS then
 		rowAlpha = 0.35
 	end
 	Row.StatusBar:SetAlpha(rowAlpha)
@@ -1054,25 +1057,25 @@ end
 -- Applies a look preset by setting the handful of underlying knobs it drives,
 -- then restyling live. classbars = stock class-coloured bars; flat = no fill,
 -- class-coloured names; compact = denser rows.
-function Spy:ApplyLookPreset(preset)
-	Spy.db.profile.LookPreset = preset
+function Ping:ApplyLookPreset(preset)
+	Ping.db.profile.LookPreset = preset
 	if preset == "flat" then
-		Spy.db.profile.ClassColoredNames = true
-		Spy.db.profile.BarOpacity = 0
-		Spy.db.profile.MainWindow.RowHeight = 14
+		Ping.db.profile.ClassColoredNames = true
+		Ping.db.profile.BarOpacity = 0
+		Ping.db.profile.MainWindow.RowHeight = 14
 	elseif preset == "compact" then
-		Spy.db.profile.ClassColoredNames = false
-		Spy.db.profile.BarOpacity = 1
-		Spy.db.profile.MainWindow.RowHeight = 10
+		Ping.db.profile.ClassColoredNames = false
+		Ping.db.profile.BarOpacity = 1
+		Ping.db.profile.MainWindow.RowHeight = 10
 	else -- "classbars"
-		Spy.db.profile.ClassColoredNames = false
-		Spy.db.profile.BarOpacity = 1
-		Spy.db.profile.MainWindow.RowHeight = 14
+		Ping.db.profile.ClassColoredNames = false
+		Ping.db.profile.BarOpacity = 1
+		Ping.db.profile.MainWindow.RowHeight = 14
 	end
-	if Spy.MainWindow and Spy.MainWindow.Rows then
-		Spy:BarsChanged()
+	if Ping.MainWindow and Ping.MainWindow.Rows then
+		Ping:BarsChanged()
 	end
-	Spy:RefreshCurrentList()
+	Ping:RefreshCurrentList()
 end
 
 -- ============================================================
@@ -1107,19 +1110,19 @@ local function rgb(hex, a)
 end
 
 -- Each entry is { branch, slot, colour }. Branch matters: "Window" holds the
--- backdrop and frame the eye actually reads, "Spy" holds the accents.
-Spy.LookThemes = {
+-- backdrop and frame the eye actually reads, "Ping" holds the accents.
+Ping.LookThemes = {
 	classic = {
 		name = "Classic Gold",
 		colors = {
 			{ "Window", "Background",   rgb("1a1712") },
 			{ "Window", "Title",        rgb("c8a04a") },
 			{ "Window", "Title Text",   rgb("ffd100") },
-			{ "Spy",    "Title Bar",    rgb("2e2412") },
-			{ "Spy",    "Window Border",rgb("c8a04a") },
-			{ "Spy",    "Healer Marker",rgb("4fe27a") },
-			{ "Spy",    "Healer Edge",  rgb("4fe27a") },
-			{ "Spy",    "Cooldown",     rgb("ffd100") },
+			{ "Ping",    "Title Bar",    rgb("2e2412") },
+			{ "Ping",    "Window Border",rgb("c8a04a") },
+			{ "Ping",    "Healer Marker",rgb("4fe27a") },
+			{ "Ping",    "Healer Edge",  rgb("4fe27a") },
+			{ "Ping",    "Cooldown",     rgb("ffd100") },
 		},
 	},
 	midnight = {
@@ -1128,11 +1131,11 @@ Spy.LookThemes = {
 			{ "Window", "Background",   rgb("0e1220") },
 			{ "Window", "Title",        rgb("4f7fd6") },
 			{ "Window", "Title Text",   rgb("aaccff") },
-			{ "Spy",    "Title Bar",    rgb("1a2440") },
-			{ "Spy",    "Window Border",rgb("4f7fd6") },
-			{ "Spy",    "Healer Marker",rgb("66d9ff") },
-			{ "Spy",    "Healer Edge",  rgb("66d9ff") },
-			{ "Spy",    "Cooldown",     rgb("a6c0ff") },
+			{ "Ping",    "Title Bar",    rgb("1a2440") },
+			{ "Ping",    "Window Border",rgb("4f7fd6") },
+			{ "Ping",    "Healer Marker",rgb("66d9ff") },
+			{ "Ping",    "Healer Edge",  rgb("66d9ff") },
+			{ "Ping",    "Cooldown",     rgb("a6c0ff") },
 		},
 	},
 	horde = {
@@ -1141,11 +1144,11 @@ Spy.LookThemes = {
 			{ "Window", "Background",   rgb("1c0e0e") },
 			{ "Window", "Title",        rgb("c8231e") },
 			{ "Window", "Title Text",   rgb("ff8a6a") },
-			{ "Spy",    "Title Bar",    rgb("4a1010") },
-			{ "Spy",    "Window Border",rgb("c8231e") },
-			{ "Spy",    "Healer Marker",rgb("8ce65a") },
-			{ "Spy",    "Healer Edge",  rgb("8ce65a") },
-			{ "Spy",    "Cooldown",     rgb("ff8c1a") },
+			{ "Ping",    "Title Bar",    rgb("4a1010") },
+			{ "Ping",    "Window Border",rgb("c8231e") },
+			{ "Ping",    "Healer Marker",rgb("8ce65a") },
+			{ "Ping",    "Healer Edge",  rgb("8ce65a") },
+			{ "Ping",    "Cooldown",     rgb("ff8c1a") },
 		},
 	},
 	alliance = {
@@ -1154,11 +1157,11 @@ Spy.LookThemes = {
 			{ "Window", "Background",   rgb("0d1220") },
 			{ "Window", "Title",        rgb("d4af37") },
 			{ "Window", "Title Text",   rgb("9fd0ff") },
-			{ "Spy",    "Title Bar",    rgb("12224a") },
-			{ "Spy",    "Window Border",rgb("d4af37") },
-			{ "Spy",    "Healer Marker",rgb("8cd9ff") },
-			{ "Spy",    "Healer Edge",  rgb("8cd9ff") },
-			{ "Spy",    "Cooldown",     rgb("d4af37") },
+			{ "Ping",    "Title Bar",    rgb("12224a") },
+			{ "Ping",    "Window Border",rgb("d4af37") },
+			{ "Ping",    "Healer Marker",rgb("8cd9ff") },
+			{ "Ping",    "Healer Edge",  rgb("8cd9ff") },
+			{ "Ping",    "Cooldown",     rgb("d4af37") },
 		},
 	},
 	emerald = {
@@ -1167,11 +1170,11 @@ Spy.LookThemes = {
 			{ "Window", "Background",   rgb("0c1a12") },
 			{ "Window", "Title",        rgb("3fd67f") },
 			{ "Window", "Title Text",   rgb("8cffbf") },
-			{ "Spy",    "Title Bar",    rgb("12402a") },
-			{ "Spy",    "Window Border",rgb("3fd67f") },
-			{ "Spy",    "Healer Marker",rgb("5cff99") },
-			{ "Spy",    "Healer Edge",  rgb("5cff99") },
-			{ "Spy",    "Cooldown",     rgb("ccff66") },
+			{ "Ping",    "Title Bar",    rgb("12402a") },
+			{ "Ping",    "Window Border",rgb("3fd67f") },
+			{ "Ping",    "Healer Marker",rgb("5cff99") },
+			{ "Ping",    "Healer Edge",  rgb("5cff99") },
+			{ "Ping",    "Cooldown",     rgb("ccff66") },
 		},
 	},
 	mono = {
@@ -1180,68 +1183,68 @@ Spy.LookThemes = {
 			{ "Window", "Background",   rgb("161616") },
 			{ "Window", "Title",        rgb("b4b4b4") },
 			{ "Window", "Title Text",   rgb("ffffff") },
-			{ "Spy",    "Title Bar",    rgb("2c2c2c") },
-			{ "Spy",    "Window Border",rgb("b4b4b4") },
-			{ "Spy",    "Healer Marker",rgb("e6e6e6") },
-			{ "Spy",    "Healer Edge",  rgb("e6e6e6") },
-			{ "Spy",    "Cooldown",     rgb("999999") },
+			{ "Ping",    "Title Bar",    rgb("2c2c2c") },
+			{ "Ping",    "Window Border",rgb("b4b4b4") },
+			{ "Ping",    "Healer Marker",rgb("e6e6e6") },
+			{ "Ping",    "Healer Edge",  rgb("e6e6e6") },
+			{ "Ping",    "Cooldown",     rgb("999999") },
 		},
 	},
 }
 
-function Spy:ApplyLookTheme(key)
-	local theme = Spy.LookThemes[key]
+function Ping:ApplyLookTheme(key)
+	local theme = Ping.LookThemes[key]
 	if not theme then return end
-	Spy.db.profile.LookTheme = key
+	Ping.db.profile.LookTheme = key
 
 	for _, entry in ipairs(theme.colors) do
 		local branch, slot, colour = entry[1], entry[2], entry[3]
-		local target = Spy.db.profile.Colors[branch]
+		local target = Ping.db.profile.Colors[branch]
 		if target and target[slot] then
 			-- Through SetColor, not a raw write: registered widgets only repaint
 			-- when told to, and Window/Background is one of them.
-			Spy.Colors:SetColor(branch, slot, colour)
+			Ping.Colors:SetColor(branch, slot, colour)
 		end
 	end
 
 	-- The themed title bar only draws in the solid style, so a theme switches to
 	-- it rather than silently doing nothing on the classic style.
-	Spy.db.profile.TitleBarStyle = "solid"
-	Spy:ApplyWindowStyle()
-	Spy:UpdateMainWindow()
-	Spy:RefreshCurrentList()
+	Ping.db.profile.TitleBarStyle = "solid"
+	Ping:ApplyWindowStyle()
+	Ping:UpdateMainWindow()
+	Ping:RefreshCurrentList()
 end
 
-function Spy:AutomaticallyResize()
-	local detected = Spy.ListAmountDisplayed
-	if detected > Spy.db.profile.ResizeSpyLimit then detected = Spy.db.profile.ResizeSpyLimit end
-	local height = 35 + (detected * (Spy.db.profile.MainWindow.RowHeight + Spy.db.profile.MainWindow.RowSpacing))
-	Spy.MainWindow.CurRows = detected
-	if not Spy.db.profile.InvertSpy then
+function Ping:AutomaticallyResize()
+	local detected = Ping.ListAmountDisplayed
+	if detected > Ping.db.profile.ResizePingLimit then detected = Ping.db.profile.ResizePingLimit end
+	local height = 35 + (detected * (Ping.db.profile.MainWindow.RowHeight + Ping.db.profile.MainWindow.RowSpacing))
+	Ping.MainWindow.CurRows = detected
+	if not Ping.db.profile.InvertPing then
 		if not InCombatLockdown() then 
-			Spy:RestoreMainWindowPosition(Spy.MainWindow:GetLeft(), Spy.MainWindow:GetTop(), Spy.MainWindow:GetWidth(), height)
+			Ping:RestoreMainWindowPosition(Ping.MainWindow:GetLeft(), Ping.MainWindow:GetTop(), Ping.MainWindow:GetWidth(), height)
 		end
 	else
 		if not InCombatLockdown() then 
-			Spy:RestoreMainWindowPosition(Spy.MainWindow:GetLeft(), Spy.MainWindow:GetBottom(), Spy.MainWindow:GetWidth(), height)
+			Ping:RestoreMainWindowPosition(Ping.MainWindow:GetLeft(), Ping.MainWindow:GetBottom(), Ping.MainWindow:GetWidth(), height)
 		end
 	end	
 end
 
-function Spy:ManageBarsDisplayed()
-	local detected = Spy.ListAmountDisplayed
-	local bars = math.floor((Spy.MainWindow:GetHeight() - 34) / (Spy.db.profile.MainWindow.RowHeight + Spy.db.profile.MainWindow.RowSpacing))
+function Ping:ManageBarsDisplayed()
+	local detected = Ping.ListAmountDisplayed
+	local bars = math.floor((Ping.MainWindow:GetHeight() - 34) / (Ping.db.profile.MainWindow.RowHeight + Ping.db.profile.MainWindow.RowSpacing))
 	if bars > detected then
 		bars = detected
 	end
-	if bars > Spy.db.profile.ResizeSpyLimit then
-		bars = Spy.db.profile.ResizeSpyLimit
+	if bars > Ping.db.profile.ResizePingLimit then
+		bars = Ping.db.profile.ResizePingLimit
 	end	
-	Spy.MainWindow.CurRows = bars
+	Ping.MainWindow.CurRows = bars
 
 	if not InCombatLockdown() then
-		for i,row in pairs(Spy.MainWindow.Rows) do	
-			if i <= Spy.MainWindow.CurRows then
+		for i,row in pairs(Ping.MainWindow.Rows) do	
+			if i <= Ping.MainWindow.CurRows then
 				row:Show()
 			else
 				row:Hide()
@@ -1250,64 +1253,64 @@ function Spy:ManageBarsDisplayed()
 	end
 end
 
-function Spy:ResizeMainWindow()
-	if Spy.MainWindow.Rows[0] then
-		Spy.MainWindow.Rows[0]:Hide()
+function Ping:ResizeMainWindow()
+	if Ping.MainWindow.Rows[0] then
+		Ping.MainWindow.Rows[0]:Hide()
 	end
 
-	local CurWidth = Spy.MainWindow:GetWidth() - 4
-	Spy.MainWindow.Title:SetWidth(CurWidth - 75)
-	for i,row in pairs(Spy.MainWindow.Rows) do
+	local CurWidth = Ping.MainWindow:GetWidth() - 4
+	Ping.MainWindow.Title:SetWidth(CurWidth - 75)
+	for i,row in pairs(Ping.MainWindow.Rows) do
 		row:SetWidth(CurWidth)	
 	end
 
-	Spy:ManageBarsDisplayed()
+	Ping:ManageBarsDisplayed()
 end
 
-function Spy:SetCurrentList(mode)
-	if not mode or mode > #Spy.ListTypes then
+function Ping:SetCurrentList(mode)
+	if not mode or mode > #Ping.ListTypes then
 		mode = 1
 	end
-	Spy.db.profile.CurrentList = mode
-	Spy:ManageExpirations()
+	Ping.db.profile.CurrentList = mode
+	Ping:ManageExpirations()
 
-	Spy:UpdateWindowTitle()
-	Spy:RefreshCurrentList()
+	Ping:UpdateWindowTitle()
+	Ping:RefreshCurrentList()
 end
 
 -- Title reflects the active list, and flags the healer-only filter so a short
 -- list is never mistaken for "no enemies around".
-function Spy:UpdateWindowTitle()
-	if not Spy.MainWindow or not Spy.MainWindow.Title then return end
-	local mode = Spy.db.profile.CurrentList or 1
-	local data = Spy.ListTypes[mode]
+function Ping:UpdateWindowTitle()
+	if not Ping.MainWindow or not Ping.MainWindow.Title then return end
+	local mode = Ping.db.profile.CurrentList or 1
+	local data = Ping.ListTypes[mode]
 	if not data then return end
 	local title = data[1]
-	if Spy.db.profile.HealerOnlyFilter and mode == 1 then
-		local hc = Spy.db.profile.Colors["Spy"]["Healer Marker"]
+	if Ping.db.profile.HealerOnlyFilter and mode == 1 then
+		local hc = Ping.db.profile.Colors["Ping"]["Healer Marker"]
 		local hex = hc and format("%02x%02x%02x", hc.r * 255, hc.g * 255, hc.b * 255) or "4fe27a"
 		title = title .. format(" |cff%s(%s)|r", hex, L["HealersOnlyTag"])
 	end
-	Spy.MainWindow.Title:SetText(title)
+	Ping.MainWindow.Title:SetText(title)
 end
 
-function Spy:MainWindowNextMode()
-	local mode = Spy.db.profile.CurrentList + 1
-	if mode > table.maxn(Spy.ListTypes) then
+function Ping:MainWindowNextMode()
+	local mode = Ping.db.profile.CurrentList + 1
+	if mode > table.maxn(Ping.ListTypes) then
 		mode = 1
 	end
-	Spy:SetCurrentList(mode)
+	Ping:SetCurrentList(mode)
 end
 
-function Spy:MainWindowPrevMode()
-	local mode = Spy.db.profile.CurrentList - 1
+function Ping:MainWindowPrevMode()
+	local mode = Ping.db.profile.CurrentList - 1
 	if mode == 0 then
-		mode = table.maxn(Spy.ListTypes)
+		mode = table.maxn(Ping.ListTypes)
 	end
-	Spy:SetCurrentList(mode)
+	Ping:SetCurrentList(mode)
 end
 
-function Spy:MainWindowScroll(delta)
+function Ping:MainWindowScroll(delta)
 --  Work in progress to scroll the MainWindow
 --	DEFAULT_CHAT_FRAME:AddMessage(delta)
 	if delta > 0 then
@@ -1317,59 +1320,59 @@ function Spy:MainWindowScroll(delta)
 	end
 end
 
-function Spy:SaveMainWindowPosition()
-	Spy.db.profile.MainWindow.Position.x = Spy.MainWindow:GetLeft()
-	if not Spy.db.profile.InvertSpy then 
-		Spy.db.profile.MainWindow.Position.y = Spy.MainWindow:GetTop()
+function Ping:SaveMainWindowPosition()
+	Ping.db.profile.MainWindow.Position.x = Ping.MainWindow:GetLeft()
+	if not Ping.db.profile.InvertPing then 
+		Ping.db.profile.MainWindow.Position.y = Ping.MainWindow:GetTop()
     else 
-		Spy.db.profile.MainWindow.Position.y = Spy.MainWindow:GetBottom()
+		Ping.db.profile.MainWindow.Position.y = Ping.MainWindow:GetBottom()
     end
-	Spy.db.profile.MainWindow.Position.w = Spy.MainWindow:GetWidth()
-	Spy.db.profile.MainWindow.Position.h = Spy.MainWindow:GetHeight()
-	local h = Spy.MainWindow:GetHeight()
+	Ping.db.profile.MainWindow.Position.w = Ping.MainWindow:GetWidth()
+	Ping.db.profile.MainWindow.Position.h = Ping.MainWindow:GetHeight()
+	local h = Ping.MainWindow:GetHeight()
 end
 
-function Spy:RestoreMainWindowPosition(x, y, width, height)
-	Spy.MainWindow:ClearAllPoints()
-	if not Spy.db.profile.InvertSpy then 	
-		Spy.MainWindow:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
+function Ping:RestoreMainWindowPosition(x, y, width, height)
+	Ping.MainWindow:ClearAllPoints()
+	if not Ping.db.profile.InvertPing then 	
+		Ping.MainWindow:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
 	else		
-		Spy.MainWindow:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)	
+		Ping.MainWindow:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)	
 	end
-	Spy.MainWindow:SetWidth(width)
-	for i,row in pairs(Spy.MainWindow.Rows) do
+	Ping.MainWindow:SetWidth(width)
+	for i,row in pairs(Ping.MainWindow.Rows) do
 		row:SetWidth(width -4) 
 	end
-	Spy.MainWindow:SetHeight(height)
+	Ping.MainWindow:SetHeight(height)
 end
 
-function Spy:SaveAlertWindowPosition()
-	Spy.db.profile.AlertWindow.Position.x = Spy.AlertWindow:GetLeft()
-	Spy.db.profile.AlertWindow.Position.y = Spy.AlertWindow:GetTop()
+function Ping:SaveAlertWindowPosition()
+	Ping.db.profile.AlertWindow.Position.x = Ping.AlertWindow:GetLeft()
+	Ping.db.profile.AlertWindow.Position.y = Ping.AlertWindow:GetTop()
 end
 
-function Spy:RestoreAlertWindowPosition(x, y)
-	Spy.AlertWindow:ClearAllPoints()
-	Spy.AlertWindow:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
+function Ping:RestoreAlertWindowPosition(x, y)
+	Ping.AlertWindow:ClearAllPoints()
+	Ping.AlertWindow:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", x, y)
 end
 
-function Spy:UpdateMainWindow()
-	if Spy.InInstance then
-		Spy.MainWindow:SetAlpha(Spy.db.profile.MainWindow.AlphaBG)
+function Ping:UpdateMainWindow()
+	if Ping.InInstance then
+		Ping.MainWindow:SetAlpha(Ping.db.profile.MainWindow.AlphaBG)
 	else
-		Spy.MainWindow:SetAlpha(Spy.db.profile.MainWindow.Alpha)
+		Ping.MainWindow:SetAlpha(Ping.db.profile.MainWindow.Alpha)
 	end
 end
 
 -- Position lock keeps the saved spot but refuses drags (SetMovable(false) makes
 -- the existing StartMoving() calls no-ops). Size lock hides the resize grips.
 -- Both layer cleanly on top of the legacy "Locked" toggle.
-function Spy:ApplyWindowLocks()
-	local frame = Spy.MainWindow
+function Ping:ApplyWindowLocks()
+	local frame = Ping.MainWindow
 	if not frame then return end
-	frame:SetMovable(not Spy.db.profile.LockPosition)
+	frame:SetMovable(not Ping.db.profile.LockPosition)
 
-	local hideGrips = Spy.db.profile.LockSize or Spy.db.profile.Locked
+	local hideGrips = Ping.db.profile.LockSize or Ping.db.profile.Locked
 	local grips = { frame.DragBottomRight, frame.DragBottomLeft, frame.DragTopRight, frame.DragTopLeft }
 	for _, grip in pairs(grips) do
 		if hideGrips then grip:Hide() else grip:Show() end
@@ -1378,14 +1381,14 @@ end
 
 -- Show/hide and recolour the window background fill and border, and apply the
 -- window scale. Safe to call any time after the main window exists.
-function Spy:ApplyWindowStyle()
-	local frame = Spy.MainWindow
+function Ping:ApplyWindowStyle()
+	local frame = Ping.MainWindow
 	if not frame then return end
 
-	local o = Spy.db.profile.BackgroundOpacity
+	local o = Ping.db.profile.BackgroundOpacity
 	if o == nil then o = 1 end
 	if frame.Background then
-		if Spy.db.profile.ShowBackground then
+		if Ping.db.profile.ShowBackground then
 			frame.Background:SetAlpha(o)
 			frame.Background:Show()
 		else
@@ -1396,10 +1399,10 @@ function Spy:ApplyWindowStyle()
 	-- backdrop show through; "solid" draws the coloured strip at its own
 	-- opacity, independent of the window background toggle.
 	if frame.TitleFill then
-		if Spy.db.profile.TitleBarStyle == "solid" then
-			local tc = Spy.Colors:GetColor("Spy", "Title Bar")
+		if Ping.db.profile.TitleBarStyle == "solid" then
+			local tc = Ping.Colors:GetColor("Ping", "Title Bar")
 			if tc then frame.TitleFill:SetVertexColor(tc.r, tc.g, tc.b, 1) end
-			local to = Spy.db.profile.TitleBarOpacity
+			local to = Ping.db.profile.TitleBarOpacity
 			if to == nil then to = 1 end
 			frame.TitleFill:SetAlpha(to)
 			frame.TitleFill:Show()
@@ -1408,62 +1411,62 @@ function Spy:ApplyWindowStyle()
 		end
 	end
 
-	if Spy.db.profile.ShowBorder then
+	if Ping.db.profile.ShowBorder then
 		frame:SetBackdrop({
 			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
 			tile = false, edgeSize = 14,
 			insets = { left = 0, right = 0, top = 0, bottom = 0 },
 		})
-		local bc = Spy.Colors:GetColor("Spy", "Window Border")
+		local bc = Ping.Colors:GetColor("Ping", "Window Border")
 		if bc then frame:SetBackdropBorderColor(bc.r, bc.g, bc.b, bc.a or 1) end
 	else
 		frame:SetBackdrop(nil)
 	end
 
-	frame:SetScale(Spy.db.profile.WindowScale or 1)
+	frame:SetScale(Ping.db.profile.WindowScale or 1)
 end
 
-function Spy:UpdateAlertWindow()
-	if Spy.db.profile.DisplayWarnings == "Moveable" then
-		Spy.AlertWindow:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", Spy.db.profile.AlertWindow.Position.x, Spy.db.profile.AlertWindow.Position.y)
-		Spy.AlertWindow:SetMovable(true)
-		Spy.AlertWindow:EnableMouse(true)
-		Spy.AlertWindow:SetScript("OnMouseDown", function(self, button) 
-			Spy.AlertWindow:StartMoving();
-			Spy.AlertWindow.isMoving = true;
+function Ping:UpdateAlertWindow()
+	if Ping.db.profile.DisplayWarnings == "Moveable" then
+		Ping.AlertWindow:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", Ping.db.profile.AlertWindow.Position.x, Ping.db.profile.AlertWindow.Position.y)
+		Ping.AlertWindow:SetMovable(true)
+		Ping.AlertWindow:EnableMouse(true)
+		Ping.AlertWindow:SetScript("OnMouseDown", function(self, button) 
+			Ping.AlertWindow:StartMoving();
+			Ping.AlertWindow.isMoving = true;
 		end)
-		Spy.AlertWindow:SetScript("OnMouseUp", function(self) 
-			if (Spy.AlertWindow.isMoving) then
-				Spy.AlertWindow:StopMovingOrSizing();
-				Spy.AlertWindow.isMoving = false;
-				Spy:SaveAlertWindowPosition()
+		Ping.AlertWindow:SetScript("OnMouseUp", function(self) 
+			if (Ping.AlertWindow.isMoving) then
+				Ping.AlertWindow:StopMovingOrSizing();
+				Ping.AlertWindow.isMoving = false;
+				Ping:SaveAlertWindowPosition()
 			end
 		end)
 	else
-		Spy.AlertWindow:ClearAllPoints()	
-		Spy.AlertWindow:SetPoint("TOP", UIParent, "TOP", 0, -140)
+		Ping.AlertWindow:ClearAllPoints()	
+		Ping.AlertWindow:SetPoint("TOP", UIParent, "TOP", 0, -140)
 	end		
 end	
 
-function Spy:ShowTooltip(self, show, id)
+function Ping:ShowTooltip(self, show, id)
 	if show then
 		local unit = self.unit
-		local name = Spy.ButtonName[self.id] or unit.name
+		local name = Ping.ButtonName[self.id] or unit.name
 		if name and name ~= "" then
-			local titleText = Spy.db.profile.Colors.Tooltip["Title Text"]
+			local titleText = Ping.db.profile.Colors.Tooltip["Title Text"]
 
-			if not Spy.db.profile.DisplayTooltipNearSpyWindow then
-				GameTooltip:SetOwner(Spy.MainWindow, "ANCHOR_NONE")
+			if not Ping.db.profile.DisplayTooltipNearPingWindow then
+				GameTooltip:SetOwner(Ping.MainWindow, "ANCHOR_NONE")
 				GameTooltip:SetPoint("BOTTOMRIGHT", "UIParent", "BOTTOMRIGHT", -CONTAINER_OFFSET_X - 13, CONTAINER_OFFSET_Y)
 			else
-				GameTooltip:SetOwner(self, Spy.db.profile.TooltipAnchor)
+				GameTooltip:SetOwner(self, Ping.db.profile.TooltipAnchor)
 			end
 			GameTooltip:ClearLines()
 			GameTooltip:AddLine(string.gsub(name, "%-", " - "), titleText.r, titleText.g, titleText.b)
 
-			local playerData = SpyPerCharDB.PlayerData[name]
+			local playerData = PingPerCharDB.PlayerData[name]
 			if playerData then
-				local detailsText = Spy.db.profile.Colors.Tooltip["Details Text"]
+				local detailsText = Ping.db.profile.Colors.Tooltip["Details Text"]
 				if playerData.guild and playerData.guild ~= "" then
 					GameTooltip:AddLine(playerData.guild, detailsText.r, detailsText.g, detailsText.b)
 				end
@@ -1476,7 +1479,7 @@ function Spy:ShowTooltip(self, show, id)
 					GameTooltip:AddLine(details..L["Player"], detailsText.r, detailsText.g, detailsText.b)
 				end
 
-				if Spy.db.profile.DisplayWinLossStatistics then
+				if Ping.db.profile.DisplayWinLossStatistics then
 					local wins = "0"
 					local loses = "0"
 					if playerData.wins then wins = playerData.wins end
@@ -1484,10 +1487,10 @@ function Spy:ShowTooltip(self, show, id)
 					GameTooltip:AddLine(L["StatsWins"]..wins..L["StatsSeparator"]..L["StatsLoses"]..loses, detailsText.r, detailsText.g, detailsText.b)
 				end
 
-				if SpyPerCharDB.KOSData[name] then
-					local reasonText = Spy.db.profile.Colors.Tooltip["Reason Text"]
+				if PingPerCharDB.KOSData[name] then
+					local reasonText = Ping.db.profile.Colors.Tooltip["Reason Text"]
 					GameTooltip:AddLine(L["KOSReason"], reasonText.r, reasonText.g, reasonText.b)
-					if playerData.reason and Spy.db.profile.DisplayKOSReason then
+					if playerData.reason and Ping.db.profile.DisplayKOSReason then
 						for reason in pairs(playerData.reason) do
 							if reason == L["KOSReasonOther"] then
 								GameTooltip:AddLine(L["KOSReasonIndent"]..playerData.reason[reason], reasonText.r, reasonText.g, reasonText.b)
@@ -1498,8 +1501,8 @@ function Spy:ShowTooltip(self, show, id)
 					end
 				end
 
-				if Spy.db.profile.DisplayLastSeen then
-					local locationText = Spy.db.profile.Colors.Tooltip["Location Text"]
+				if Ping.db.profile.DisplayLastSeen then
+					local locationText = Ping.db.profile.Colors.Tooltip["Location Text"]
 					if playerData.time then
 						local lastSeen = L["LastSeen"]
 						local minutes = math.floor((time() - playerData.time) / 60)
@@ -1516,7 +1519,7 @@ function Spy:ShowTooltip(self, show, id)
 						end
 						GameTooltip:AddLine(lastSeen, locationText.r, locationText.g, locationText.b)
 					end
-					GameTooltip:AddLine(Spy:GetPlayerLocation(playerData), locationText.r, locationText.g, locationText.b)
+					GameTooltip:AddLine(Ping:GetPlayerLocation(playerData), locationText.r, locationText.g, locationText.b)
 				end
 			end
 
@@ -1527,11 +1530,11 @@ function Spy:ShowTooltip(self, show, id)
 	end
 end
 
-function Spy:ShowMapTooltip(icon, show)
-	local tooltip = Spy.MapTooltip
+function Ping:ShowMapTooltip(icon, show)
+	local tooltip = Ping.MapTooltip
 	if show then
-		local titleText = Spy.db.profile.Colors.Tooltip["Details Text"]
-		local locationText = Spy.db.profile.Colors.Tooltip["Location Text"]
+		local titleText = Ping.db.profile.Colors.Tooltip["Details Text"]
+		local locationText = Ping.db.profile.Colors.Tooltip["Location Text"]
 
         local angle, distance = HBDP:GetVectorToIcon(icon)
 		local distance = nil
@@ -1544,17 +1547,17 @@ function Spy:ShowMapTooltip(icon, show)
 		tooltip:SetOwner(icon, "ANCHOR_NONE")
 		tooltip:SetPoint("TOPLEFT", icon, "TOPRIGHT", 16, 0)
 		tooltip:ClearLines()
-		tooltip:AddDoubleLine(Spy.EnemyFactionName.." "..L["Located"], distance, titleText.r, titleText.g, titleText.b, locationText.r, locationText.g, locationText.b)
+		tooltip:AddDoubleLine(Ping.EnemyFactionName.." "..L["Located"], distance, titleText.r, titleText.g, titleText.b, locationText.r, locationText.g, locationText.b)
 
-		for player in pairs(Spy.PlayerCommList) do
-			if Spy.PlayerCommList[player] == icon.id then
+		for player in pairs(Ping.PlayerCommList) do
+			if Ping.PlayerCommList[player] == icon.id then
 				local name, description = player, ""
-				local playerData = SpyPerCharDB.PlayerData[player]
+				local playerData = PingPerCharDB.PlayerData[player]
 				if playerData and playerData.isEnemy then
 					if playerData.guild and strlen(playerData.guild) > 0 then
 						name = name..L["MinimapGuildText"].." <"..playerData.guild..">"
 					end
-					if Spy.db.profile.MinimapDetails then
+					if Ping.db.profile.MinimapDetails then
 						if playerData.class and playerData.level then
 							description = description..L["MinimapClassText"..playerData.class].."["..playerData.level.." "..L[playerData.class].."]"
 						elseif playerData.class then
@@ -1573,167 +1576,167 @@ function Spy:ShowMapTooltip(icon, show)
 	end
 end
 
-function Spy:ShowAlert(type, name, source, location)
-	if not SpyFrameIsFading(Spy.AlertWindow) then
-		Spy.AlertType = nil
+function Ping:ShowAlert(type, name, source, location)
+	if not PingFrameIsFading(Ping.AlertWindow) then
+		Ping.AlertType = nil
 	end
 
 	if type == "kos" then
-		Spy.Colors:RegisterBorder("Alert", "KOS Border", Spy.AlertWindow)
-		Spy.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Ability_Creature_Cursed_02" })
-		Spy.Colors:RegisterBorder("Alert", "Background", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterBackground("Alert", "Icon", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterFont("Alert", "KOS Text", Spy.AlertWindow.Title)
-		Spy.AlertWindow.Title:SetText(L["AlertKOSTitle"])
-		Spy.Colors:RegisterFont("Alert", "Name Text", Spy.AlertWindow.Name)
-		Spy.AlertWindow.Name:SetText(name)
-		Spy.Colors:RegisterFont("Alert", "KOS Text", Spy.AlertWindow.Location)
-		Spy.AlertWindow.Location:SetText(location)
-		Spy.AlertWindow:SetWidth(Spy.AlertWindow.Title:GetStringWidth() + 52)
-		if (Spy.AlertWindow.Title:GetStringWidth() < Spy.AlertWindow.Name:GetStringWidth()) then
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Name:GetStringWidth() + 52)
+		Ping.Colors:RegisterBorder("Alert", "KOS Border", Ping.AlertWindow)
+		Ping.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Ability_Creature_Cursed_02" })
+		Ping.Colors:RegisterBorder("Alert", "Background", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterBackground("Alert", "Icon", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterFont("Alert", "KOS Text", Ping.AlertWindow.Title)
+		Ping.AlertWindow.Title:SetText(L["AlertKOSTitle"])
+		Ping.Colors:RegisterFont("Alert", "Name Text", Ping.AlertWindow.Name)
+		Ping.AlertWindow.Name:SetText(name)
+		Ping.Colors:RegisterFont("Alert", "KOS Text", Ping.AlertWindow.Location)
+		Ping.AlertWindow.Location:SetText(location)
+		Ping.AlertWindow:SetWidth(Ping.AlertWindow.Title:GetStringWidth() + 52)
+		if (Ping.AlertWindow.Title:GetStringWidth() < Ping.AlertWindow.Name:GetStringWidth()) then
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Name:GetStringWidth() + 52)
 		else
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Title:GetStringWidth() + 52)
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Title:GetStringWidth() + 52)
 		end
 
-		SpyFrameFlashStop(Spy.AlertWindow)
-		SpyFrameFlash(Spy.AlertWindow, 0, 1, 4, false, 3, 0)
-		Spy.AlertType = type
-	elseif type == "kosguild" and Spy.AlertType ~= "kos" then
-		Spy.Colors:RegisterBorder("Alert", "KOS Guild Border", Spy.AlertWindow)
-		Spy.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Spell_Holy_PrayerofSpirit" })
-		Spy.Colors:RegisterBorder("Alert", "Background", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterBackground("Alert", "Icon", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterFont("Alert", "KOS Guild Text", Spy.AlertWindow.Title)
-		Spy.AlertWindow.Title:SetText(L["AlertKOSGuildTitle"])
-		Spy.Colors:RegisterFont("Alert", "Name Text", Spy.AlertWindow.Name)
-		Spy.AlertWindow.Name:SetText(name)
-		Spy.AlertWindow.Location:SetText("")
-		Spy.AlertWindow:SetWidth(Spy.AlertWindow.Title:GetStringWidth() + 52)
-		if (Spy.AlertWindow.Title:GetStringWidth() < Spy.AlertWindow.Name:GetStringWidth()) then
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Name:GetStringWidth() + 52)
+		PingFrameFlashStop(Ping.AlertWindow)
+		PingFrameFlash(Ping.AlertWindow, 0, 1, 4, false, 3, 0)
+		Ping.AlertType = type
+	elseif type == "kosguild" and Ping.AlertType ~= "kos" then
+		Ping.Colors:RegisterBorder("Alert", "KOS Guild Border", Ping.AlertWindow)
+		Ping.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Spell_Holy_PrayerofSpirit" })
+		Ping.Colors:RegisterBorder("Alert", "Background", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterBackground("Alert", "Icon", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterFont("Alert", "KOS Guild Text", Ping.AlertWindow.Title)
+		Ping.AlertWindow.Title:SetText(L["AlertKOSGuildTitle"])
+		Ping.Colors:RegisterFont("Alert", "Name Text", Ping.AlertWindow.Name)
+		Ping.AlertWindow.Name:SetText(name)
+		Ping.AlertWindow.Location:SetText("")
+		Ping.AlertWindow:SetWidth(Ping.AlertWindow.Title:GetStringWidth() + 52)
+		if (Ping.AlertWindow.Title:GetStringWidth() < Ping.AlertWindow.Name:GetStringWidth()) then
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Name:GetStringWidth() + 52)
 		else
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Title:GetStringWidth() + 52)
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Title:GetStringWidth() + 52)
 		end
 
-		SpyFrameFlashStop(Spy.AlertWindow)
-		SpyFrameFlash(Spy.AlertWindow, 0, 1, 4, false, 3, 0)
-		Spy.AlertType = type
-	elseif type == "stealth" and Spy.AlertType ~= "kos" and Spy.AlertType ~= "kosguild" then
-		Spy.Colors:RegisterBorder("Alert", "Stealth Border", Spy.AlertWindow)
-		Spy.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Ability_Stealth" })
-		Spy.Colors:RegisterBorder("Alert", "Background", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterBackground("Alert", "Icon", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterFont("Alert", "Stealth Text", Spy.AlertWindow.Title)
-		Spy.AlertWindow.Title:SetText(L["AlertStealthTitle"])
-		Spy.Colors:RegisterFont("Alert", "Name Text", Spy.AlertWindow.Name)
-		Spy.AlertWindow.Name:SetText(name)
-		Spy.AlertWindow.Location:SetText("")
-		Spy.AlertWindow:SetWidth(Spy.AlertWindow.Title:GetStringWidth() + 52)
-		if (Spy.AlertWindow.Title:GetStringWidth() < Spy.AlertWindow.Name:GetStringWidth()) then
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Name:GetStringWidth() + 52)
+		PingFrameFlashStop(Ping.AlertWindow)
+		PingFrameFlash(Ping.AlertWindow, 0, 1, 4, false, 3, 0)
+		Ping.AlertType = type
+	elseif type == "stealth" and Ping.AlertType ~= "kos" and Ping.AlertType ~= "kosguild" then
+		Ping.Colors:RegisterBorder("Alert", "Stealth Border", Ping.AlertWindow)
+		Ping.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Ability_Stealth" })
+		Ping.Colors:RegisterBorder("Alert", "Background", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterBackground("Alert", "Icon", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterFont("Alert", "Stealth Text", Ping.AlertWindow.Title)
+		Ping.AlertWindow.Title:SetText(L["AlertStealthTitle"])
+		Ping.Colors:RegisterFont("Alert", "Name Text", Ping.AlertWindow.Name)
+		Ping.AlertWindow.Name:SetText(name)
+		Ping.AlertWindow.Location:SetText("")
+		Ping.AlertWindow:SetWidth(Ping.AlertWindow.Title:GetStringWidth() + 52)
+		if (Ping.AlertWindow.Title:GetStringWidth() < Ping.AlertWindow.Name:GetStringWidth()) then
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Name:GetStringWidth() + 52)
 		else
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Title:GetStringWidth() + 52)
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Title:GetStringWidth() + 52)
 		end
 
-		SpyFrameFlashStop(Spy.AlertWindow)
-		SpyFrameFlash(Spy.AlertWindow, 0, 1, 5, false, 4, 0)
-		Spy.AlertType = type
-	elseif type == "prowl" and Spy.AlertType ~= "kos" and Spy.AlertType ~= "kosguild" then
-		Spy.Colors:RegisterBorder("Alert", "Stealth Border", Spy.AlertWindow)
-		Spy.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Ability_Ambush" })
-		Spy.Colors:RegisterBorder("Alert", "Background", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterBackground("Alert", "Icon", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterFont("Alert", "Stealth Text", Spy.AlertWindow.Title)
-		Spy.AlertWindow.Title:SetText(L["AlertStealthTitle"])
-		Spy.Colors:RegisterFont("Alert", "Name Text", Spy.AlertWindow.Name)
-		Spy.AlertWindow.Name:SetText(name)
-		Spy.AlertWindow.Location:SetText("")
-		Spy.AlertWindow:SetWidth(Spy.AlertWindow.Title:GetStringWidth() + 52)
-		if (Spy.AlertWindow.Title:GetStringWidth() < Spy.AlertWindow.Name:GetStringWidth()) then
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Name:GetStringWidth() + 52)
+		PingFrameFlashStop(Ping.AlertWindow)
+		PingFrameFlash(Ping.AlertWindow, 0, 1, 5, false, 4, 0)
+		Ping.AlertType = type
+	elseif type == "prowl" and Ping.AlertType ~= "kos" and Ping.AlertType ~= "kosguild" then
+		Ping.Colors:RegisterBorder("Alert", "Stealth Border", Ping.AlertWindow)
+		Ping.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Ability_Ambush" })
+		Ping.Colors:RegisterBorder("Alert", "Background", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterBackground("Alert", "Icon", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterFont("Alert", "Stealth Text", Ping.AlertWindow.Title)
+		Ping.AlertWindow.Title:SetText(L["AlertStealthTitle"])
+		Ping.Colors:RegisterFont("Alert", "Name Text", Ping.AlertWindow.Name)
+		Ping.AlertWindow.Name:SetText(name)
+		Ping.AlertWindow.Location:SetText("")
+		Ping.AlertWindow:SetWidth(Ping.AlertWindow.Title:GetStringWidth() + 52)
+		if (Ping.AlertWindow.Title:GetStringWidth() < Ping.AlertWindow.Name:GetStringWidth()) then
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Name:GetStringWidth() + 52)
 		else
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Title:GetStringWidth() + 52)
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Title:GetStringWidth() + 52)
 		end
 
-		SpyFrameFlashStop(Spy.AlertWindow)
-		SpyFrameFlash(Spy.AlertWindow, 0, 1, 5, false, 4, 0)
-		Spy.AlertType = type
-	elseif (type == "kosaway" or type == "kosguildaway") and Spy.AlertType ~= "kos" and Spy.AlertType ~= "kosguild" and Spy.AlertType ~= "stealth" then
+		PingFrameFlashStop(Ping.AlertWindow)
+		PingFrameFlash(Ping.AlertWindow, 0, 1, 5, false, 4, 0)
+		Ping.AlertType = type
+	elseif (type == "kosaway" or type == "kosguildaway") and Ping.AlertType ~= "kos" and Ping.AlertType ~= "kosguild" and Ping.AlertType ~= "stealth" then
 		local realmSeparator = strfind(source, "-")
 		if realmSeparator and realmSeparator > 1 then
 			source = string.gsub(strsub(source, 1, realmSeparator - 1), " ", "")
 		end
-		Spy.Colors:RegisterBorder("Alert", "Away Border", Spy.AlertWindow)
-		Spy.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Ability_Hunter_SniperShot" })
-		Spy.Colors:RegisterBorder("Alert", "Background", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterBackground("Alert", "Icon", Spy.AlertWindow.Icon)
-		Spy.Colors:RegisterFont("Alert", "Away Text", Spy.AlertWindow.Title)
-		Spy.AlertWindow.Title:SetText(L["AlertTitle_"..type]..source.."!")
-		Spy.Colors:RegisterFont("Alert", "Name Text", Spy.AlertWindow.Name)
-		Spy.AlertWindow.Name:SetText(name)
-		Spy.Colors:RegisterFont("Alert", "Location Text", Spy.AlertWindow.Location)
-		Spy.AlertWindow.Location:SetText(location)
-		if (Spy.AlertWindow.Title:GetStringWidth() < Spy.AlertWindow.Location:GetStringWidth()) then
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Location:GetStringWidth() + 52)
+		Ping.Colors:RegisterBorder("Alert", "Away Border", Ping.AlertWindow)
+		Ping.AlertWindow.Icon:SetBackdrop({ bgFile = "Interface\\Icons\\Ability_Hunter_SniperShot" })
+		Ping.Colors:RegisterBorder("Alert", "Background", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterBackground("Alert", "Icon", Ping.AlertWindow.Icon)
+		Ping.Colors:RegisterFont("Alert", "Away Text", Ping.AlertWindow.Title)
+		Ping.AlertWindow.Title:SetText(L["AlertTitle_"..type]..source.."!")
+		Ping.Colors:RegisterFont("Alert", "Name Text", Ping.AlertWindow.Name)
+		Ping.AlertWindow.Name:SetText(name)
+		Ping.Colors:RegisterFont("Alert", "Location Text", Ping.AlertWindow.Location)
+		Ping.AlertWindow.Location:SetText(location)
+		if (Ping.AlertWindow.Title:GetStringWidth() < Ping.AlertWindow.Location:GetStringWidth()) then
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Location:GetStringWidth() + 52)
 		else
-			Spy.AlertWindow:SetWidth(Spy.AlertWindow.Title:GetStringWidth() + 52)
+			Ping.AlertWindow:SetWidth(Ping.AlertWindow.Title:GetStringWidth() + 52)
 		end
 
-		SpyFrameFlashStop(Spy.AlertWindow)
-		SpyFrameFlash(Spy.AlertWindow, 0, 1, 4, false, 3, 0)
-		Spy.AlertType = type
+		PingFrameFlashStop(Ping.AlertWindow)
+		PingFrameFlash(Ping.AlertWindow, 0, 1, 4, false, 3, 0)
+		Ping.AlertType = type
 	end
-	Spy.AlertWindow.Name:SetWidth(Spy.AlertWindow:GetWidth() - 52)
-	Spy.AlertWindow.Location:SetWidth(Spy.AlertWindow:GetWidth() - 52)
+	Ping.AlertWindow.Name:SetWidth(Ping.AlertWindow:GetWidth() - 52)
+	Ping.AlertWindow.Location:SetWidth(Ping.AlertWindow:GetWidth() - 52)
 end
 
-function Spy:BarsChanged()  
-	for k, v in pairs(Spy.MainWindow.Rows) do
-		v:SetHeight(Spy.db.profile.MainWindow.RowHeight)
-		v:SetPoint("TOPLEFT", Spy.MainWindow, "TOPLEFT", 2, -34 - (Spy.db.profile.MainWindow.RowHeight + Spy.db.profile.MainWindow.RowSpacing) * (k - 1))			
-		Spy:SetFontSize(v.LeftText, math.max(Spy.db.profile.MainWindow.RowHeight * 0.75, Spy.db.profile.MainWindow.RowHeight - 3))
-		Spy:SetFontSize(v.RightText, math.max(Spy.db.profile.MainWindow.RowHeight * 0.5, Spy.db.profile.MainWindow.RowHeight - 12))
+function Ping:BarsChanged()  
+	for k, v in pairs(Ping.MainWindow.Rows) do
+		v:SetHeight(Ping.db.profile.MainWindow.RowHeight)
+		v:SetPoint("TOPLEFT", Ping.MainWindow, "TOPLEFT", 2, -34 - (Ping.db.profile.MainWindow.RowHeight + Ping.db.profile.MainWindow.RowSpacing) * (k - 1))			
+		Ping:SetFontSize(v.LeftText, math.max(Ping.db.profile.MainWindow.RowHeight * 0.75, Ping.db.profile.MainWindow.RowHeight - 3))
+		Ping:SetFontSize(v.RightText, math.max(Ping.db.profile.MainWindow.RowHeight * 0.5, Ping.db.profile.MainWindow.RowHeight - 12))
 	end
-	Spy:ResizeMainWindow()
+	Ping:ResizeMainWindow()
 end
 
-function Spy:CreateKoSButton()
-	if not Spy.KoSButton then
-		Spy.KoSButton = CreateFrame("Button", "Spy_KoSButton", TargetFrame)
-		Spy.KoSButton:Hide()
-		Spy.KoSButton:SetWidth(22) 
-		Spy.KoSButton:SetHeight(22)
-		Spy.KoSButton:SetPoint("TOPLEFT", TargetFrame, "BOTTOMLEFT", 141, 44)
-		Spy.KoSButton:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-		Spy.KoSButton.Background = Spy.KoSButton:CreateTexture("KoSButtonBackground", "BACKGROUND")
-		Spy.KoSButton.Background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
-		Spy.KoSButton.Background:SetWidth(12)
-		Spy.KoSButton.Background:SetHeight(12)
-		Spy.KoSButton.Background:SetPoint("CENTER")
-		Spy.KoSButton.Background:SetVertexColor(0, 0, 0, 0.7)
-		Spy.KoSButton.Icon = Spy.KoSButton:CreateTexture("KoSButtonIcon", "ARTWORK")
-		Spy.KoSButton.Icon:SetWidth(14)
-		Spy.KoSButton.Icon:SetHeight(14)
-		Spy.KoSButton.Icon:SetPoint("CENTER", 2, -1)
-		Spy.KoSButton.Border = Spy.KoSButton:CreateTexture("KoSButtonBorder", "OVERLAY")
-		Spy.KoSButton.Border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
-		Spy.KoSButton.Border:SetWidth(44)
-		Spy.KoSButton.Border:SetHeight(44)
-		Spy.KoSButton.Border:SetPoint("CENTER", 11, -12)
-		RaiseFrameLevel(Spy.KoSButton)
+function Ping:CreateKoSButton()
+	if not Ping.KoSButton then
+		Ping.KoSButton = CreateFrame("Button", "Ping_KoSButton", TargetFrame)
+		Ping.KoSButton:Hide()
+		Ping.KoSButton:SetWidth(22) 
+		Ping.KoSButton:SetHeight(22)
+		Ping.KoSButton:SetPoint("TOPLEFT", TargetFrame, "BOTTOMLEFT", 141, 44)
+		Ping.KoSButton:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+		Ping.KoSButton.Background = Ping.KoSButton:CreateTexture("KoSButtonBackground", "BACKGROUND")
+		Ping.KoSButton.Background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
+		Ping.KoSButton.Background:SetWidth(12)
+		Ping.KoSButton.Background:SetHeight(12)
+		Ping.KoSButton.Background:SetPoint("CENTER")
+		Ping.KoSButton.Background:SetVertexColor(0, 0, 0, 0.7)
+		Ping.KoSButton.Icon = Ping.KoSButton:CreateTexture("KoSButtonIcon", "ARTWORK")
+		Ping.KoSButton.Icon:SetWidth(14)
+		Ping.KoSButton.Icon:SetHeight(14)
+		Ping.KoSButton.Icon:SetPoint("CENTER", 2, -1)
+		Ping.KoSButton.Border = Ping.KoSButton:CreateTexture("KoSButtonBorder", "OVERLAY")
+		Ping.KoSButton.Border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
+		Ping.KoSButton.Border:SetWidth(44)
+		Ping.KoSButton.Border:SetHeight(44)
+		Ping.KoSButton.Border:SetPoint("CENTER", 11, -12)
+		RaiseFrameLevel(Ping.KoSButton)
 
-		Spy.KoSButton:SetScript("OnMouseDown", function(self, button)
+		Ping.KoSButton:SetScript("OnMouseDown", function(self, button)
 			if (UnitIsEnemy("player","target") and UnitIsPlayer("target")) then
 				local name = GetUnitName("target", true)
 				if button == "LeftButton" then
-					if SpyPerCharDB.KOSData[name] then
-						Spy:ToggleKOSPlayer(false, name)
+					if PingPerCharDB.KOSData[name] then
+						Ping:ToggleKOSPlayer(false, name)
 					else
-						Spy:ToggleKOSPlayer(true, name)
+						Ping:ToggleKOSPlayer(true, name)
 					end
 				elseif button == "RightButton" then	
-					Spy:SetKOSReason(name, L["KOSReasonOther"], other)
+					Ping:SetKOSReason(name, L["KOSReasonOther"], other)
 				end
 			end
 		end)
@@ -1742,17 +1745,17 @@ end
 
 --hooksecurefunc("TargetFrame_Update", function()
 hooksecurefunc(TargetFrame, "Update", function()
-	if Spy.db.profile.ShowKoSButton then
+	if Ping.db.profile.ShowKoSButton then
 		if (UnitIsEnemy("player","target") and UnitIsPlayer("target")) then
 			local name = GetUnitName("target", true)	
-			if SpyPerCharDB.KOSData[name] then
-				Spy.KoSButton.Icon:SetTexture("Interface\\AddOns\\Spy\\Textures\\button-on.tga")
+			if PingPerCharDB.KOSData[name] then
+				Ping.KoSButton.Icon:SetTexture("Interface\\AddOns\\Ping\\Textures\\button-on.tga")
 			else	
-				Spy.KoSButton.Icon:SetTexture("Interface\\AddOns\\Spy\\Textures\\button-off.tga")
+				Ping.KoSButton.Icon:SetTexture("Interface\\AddOns\\Ping\\Textures\\button-off.tga")
 			end
-			Spy.KoSButton:Show()
+			Ping.KoSButton:Show()
 		else
-			Spy.KoSButton:Hide()
+			Ping.KoSButton:Hide()
 		end
 	end	
 end)
