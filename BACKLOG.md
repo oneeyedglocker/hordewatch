@@ -1,4 +1,6 @@
-# Spy — backlog
+# Ping — backlog
+
+_(The addon is being renamed from Spy to **Ping** — see item 2.)_
 
 Work that is agreed but not started. Newest ideas at the bottom of each section.
 
@@ -6,24 +8,24 @@ Work that is agreed but not started. Newest ideas at the bottom of each section.
 
 ## 1. Finish out themes
 
-Six palettes exist (Classic Gold, Midnight, Horde, Alliance, Emerald, Monochrome) and
-each sets four colours: title bar, window border, healer marker, cooldown text.
+Six palettes exist (Classic Gold, Midnight, Horde, Alliance, Emerald, Monochrome).
+As of the theme fix they set the window background, title bar, border, title text,
+healer marker and cooldown colour — the background and title bar are what make the
+change visible.
 
-Not yet done:
+Still to do:
 
-- **Coverage.** A theme currently touches four of the window's colours. The KoS edge
-  is deliberately excluded (red-for-danger should not move between themes) but the
-  class bars, row background, and window backdrop are simply not covered yet, so a
-  theme changes less than it looks like it should.
-- **Bar texture and font** are part of a "look" and are not themed at all — they sit
-  in Rows & Text as independent settings. Decide whether a theme should set them
-  (more complete, but overwrites deliberate choices) or stay colour-only.
-- **Preview.** Picking a theme applies it immediately with no way to see it first
-  and no undo beyond picking another. A preview swatch, or a "revert" that restores
-  the colours from before the last theme was applied, would make experimenting safe.
-- **Custom themes.** Save the current colours as a named theme; export/import as a
-  string so a setup can be shared. This is the natural end state of the feature and
-  probably where it should land.
+- **Class bars are not themed.** They are the dominant visual element of every row
+  and currently stay at their stock class colours under every theme. Options: leave
+  them (class identity is information, not decoration — a strong argument), or let a
+  theme apply a saturation/tint pass over them.
+- **Bar texture and font** are not themed at all; they sit in Rows & Text as
+  independent settings. Decide whether a theme should set them.
+- **Preview / undo.** Picking a theme applies immediately with no way to see it
+  first and no revert beyond picking another. Worth capturing the pre-theme colours
+  so a single "revert" is possible.
+- **Custom themes.** Save current colours as a named theme, export/import as a
+  string. The natural end state.
 
 ---
 
@@ -36,15 +38,15 @@ To make them coexist, all of these have to change together:
 
 | Thing | Current | Notes |
 |---|---|---|
-| Folder | `Spy/` | Determines the addon name WoW sees |
-| `.toc` filename | `Spy.toc` | Must match the folder exactly |
+| Folder | `Spy/` → `Ping/` | Determines the addon name WoW sees |
+| `.toc` filename | `Spy.toc` → `Ping.toc` | Must match the folder exactly |
 | SavedVariables | `SpyDB`, `SpyDebugDB` | Global — collides with real Spy |
 | SavedVariablesPerCharacter | `SpyPerCharDB` | Where KoS / win-loss / player data lives |
 | Lua global | `Spy` | Referenced throughout every file |
 | Frame names | 13 of them | `Spy_MainWindow`, `Spy_AlertWindow`, `Spy_KoSButton`, `Spy_GameTooltip`, `Spy_BarDropDownMenu`, `Spy_MapNoteList_mini`/`_world`, `Spy_DebugDumpFrame`/`Scroll`, `SpyTitleBarFrame`, `SpyResizeGripLeft`/`Right`, `SpyTempTooltip` |
 | AceLocale namespace | `"Spy"` | `AceLocale:NewLocale("Spy", …)` in every locale file |
 | AceDB / AceConfig registration | `"Spy"`, `"Spy Commands"` | Options panel identity |
-| Slash command | `/spy` | Needs its own |
+| Slash command | `/spy` → `/ping` | Needs its own |
 | Texture paths | `Interface\AddOns\Spy\Textures\…` | Follow the folder rename |
 | AceComm prefix | `Spy.Signature` = `"[Spy]"` | Two addons must not talk over the same prefix |
 
@@ -53,7 +55,7 @@ loudly at load; those two fail *quietly* — colliding frames silently overwrite
 other, and a shared comm prefix means the two addons would exchange data as if they
 were the same thing.
 
-Name still to be chosen. Once picked, this is largely a careful find-and-replace,
+**Name chosen: `Ping`.** This is largely a careful find-and-replace,
 verifiable the same way the config restructure was: diff the set of referenced
 globals before and after and confirm nothing was missed.
 
@@ -91,6 +93,28 @@ Design notes:
 
 ---
 
+## 4. Healer spell list as a proper list widget
+
+Currently a multiline text box. Wanted instead: a scrolling list like
+BetterBlizzFrames' aura filter — one row per spell with its icon, name, spell id,
+and an X to remove it, plus an "Add" box underneath.
+
+Notes for whoever builds it:
+
+- AceConfig has no list-of-rows widget, so this needs a **custom AceGUI widget**
+  (or a plain frame embedded via `dialogControl`). That is the bulk of the work,
+  not the data side — the data is already a parsed list and `Spy:BuildHealerSpellNames`
+  already handles names, ids and links.
+- Icons come from `GetSpellTexture(id)`. The current list stores NAMES, not ids, so
+  either store ids alongside (better for icons) or resolve name → id at display
+  time, which is not reliable in reverse.
+- The same widget should serve the **cooldown watch list**, which has the identical
+  shape (spell rows + add box). Build it once, use it twice.
+- Keep the text box as an import/export escape hatch, or a "paste a list" mode —
+  it is the only practical way to move a list between profiles or characters.
+
+---
+
 ## Unfiled
 
-- _(placeholder — the fourth bullet in the original list was left empty)_
+- _(nothing yet)_
