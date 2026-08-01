@@ -726,3 +726,16 @@ L["CooldownListStatus"] = "%d spells watched."
 L["CooldownListStatusWithWarning"] = "%d spells watched. |cffff8000%d lines have no spell id|r and are being ignored."
 L["CooldownListReset"] = "Reset to the ten defaults"
 L["CooldownListResetDescription"] = "Discards every edit and restores the spells Spy ships with."
+
+------------------------------------------------------------------------------
+-- Class focus
+------------------------------------------------------------------------------
+L["FocusClassHeader"] = "Focus classes"
+L["FocusClassIntro"] = "Float chosen classes to the top of the list, or show only those classes. Works alongside the healer controls above - healers still outrank focused classes when both are on."
+L["FocusClassMode"] = "Class focus"
+L["FocusClassModeDescription"] = "Off, sort chosen classes to the top, or hide everything except them."
+L["FocusClassOff"] = "Off"
+L["FocusClassSort"] = "Sort them to the top"
+L["FocusClassOnly"] = "Show only these classes"
+L["FocusClasses"] = "Classes to focus"
+L["FocusClassesDescription"] = "Kill-on-Sight players are always shown regardless of this."

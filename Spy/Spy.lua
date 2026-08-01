@@ -663,6 +663,54 @@ Spy.options = {
 								Spy:RefreshCurrentList()
 							end,
 						},
+						focusHeader = {
+							name = L["FocusClassHeader"],
+							type = "header",
+							order = 10,
+						},
+						focusIntro = {
+							name = L["FocusClassIntro"],
+							type = "description",
+							order = 11,
+							fontSize = "medium",
+						},
+						FocusClassMode = {
+							name = L["FocusClassMode"],
+							desc = L["FocusClassModeDescription"],
+							type = "select",
+							order = 12,
+							values = {
+								["off"]  = L["FocusClassOff"],
+								["sort"] = L["FocusClassSort"],
+								["only"] = L["FocusClassOnly"],
+							},
+							get = function() return Spy.db.profile.FocusClassMode end,
+							set = function(_, v)
+								Spy.db.profile.FocusClassMode = v
+								Spy:RefreshCurrentList()
+							end,
+						},
+						FocusClasses = {
+							name = L["FocusClasses"],
+							desc = L["FocusClassesDescription"],
+							type = "multiselect",
+							order = 13,
+							disabled = function() return Spy.db.profile.FocusClassMode == "off" end,
+							values = function()
+								-- Driven by the client's own class list rather than a second
+								-- hardcoded one, so it cannot drift out of step with detection.
+								local t = {}
+								for class in pairs(Spy.ValidClasses or {}) do
+									t[class] = L[class] or class
+								end
+								return t
+							end,
+							get = function(_, class) return Spy.db.profile.FocusClasses[class] == true end,
+							set = function(_, class, value)
+								Spy.db.profile.FocusClasses[class] = value or nil
+								Spy:RefreshCurrentList()
+							end,
+						},
 					},
 				},
 				Cooldowns = {
@@ -2272,6 +2320,9 @@ local Default_Profile = {
 		ViewDistanceValue=777,			-- used when the mode is custom
 		DebugMode=false,
 		HealerOnlyFilter=false,		-- show only confirmed healers (and KoS)
+		-- Focus specific classes, independently of the healer controls.
+		FocusClassMode="off",		-- off | sort (float to top) | only (filter)
+		FocusClasses={},			-- set of CLASS tokens, e.g. { ROGUE = true }
 		KillPriorityOrder=false,	-- order by target value instead of recency
 		ShowAggregateHeader=true,	-- "12 3H" beside the title
 		-- Window options
@@ -2571,6 +2622,8 @@ function Spy:CheckDatabase()
 	end
 	if p.DebugMode == nil then p.DebugMode = Default_Profile.profile.DebugMode end
 	if p.HealerOnlyFilter == nil then p.HealerOnlyFilter = Default_Profile.profile.HealerOnlyFilter end
+	if p.FocusClassMode == nil then p.FocusClassMode = Default_Profile.profile.FocusClassMode end
+	if type(p.FocusClasses) ~= "table" then p.FocusClasses = {} end
 	if p.KillPriorityOrder == nil then p.KillPriorityOrder = Default_Profile.profile.KillPriorityOrder end
 	if p.ShowAggregateHeader == nil then p.ShowAggregateHeader = Default_Profile.profile.ShowAggregateHeader end
 	if p.TrackCooldowns == nil then p.TrackCooldowns = Default_Profile.profile.TrackCooldowns end

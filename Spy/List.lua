@@ -81,6 +81,16 @@ end
 -- honouring the HealerDetectBy mode:
 --   "class" - any heal-capable class counts.
 --   "heal"  - only players we've actually seen cast a heal (isHealer flag).
+-- True when this player's class is one the user asked to focus on. Empty
+-- selection means "nothing is focused" rather than "everything is", so turning
+-- the mode on without picking a class cannot silently blank the list.
+function Spy:IsFocusClass(playerData)
+	if not playerData or not playerData.class then return false end
+	local focus = Spy.db.profile.FocusClasses
+	if type(focus) ~= "table" then return false end
+	return focus[playerData.class] == true
+end
+
 function Spy:IsHealer(playerData)
 	if not playerData then return false end
 	if Spy.db.profile.HealerDetectBy == "heal" then
@@ -105,13 +115,18 @@ function Spy:RefreshCurrentList(player, source)
 	-- detections a minute through fifteen rows - so this strips it down to the
 	-- only targets that matter. KoS players are always kept.
 	local displayList = Spy.CurrentList
-	if Spy.db.profile.HealerOnlyFilter and mode == 1 then
+	if mode == 1 and (Spy.db.profile.HealerOnlyFilter
+		or Spy.db.profile.FocusClassMode == "only") then
+		local wantHealers = Spy.db.profile.HealerOnlyFilter
+		local wantFocus = Spy.db.profile.FocusClassMode == "only"
 		local filtered = {}
 		for _, entry in ipairs(Spy.CurrentList) do
 			local pd = SpyPerCharDB.PlayerData[entry.player]
-			if Spy:IsHealer(pd) or SpyPerCharDB.KOSData[entry.player] then
-				filtered[#filtered + 1] = entry
-			end
+			-- KoS players are never filtered out, whichever filter is running.
+			local keep = SpyPerCharDB.KOSData[entry.player] and true or false
+			if not keep and wantHealers and Spy:IsHealer(pd) then keep = true end
+			if not keep and wantFocus and Spy:IsFocusClass(pd) then keep = true end
+			if keep then filtered[#filtered + 1] = entry end
 		end
 		displayList = filtered
 	end
@@ -232,25 +247,34 @@ function Spy:ManageNearbyList()
 	table.sort(active, function(a, b) return a.time < b.time end)
 	table.sort(inactive, function(a, b) return a.time < b.time end)
 
-	-- Appends a group to the final list. With SortHealersToTop on, likely
-	-- healers within the group float above the rest while keeping the group's
-	-- existing (time-sorted) order within each half. KoS priority is untouched
-	-- - it's already expressed by the separate activeKoS/inactiveKoS groups.
+	-- Appends a group to the final list, floating the interesting rows to the
+	-- top of it. Two independent things can promote a row - being a healer, and
+	-- being one of the classes you asked to focus - so this is a tier number
+	-- rather than a single if/else, with healers outranking focused classes
+	-- when both are on. Order WITHIN a tier is left alone, so the group's
+	-- existing time sort survives. KoS priority is untouched: it is already
+	-- expressed by the separate activeKoS/inactiveKoS groups.
+	local function tierOf(entry)
+		local pd = SpyPerCharDB.PlayerData[entry.player]
+		if Spy.db.profile.SortHealersToTop and Spy:IsHealer(pd) then return 1 end
+		if Spy.db.profile.FocusClassMode ~= "off" and Spy:IsFocusClass(pd) then return 2 end
+		return 3
+	end
+
 	local function appendGroup(dest, group)
-		if Spy.db.profile.SortHealersToTop then
-			for _, entry in ipairs(group) do
-				if Spy:IsHealer(SpyPerCharDB.PlayerData[entry.player]) then
-					table.insert(dest, entry)
-				end
-			end
-			for _, entry in ipairs(group) do
-				if not Spy:IsHealer(SpyPerCharDB.PlayerData[entry.player]) then
-					table.insert(dest, entry)
-				end
-			end
-		else
+		local sortingHealers = Spy.db.profile.SortHealersToTop
+		local sortingFocus = Spy.db.profile.FocusClassMode ~= "off"
+		if not sortingHealers and not sortingFocus then
 			for _, entry in ipairs(group) do
 				table.insert(dest, entry)
+			end
+			return
+		end
+		for tier = 1, 3 do
+			for _, entry in ipairs(group) do
+				if tierOf(entry) == tier then
+					table.insert(dest, entry)
+				end
 			end
 		end
 	end

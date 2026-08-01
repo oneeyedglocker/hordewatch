@@ -1078,63 +1078,114 @@ end
 -- ============================================================
 -- Look themes: one-click colour bundles, distinct from LookPreset above.
 -- LookPreset changes ROW LAYOUT (bar opacity, row height, class colours);
--- a theme changes the WINDOW'S palette (title bar, border, healer marker,
--- cooldown text) without touching layout. The two are independent and can be
--- combined freely - a theme applied on top of any preset keeps that preset's
--- row layout, and vice versa.
+-- a theme changes the WINDOW'S palette without touching layout.
 --
--- KoS Edge is deliberately left out of every theme: red-for-danger is a signal
--- the eye should never have to relearn per theme, so it stays constant and is
--- only ever changed from its own colour picker.
+-- Two things went wrong in the first version and both are fixed here:
+--
+--  1. Every theme set the title bar to a shade of near-black (all six were
+--     between rgb 6 and 22), so switching themes was invisible. Themes now set
+--     the window BACKGROUND and a genuinely contrasting title bar - the two
+--     largest areas of the window - so the change is unmistakable.
+--
+--  2. Colours were written straight into the profile table. That works for
+--     values re-read on every draw, but Window/Background and Window/Title are
+--     REGISTERED widgets (see Colors:RegisterBackground / RegisterBorder) which
+--     are painted once and only repaint when pushed through Colors:SetColor.
+--     Every slot now goes through SetColor, so registered widgets update live.
+--
+-- KoS Edge is deliberately not themed: red-for-danger is a signal the eye
+-- should never have to relearn, so it stays constant and is only ever changed
+-- from its own colour picker.
 -- ============================================================
+local function rgb(hex, a)
+	return {
+		r = tonumber(hex:sub(1, 2), 16) / 255,
+		g = tonumber(hex:sub(3, 4), 16) / 255,
+		b = tonumber(hex:sub(5, 6), 16) / 255,
+		a = a or 1,
+	}
+end
+
+-- Each entry is { branch, slot, colour }. Branch matters: "Window" holds the
+-- backdrop and frame the eye actually reads, "Spy" holds the accents.
 Spy.LookThemes = {
 	classic = {
 		name = "Classic Gold",
-		["Title Bar"] = { r = 13/255, g = 11/255, b = 10/255, a = 1 },
-		["Window Border"] = { r = 1, g = 1, b = 1, a = 1 },
-		["Healer Marker"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
-		["Healer Edge"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
-		["Cooldown"] = { r = 1, g = 0.82, b = 0, a = 1 },
+		colors = {
+			{ "Window", "Background",   rgb("1a1712") },
+			{ "Window", "Title",        rgb("c8a04a") },
+			{ "Window", "Title Text",   rgb("ffd100") },
+			{ "Spy",    "Title Bar",    rgb("2e2412") },
+			{ "Spy",    "Window Border",rgb("c8a04a") },
+			{ "Spy",    "Healer Marker",rgb("4fe27a") },
+			{ "Spy",    "Healer Edge",  rgb("4fe27a") },
+			{ "Spy",    "Cooldown",     rgb("ffd100") },
+		},
 	},
 	midnight = {
 		name = "Midnight",
-		["Title Bar"] = { r = 8/255, g = 10/255, b = 22/255, a = 1 },
-		["Window Border"] = { r = 0.35, g = 0.55, b = 1, a = 1 },
-		["Healer Marker"] = { r = 0.40, g = 0.85, b = 1, a = 1 },
-		["Healer Edge"] = { r = 0.40, g = 0.85, b = 1, a = 1 },
-		["Cooldown"] = { r = 0.65, g = 0.75, b = 1, a = 1 },
+		colors = {
+			{ "Window", "Background",   rgb("0e1220") },
+			{ "Window", "Title",        rgb("4f7fd6") },
+			{ "Window", "Title Text",   rgb("aaccff") },
+			{ "Spy",    "Title Bar",    rgb("1a2440") },
+			{ "Spy",    "Window Border",rgb("4f7fd6") },
+			{ "Spy",    "Healer Marker",rgb("66d9ff") },
+			{ "Spy",    "Healer Edge",  rgb("66d9ff") },
+			{ "Spy",    "Cooldown",     rgb("a6c0ff") },
+		},
 	},
 	horde = {
 		name = "Horde",
-		["Title Bar"] = { r = 18/255, g = 6/255, b = 6/255, a = 1 },
-		["Window Border"] = { r = 0.78, g = 0.09, b = 0.09, a = 1 },
-		["Healer Marker"] = { r = 0.55, g = 0.90, b = 0.35, a = 1 },
-		["Healer Edge"] = { r = 0.55, g = 0.90, b = 0.35, a = 1 },
-		["Cooldown"] = { r = 1, g = 0.55, b = 0.10, a = 1 },
+		colors = {
+			{ "Window", "Background",   rgb("1c0e0e") },
+			{ "Window", "Title",        rgb("c8231e") },
+			{ "Window", "Title Text",   rgb("ff8a6a") },
+			{ "Spy",    "Title Bar",    rgb("4a1010") },
+			{ "Spy",    "Window Border",rgb("c8231e") },
+			{ "Spy",    "Healer Marker",rgb("8ce65a") },
+			{ "Spy",    "Healer Edge",  rgb("8ce65a") },
+			{ "Spy",    "Cooldown",     rgb("ff8c1a") },
+		},
 	},
 	alliance = {
 		name = "Alliance",
-		["Title Bar"] = { r = 6/255, g = 10/255, b = 22/255, a = 1 },
-		["Window Border"] = { r = 0.85, g = 0.70, b = 0.25, a = 1 },
-		["Healer Marker"] = { r = 0.55, g = 0.85, b = 1, a = 1 },
-		["Healer Edge"] = { r = 0.55, g = 0.85, b = 1, a = 1 },
-		["Cooldown"] = { r = 0.85, g = 0.70, b = 0.25, a = 1 },
+		colors = {
+			{ "Window", "Background",   rgb("0d1220") },
+			{ "Window", "Title",        rgb("d4af37") },
+			{ "Window", "Title Text",   rgb("9fd0ff") },
+			{ "Spy",    "Title Bar",    rgb("12224a") },
+			{ "Spy",    "Window Border",rgb("d4af37") },
+			{ "Spy",    "Healer Marker",rgb("8cd9ff") },
+			{ "Spy",    "Healer Edge",  rgb("8cd9ff") },
+			{ "Spy",    "Cooldown",     rgb("d4af37") },
+		},
 	},
 	emerald = {
 		name = "Emerald",
-		["Title Bar"] = { r = 6/255, g = 16/255, b = 10/255, a = 1 },
-		["Window Border"] = { r = 0.25, g = 0.85, b = 0.50, a = 1 },
-		["Healer Marker"] = { r = 0.35, g = 1, b = 0.60, a = 1 },
-		["Healer Edge"] = { r = 0.35, g = 1, b = 0.60, a = 1 },
-		["Cooldown"] = { r = 0.80, g = 1, b = 0.40, a = 1 },
+		colors = {
+			{ "Window", "Background",   rgb("0c1a12") },
+			{ "Window", "Title",        rgb("3fd67f") },
+			{ "Window", "Title Text",   rgb("8cffbf") },
+			{ "Spy",    "Title Bar",    rgb("12402a") },
+			{ "Spy",    "Window Border",rgb("3fd67f") },
+			{ "Spy",    "Healer Marker",rgb("5cff99") },
+			{ "Spy",    "Healer Edge",  rgb("5cff99") },
+			{ "Spy",    "Cooldown",     rgb("ccff66") },
+		},
 	},
 	mono = {
 		name = "Monochrome",
-		["Title Bar"] = { r = 10/255, g = 10/255, b = 10/255, a = 1 },
-		["Window Border"] = { r = 0.75, g = 0.75, b = 0.75, a = 1 },
-		["Healer Marker"] = { r = 0.90, g = 0.90, b = 0.90, a = 1 },
-		["Healer Edge"] = { r = 0.90, g = 0.90, b = 0.90, a = 1 },
-		["Cooldown"] = { r = 0.60, g = 0.60, b = 0.60, a = 1 },
+		colors = {
+			{ "Window", "Background",   rgb("161616") },
+			{ "Window", "Title",        rgb("b4b4b4") },
+			{ "Window", "Title Text",   rgb("ffffff") },
+			{ "Spy",    "Title Bar",    rgb("2c2c2c") },
+			{ "Spy",    "Window Border",rgb("b4b4b4") },
+			{ "Spy",    "Healer Marker",rgb("e6e6e6") },
+			{ "Spy",    "Healer Edge",  rgb("e6e6e6") },
+			{ "Spy",    "Cooldown",     rgb("999999") },
+		},
 	},
 }
 
@@ -1142,18 +1193,22 @@ function Spy:ApplyLookTheme(key)
 	local theme = Spy.LookThemes[key]
 	if not theme then return end
 	Spy.db.profile.LookTheme = key
-	local colors = Spy.db.profile.Colors["Spy"]
-	for slot, rgba in pairs(theme) do
-		if type(rgba) == "table" and colors[slot] then
-			colors[slot].r, colors[slot].g, colors[slot].b = rgba.r, rgba.g, rgba.b
-			colors[slot].a = rgba.a or colors[slot].a
+
+	for _, entry in ipairs(theme.colors) do
+		local branch, slot, colour = entry[1], entry[2], entry[3]
+		local target = Spy.db.profile.Colors[branch]
+		if target and target[slot] then
+			-- Through SetColor, not a raw write: registered widgets only repaint
+			-- when told to, and Window/Background is one of them.
+			Spy.Colors:SetColor(branch, slot, colour)
 		end
 	end
-	-- A theme's title bar colour only shows with the solid style, so switching
-	-- themes is meant to be seen immediately rather than requiring a second trip
-	-- to change TitleBarStyle by hand.
+
+	-- The themed title bar only draws in the solid style, so a theme switches to
+	-- it rather than silently doing nothing on the classic style.
 	Spy.db.profile.TitleBarStyle = "solid"
 	Spy:ApplyWindowStyle()
+	Spy:UpdateMainWindow()
 	Spy:RefreshCurrentList()
 end
 
