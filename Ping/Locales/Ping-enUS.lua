@@ -780,6 +780,13 @@ L["HealerSpellListReset"] = "Reset to the researched TBC list"
 L["HealerSpellListResetDescription"] = "Discards every edit and restores the 24 spells Ping shipped with."
 
 ------------------------------------------------------------------------------
+-- Spell list rows - shared by the healer and cooldown lists
+------------------------------------------------------------------------------
+L["SpellListAdd"] = "Add"
+L["SpellListEmpty"] = "Nothing in this list."
+L["SpellListUnknown"] = "This client does not know this spell id."
+
+------------------------------------------------------------------------------
 -- Cooldown watch list - editable
 ------------------------------------------------------------------------------
 

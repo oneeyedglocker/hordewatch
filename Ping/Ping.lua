@@ -572,6 +572,7 @@ Ping.options = {
 							name = L["HealerSpellList"],
 							desc = L["HealerSpellListDescription"],
 							type = "input",
+							dialogControl = "PingSpellList",
 							multiline = 10,
 							width = "full",
 							order = 22,
@@ -785,6 +786,11 @@ Ping.options = {
 							name = L["CooldownList"],
 							desc = L["CooldownListDescription"],
 							type = "input",
+							-- Rows rather than raw text. The value is still the same
+							-- newline-separated list, so BuildCooldownLookup and the
+							-- transfer code are unaffected; if the widget is missing
+							-- AceConfigDialog falls back to the multiline box.
+							dialogControl = "PingSpellList",
 							multiline = 12,
 							width = "full",
 							order = 12,

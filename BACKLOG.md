@@ -53,54 +53,46 @@ work and are dead keys nothing reads.
 
 ---
 
-## 3. Import data from the original Spy
+## 3. Import data from the original Spy — **DONE**
 
-Now that the rename is done, a one-click import that pulls history across from a real Spy
-install, so switching does not mean starting from an empty database.
+Shipped as its own **Data → Spy Import** tab, backed by `Ping:ImportSpyData` and
+`Ping:GetSpyImportStatus` in `List.lua`. Reads `SpyPerCharDB` — players, KoS with
+reasons, ignore list — merges rather than replaces (higher win/loss count wins, the
+newer sighting wins, an exact level beats a guess), never writes back to Spy, and
+prints what it did. There are two buttons: everything, or KoS only. Both are
+disabled outright when `SpyPerCharDB` is absent, with the tab saying why.
 
-What has to move, from Spy's saved variables:
-
-- `SpyPerCharDB.KOSData` — the Kill-on-Sight list, and the reasons attached to each
-- `SpyPerCharDB.PlayerData` — every player ever seen: class, level, guild, race,
-  last-seen time and location, healer flag, win/loss counts
-- `SpyPerCharDB.IgnoreData` — the ignore list
-- `SpyDB` — profile settings, if worth carrying (optional; the config has diverged
-  enough that a fresh profile may be the better default)
-
-Design notes:
-
-- A button in **Data → Storage**, not automatic. Importing should be a decision.
-- **Merge, don't replace.** Someone may have used both. Keep the higher win/loss
-  counts and the more recent last-seen; never silently discard a KoS entry.
-- **Report what happened** — "imported 1,240 players, 37 KoS, 12 ignored" — rather
-  than a silent success. A silent import that half-worked is indistinguishable from
-  one that worked.
-- Import is only possible while the original Spy is *installed*, since its saved
-  variables have to be loaded for us to read them. Say so plainly in the UI if
-  `SpyPerCharDB` is not present, rather than showing a button that does nothing.
-- Non-destructive to the source: read only, never write back to Spy's tables.
+Spy's own settings are deliberately not carried: the config has diverged far enough
+that a fresh profile is the better default.
 
 ---
 
-## 4. Healer spell list as a proper list widget
+## 4. Healer spell list as a proper list widget — **DONE**
 
-Currently a multiline text box. Wanted instead: a scrolling list like
-BetterBlizzFrames' aura filter — one row per spell with its icon, name, spell id,
-and an X to remove it, plus an "Add" box underneath.
+Shipped as `Ping/SpellListWidget.lua`, an AceGUI widget registered as
+`PingSpellList` and attached to both lists with `dialogControl`. One row per spell:
+icon, name, spell id (plus the duration for cooldowns), and an X to remove it, with
+an add box and Add button underneath. Rows carry a spell tooltip on hover.
 
-Notes for whoever builds it:
+Two decisions worth knowing about:
 
-- AceConfig has no list-of-rows widget, so this needs a **custom AceGUI widget**
-  (or a plain frame embedded via `dialogControl`). That is the bulk of the work,
-  not the data side — the data is already a parsed list and `Ping:BuildHealerSpellNames`
-  already handles names, ids and links.
-- Icons come from `GetSpellTexture(id)`. The current list stores NAMES, not ids, so
-  either store ids alongside (better for icons) or resolve name → id at display
-  time, which is not reliable in reverse.
-- The same widget should serve the **cooldown watch list**, which has the identical
-  shape (spell rows + add box). Build it once, use it twice.
-- Keep the text box as an import/export escape hatch, or a "paste a list" mode —
-  it is the only practical way to move a list between profiles or characters.
+- **The stored value did not change.** It is still the same newline-separated text,
+  so `BuildHealerSpellNames`, `BuildCooldownLookup`, the reset buttons and the
+  transfer code all work untouched. It also means AceConfigDialog falls back to the
+  plain multiline box on its own if the widget ever fails to load, so a bug here
+  cannot cost anybody their list.
+- **Untouched rows are written back verbatim.** The cooldown list uses a trailing
+  `= 120` to override a duration and allows `--` comments; rebuilding lines from
+  parsed fields would have quietly dropped both.
+
+Adding accepts a shift-clicked spell link, a bare id, or a typed name, and refuses
+duplicates by either id or name. A line whose id the client cannot resolve is kept
+and shown in red with a question-mark icon rather than dropped — that is the signal
+that a line is not matching anything.
+
+Still open: there is no longer a raw-text view of either list. Moving a list between
+characters goes through **Data → Transfer** instead, which covers it, but a
+"paste a list" mode would be cheaper for bulk edits.
 
 ---
 

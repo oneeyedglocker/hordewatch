@@ -45,6 +45,8 @@ Locales\Ping-ruRU.lua
 Locales\Ping-zhTW.lua
 Locales\Ping-zhCN.lua
 
+SpellListWidget.lua
+
 Ping.lua
 Fonts.lua
 Colors.lua
