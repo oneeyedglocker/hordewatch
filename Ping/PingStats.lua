@@ -361,7 +361,7 @@ function PingStats:Cleanup()
     for i in ipairs(units.display) do units.display[i] = nil end
 end
 
-function CreateStatsDropdown(node)
+function Ping_CreateStatsDropdown(node)
     local info = {}
     local unit = node.unit
     local session = PingData:GetUnitSession(unit)
@@ -441,7 +441,7 @@ function Ping:ShowStatsDropDown(node, button)
 	PingStatsDropDownMenu.unit = node.unit
     local cursor = GetCursorPosition() / UIParent:GetEffectiveScale()
     local center = node:GetLeft() + (node:GetWidth() / 2)
-    UIDropDownMenu_Initialize(PingStatsDropDownMenu, CreateStatsDropdown, "MENU")
+    UIDropDownMenu_Initialize(PingStatsDropDownMenu, Ping_CreateStatsDropdown, "MENU")
     UIDropDownMenu_SetAnchor(PingStatsDropDownMenu, cursor - center, 0, "TOPRIGHT", node, "TOP")
     CloseDropDownMenus(1)
     ToggleDropDownMenu(1, nil, PingStatsDropDownMenu)    

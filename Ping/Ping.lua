@@ -3899,6 +3899,10 @@ local Ping_CombatEvents = {
 }
 
 function Ping:CombatLogEvent(info, timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGUID, dstName, dstFlags, destRaidFlags, ...)
+-- arg12..arg16 were globals, written on EVERY combat log event - the hottest
+-- path in the addon - and Spy writes globals of the same name. Every use is
+-- inside this function, so they are locals now.
+local arg12, arg13, arg14, arg15, arg16
 timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGUID, dstName, dstFlags, destRaidFlags, arg12, arg13, arg14, arg15, arg16 = CombatLogGetCurrentEventInfo()
 	if Ping.EnabledInZone then
 
@@ -4244,8 +4248,12 @@ function Ping:ShowMapNote(player)
 	local playerData = PingPerCharDB.PlayerData[player]
 	if playerData then
 		local currentMapID, TOP_MOST = C_Map.GetBestMapForUnit('player'), true
+		-- Declared local: without this both of these are globals, and Spy
+		-- writes globals of the same name, so the two addons scribble on each
+		-- other whenever a map note is placed.
+		local continentID, currentContinentID
 		local currentContinentInfo = MapUtil.GetMapParentInfo(currentMapID, Enum.UIMapType.Continent, true)
-		if currentContinentInfo then 
+		if currentContinentInfo then
 			currentContinentID = currentContinentInfo.mapID	
 		else
 			currentContinentID = currentMapID
