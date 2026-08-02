@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.8.2"
+Ping.Version = "2.8.3"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -3812,12 +3812,61 @@ end
 Ping.HealerSpellNames = {}
 Ping.HealerSpellCount = 0
 
+-- Early builds seeded this list as bare spell names, then set the seeded flag,
+-- so those profiles never received the "Name (id)" format that replaced it.
+-- Matching is by name and works either way, but with no id there is no icon and
+-- no id to show, which is what the rows UI ends up drawing: a column of
+-- question marks.
+--
+-- This adds the id back to any line whose name is one Ping ships with. Lines
+-- that already carry an id, and anything the user added themselves, are left
+-- exactly as they are.
+local function upgradeHealerListIds(p)
+	if p.HealerSpellListIdsUpgraded then return end
+	if not p.HealerSpellListSeeded then return end	-- a fresh profile seeds with ids anyway
+	if not GetSpellInfo then return end
+
+	local idByName = {}
+	local resolved = 0
+	for _, id in ipairs(Ping_HealerSpellIDs) do
+		local ok, name = pcall(GetSpellInfo, id)
+		if ok and type(name) == "string" and name ~= "" then
+			idByName[name] = id
+			resolved = resolved + 1
+		end
+	end
+	-- Called before the client can answer: leave the flag alone and try again
+	-- on the next build rather than marking a profile upgraded that is not.
+	if resolved == 0 then return end
+
+	local lines, changed = {}, false
+	for line in (p.HealerSpellListText or ""):gmatch("[^\n]+") do
+		local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
+		local hasId = trimmed:match("spell:(%d+)") or trimmed:match("%((%d+)%)") or trimmed:match("^%d+$")
+		local id = (not hasId) and idByName[trimmed] or nil
+		if id then
+			lines[#lines + 1] = format("%s (%d)", trimmed, id)
+			changed = true
+		else
+			lines[#lines + 1] = line
+		end
+	end
+
+	if changed then
+		p.HealerSpellListText = table.concat(lines, "\n")
+	end
+	p.HealerSpellListIdsUpgraded = true
+end
+
 function Ping:BuildHealerSpellNames()
 	local p = Ping.db and Ping.db.profile
 	if not p then return 0 end
 	if not p.HealerSpellListSeeded then
 		p.HealerSpellListText = defaultHealerListText()
 		p.HealerSpellListSeeded = true
+		p.HealerSpellListIdsUpgraded = true
+	else
+		upgradeHealerListIds(p)
 	end
 	wipe(Ping.HealerSpellNames)
 	local n = 0
@@ -3836,6 +3885,7 @@ end
 function Ping:ResetHealerSpellList()
 	Ping.db.profile.HealerSpellListText = defaultHealerListText()
 	Ping.db.profile.HealerSpellListSeeded = true
+	Ping.db.profile.HealerSpellListIdsUpgraded = true
 	Ping:BuildHealerSpellNames()
 end
 
