@@ -67,7 +67,7 @@ L["PingDescription2"] = [[
 • KoS reasons, KoS-guild detection, class focus, healer-only filtering and kill-priority ordering.
 • Confirmed-healer detection based on observed healing of other players. The healing-spell whitelist is editable.
 • Editable enemy cooldown watch list. Used defensives and trinkets display a live countdown on the enemy row.
-• Healer markers, healer/KoS edge accents, aggregate enemy/healer count, class bars and class-coloured names.
+• Healer and KoS edge accents, aggregate enemy/healer count, class bars and class-coloured names.
 
 |cffffd000 History, maps and sharing|cffffffff
 • Searchable encounter statistics with guild, level, wins, losses, last-seen location and KoS filters.
@@ -197,8 +197,8 @@ L["TargetPickerDescription"] = [[
 Tune the Nearby list for picking who to attack: highlight likely healers, keep the list tidy, and adjust the window's look and behaviour.
 ]]
 L["THealers"] = "Healers"
-L["MarkHealers"] = "Mark healers"
-L["MarkHealersDescription"] = "Show a coloured marker on likely-healer rows so they stand out in the list."
+L["MarkHealers"] = "Highlight healers"
+L["MarkHealersDescription"] = "Master switch for every healer highlight below."
 L["HealerDetectBy"] = "Detect healers by"
 L["HealerDetectByDescription"] = "How a player is judged to be a healer."
 L["HealerDetectByClass"] = "Heal-capable class (guess)"
@@ -263,7 +263,7 @@ L["SortHealersToTop"] = "Sort healers to the top"
 L["SortHealersToTopDescription"] = "Float likely healers above other players within the Nearby list."
 L["HealerGreenEdge"] = "Healer edge accent"
 L["HealerGreenEdgeDescription"] = "Show a coloured stripe on the left edge of healer rows."
-L["HealerEdgeColor"] = "Healer edge colour"
+L["HealerEdgeColor"] = "Healer colour"
 L["DimNonHealers"] = "Dim non-healers"
 L["DimNonHealersDescription"] = "Lower the opacity of non-healer (and non-KoS) rows to make healers pop."
 L["TLook"] = "List Look"
@@ -772,9 +772,9 @@ L["DistanceCeilings"] = "Highest your client accepts: nameplates %s yards, view 
 -- Healer spell list - editable
 ------------------------------------------------------------------------------
 L["HealerSpellListHeader"] = "Healing spells"
-L["HealerSpellListIntro"] = "Only these spells mark a healer. Delete a line to stop counting it; add a name, spell id, or shift-clicked spell link to start."
+L["HealerSpellListIntro"] = "Only these spells mark a healer. Shift-click a spell or paste its ID to add it; press the X to remove one."
 L["HealerSpellList"] = "Whitelisted healing spells"
-L["HealerSpellListDescription"] = "One spell per line in Spell Name (ID) format. IDs, names, and shift-clicked spell links are also accepted."
+L["HealerSpellListDescription"] = "Matched by the spell name your client reports. Adding needs an ID or a spell link so the name is always the right one."
 L["HealerSpellListStatus"] = "%d spells recognised right now."
 L["HealerSpellListReset"] = "Reset to the researched TBC list"
 L["HealerSpellListResetDescription"] = "Discards every edit and restores the 24 spells Ping shipped with."
@@ -785,6 +785,8 @@ L["HealerSpellListResetDescription"] = "Discards every edit and restores the 24 
 L["SpellListAdd"] = "Add"
 L["SpellListEmpty"] = "Nothing in this list."
 L["SpellListUnknown"] = "This client does not know this spell id."
+L["SpellListNeedId"] = "Add spells by spell ID or shift-clicked spell link - a typed name cannot be matched reliably."
+L["SpellListUnresolvedId"] = "Spell ID %d is not in this client's data - added, but it will not match a healing spell."
 
 ------------------------------------------------------------------------------
 -- Cooldown watch list - editable
@@ -802,7 +804,7 @@ L["NavigationColor"] = "Navigation arrows"
 L["CountColor"] = "Enemy count"
 L["CloseColor"] = "Close button"
 L["CooldownListHeader"] = "Cooldowns watched"
-L["CooldownListIntro"] = "Only these spells are tracked. Delete a line to stop watching it; add a spell id or a shift-clicked spell link to start."
+L["CooldownListIntro"] = "Only these spells are tracked. Shift-click a spell or paste its ID to add it; press the X to remove one."
 L["CooldownList"] = "Watched spells"
 L["CooldownListDescription"] = "One spell per line in Spell Name (ID) = seconds format. The duration is optional; IDs and shift-clicked spell links are also accepted."
 L["CooldownListStatus"] = "%d spells watched."

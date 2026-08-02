@@ -992,55 +992,19 @@ function Ping:ApplyRowText(Row)
 	end
 	Row.RightText:SetTextColor(barText.r, barText.g, barText.b, opacity)
 
-	-- Healer marker.
-	local showMarker = isHealer and Ping.db.profile.MarkHealers
-	local markerSide = Ping.db.profile.HealerMarkerSide or "right"
-	local markerReserve = 0
-	if Row.HealerMarker then
-		if showMarker then
-			local style = Ping.db.profile.HealerMarkerStyle or "cross"
-			local glyph = "+"
-			if style == "asterisk" then
-				glyph = "*"
-			elseif style == "dot" then
-				glyph = "\226\151\143" -- ● U+25CF
-			end
-			Row.HealerMarker:SetText(glyph)
-			local mc = Ping.Colors:GetColor("Ping", "Healer Marker")
-			if mc then Row.HealerMarker:SetTextColor(mc.r, mc.g, mc.b, 1) end
-			Row.HealerMarker:ClearAllPoints()
-			if markerSide == "left" then
-				Row.HealerMarker:SetPoint("LEFT", Row.StatusBar, "LEFT", leftInset, 0)
-				Row.HealerMarker:SetJustifyH("LEFT")
-			else
-				Row.HealerMarker:SetPoint("RIGHT", Row.StatusBar, "RIGHT", -2, 0)
-				Row.HealerMarker:SetJustifyH("RIGHT")
-			end
-			Row.HealerMarker:Show()
-			markerReserve = 12
-		else
-			Row.HealerMarker:Hide()
-		end
-	end
+	-- The healer marker glyph was removed: the green left-edge accent already
+	-- says "healer", and two indicators for one fact is noise. The FontString is
+	-- kept created but permanently hidden so row layout code below stays honest.
+	if Row.HealerMarker then Row.HealerMarker:Hide() end
 
-	-- Re-anchor the level/class text to leave room for a right-side marker.
 	Row.RightText:ClearAllPoints()
-	if showMarker and markerSide == "right" then
-		Row.RightText:SetPoint("RIGHT", Row.StatusBar, "RIGHT", -2 - markerReserve, 0)
-	else
-		Row.RightText:SetPoint("RIGHT", Row.StatusBar, "RIGHT", -2, 0)
-	end
+	Row.RightText:SetPoint("RIGHT", Row.StatusBar, "RIGHT", -2, 0)
 
-	-- Re-anchor the name (inset past the edge stripe, and past a left marker)
-	-- and size it to whatever width is left.
-	local rightReserve = (showMarker and markerSide == "right") and markerReserve or 0
-	local leftOffset = leftInset
-	if showMarker and markerSide == "left" then
-		leftOffset = leftInset + markerReserve
-	end
+	-- Re-anchor the name (inset past the edge stripe) and size it to whatever
+	-- width is left.
 	Row.LeftText:ClearAllPoints()
-	Row.LeftText:SetPoint("LEFT", Row.StatusBar, "LEFT", leftOffset, 0)
-	Row.LeftText:SetWidth(Row:GetWidth() - Row.RightText:GetStringWidth() - rightReserve - leftOffset - 4)
+	Row.LeftText:SetPoint("LEFT", Row.StatusBar, "LEFT", leftInset, 0)
+	Row.LeftText:SetWidth(Row:GetWidth() - Row.RightText:GetStringWidth() - leftInset - 4)
 
 	-- Apply the left-edge accent decided above.
 	if Row.RowEdge then
@@ -1535,7 +1499,7 @@ function Ping:UpdateWindowTitle()
 	if not data then return end
 	local title = data[1]
 	if Ping.db.profile.HealerOnlyFilter and mode == 1 then
-		local hc = Ping.db.profile.Colors["Ping"]["Healer Marker"]
+		local hc = Ping.db.profile.Colors["Ping"]["Healer Edge"]
 		local hex = hc and format("%02x%02x%02x", hc.r * 255, hc.g * 255, hc.b * 255) or "4fe27a"
 		title = title .. format(" |cff%s(%s)|r", hex, L["HealersOnlyTag"])
 	end

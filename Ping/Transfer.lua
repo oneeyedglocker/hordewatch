@@ -11,7 +11,7 @@ local PLAYER_FIELDS = {
 local APPEARANCE_FIELDS = {
 	"LookPreset", "LookTheme", "ClassColoredNames", "BarOpacity", "Font", "BarTexture",
 	"ShowBackground", "BackgroundOpacity", "ShowBorder", "WindowScale", "TitleBarStyle",
-	"TitleBarOpacity", "HealerMarkerStyle", "HealerMarkerSide", "HealerGreenEdge",
+	"TitleBarOpacity", "HealerGreenEdge",
 	"MarkHealers", "DimNonHealers", "ArtworkStyle",
 }
 local MAIN_WINDOW_FIELDS = { "RowHeight", "RowSpacing", "TextHeight", "Alpha", "AlphaBG" }

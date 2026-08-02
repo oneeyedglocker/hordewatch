@@ -282,23 +282,48 @@ end
 ------------------------------------------------------------------------------
 -- adding
 ------------------------------------------------------------------------------
--- Accepts what a person can actually produce in game: a shift-clicked spell
--- link, an id copied from a website, or a typed name.
+local function say(message)
+	local Ping = _G.Ping
+	if Ping and Ping.Print then Ping:Print(message) end
+end
+
+-- An ID IS REQUIRED. A typed name is refused, for two reasons that only bite
+-- after the fact:
+--
+--   * The cooldown list matches on id alone - UNIT_SPELLCAST_SUCCEEDED hands
+--     over a number and no name - so a name there never matches anything.
+--   * The healer list matches on name, but on the name THE CLIENT USES. Typing
+--     "Flash of Light" on a German client never matches "Blitz der
+--     Erleuchtung". Resolving the id gives the right name in any locale.
+--
+-- Either way a typed name looks accepted and quietly does nothing, which is
+-- the worst outcome. Refusing it with a reason is better than a dead line.
+-- Lines already in the list are untouched by this: they still parse and match
+-- exactly as before.
 local function addFromText(widget, text)
 	text = trim(text or "")
 	if text == "" then return end
 
 	local id = tonumber(text:match("spell:(%d+)")) or tonumber(text:match("%((%d+)%)")) or tonumber(text:match("^(%d+)$"))
+	if not id then
+		say(loc("SpellListNeedId", "Add spells by spell ID or shift-clicked spell link - a typed name cannot be matched reliably."))
+		return
+	end
+
 	local bracketed = text:match("%[([^%]]+)%]")
-	local name = bracketed or (id and spellName(id)) or text
+	local resolved = spellName(id)
+	local name = resolved or bracketed
+	if not resolved then
+		-- Still added: for the cooldown list a bare id matches perfectly well.
+		-- But it will not match in the healer list, which goes by name, so say so.
+		say(format(loc("SpellListUnresolvedId", "Spell ID %d is not in this client's data - added, but it will not match a healing spell."), id))
+	end
 
 	local raw
-	if id and name then
+	if name then
 		raw = format("%s (%d)", name, id)
-	elseif id then
-		raw = tostring(id)
 	else
-		raw = name
+		raw = tostring(id)
 	end
 
 	-- Silently adding a second copy would look like the add did nothing.

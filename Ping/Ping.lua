@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.8.3"
+Ping.Version = "2.8.4"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -461,52 +461,6 @@ Ping.options = {
 							get = function() return Ping.db.profile.HealerMinHeal end,
 							set = function(_, value) Ping.db.profile.HealerMinHeal = value end,
 						},
-						HealerMarkerStyle = {
-							name = L["HealerMarkerStyle"],
-							desc = L["HealerMarkerStyleDescription"],
-							type = "select",
-							order = 4,
-							values = {
-								["cross"] = L["HealerMarkerCross"],
-								["asterisk"] = L["HealerMarkerAsterisk"],
-								["dot"] = L["HealerMarkerDot"],
-							},
-							get = function() return Ping.db.profile.HealerMarkerStyle end,
-							set = function(_, value)
-								Ping.db.profile.HealerMarkerStyle = value
-								Ping:RefreshCurrentList()
-							end,
-						},
-						HealerMarkerSide = {
-							name = L["HealerMarkerSide"],
-							desc = L["HealerMarkerSideDescription"],
-							type = "select",
-							order = 5,
-							values = {
-								["right"] = L["HealerMarkerRight"],
-								["left"] = L["HealerMarkerLeft"],
-							},
-							get = function() return Ping.db.profile.HealerMarkerSide end,
-							set = function(_, value)
-								Ping.db.profile.HealerMarkerSide = value
-								Ping:RefreshCurrentList()
-							end,
-						},
-						HealerMarkerColor = {
-							name = L["HealerMarkerColor"],
-							type = "color",
-							order = 6,
-							hasAlpha = false,
-							get = function()
-								local c = Ping.db.profile.Colors["Ping"]["Healer Marker"]
-								return c.r, c.g, c.b
-							end,
-							set = function(_, r, g, b)
-								local c = Ping.db.profile.Colors["Ping"]["Healer Marker"]
-								c.r, c.g, c.b = r, g, b
-								Ping:RefreshCurrentList()
-							end,
-						},
 						SortHealersToTop = {
 							name = L["SortHealersToTop"],
 							desc = L["SortHealersToTopDescription"],
@@ -761,15 +715,6 @@ Ping.options = {
 								c.r, c.g, c.b = r, g, b
 								Ping:RefreshCurrentList()
 							end,
-						},
-						KOSGuildAlertCooldown = {
-							name = L["KOSGuildAlertCooldown"],
-							desc = L["KOSGuildAlertCooldownDescription"],
-							type = "range",
-							order = 4,
-							min = 0, max = 120, step = 5,
-							get = function() return Ping.db.profile.KOSGuildAlertCooldown end,
-							set = function(_, value) Ping.db.profile.KOSGuildAlertCooldown = value end,
 						},
 						cdListHeader = {
 							name = L["CooldownListHeader"],
@@ -1522,6 +1467,19 @@ Ping.options = {
 					type = "group",
 					order = 2,
 					args = {
+						-- Throttles an ALERT, so it belongs with the other alert
+						-- controls rather than under Targeting's cooldown tracking,
+						-- which is about enemy defensive cooldowns and unrelated.
+						KOSGuildAlertCooldown = {
+							name = L["KOSGuildAlertCooldown"],
+							desc = L["KOSGuildAlertCooldownDescription"],
+							type = "range",
+							order = 0,
+							width = "full",
+							min = 0, max = 120, step = 5,
+							get = function() return Ping.db.profile.KOSGuildAlertCooldown end,
+							set = function(_, value) Ping.db.profile.KOSGuildAlertCooldown = value end,
+						},
 						Announce = {
 							name = L["Announce"],
 							type = "group",
@@ -2486,8 +2444,6 @@ local Default_Profile = {
 		StrictHealerDetection=true,	-- only real healing spells count, not anything that heals
 		HealerSpellListText="",		-- seeded from the built-in whitelist the first time it's needed
 		HealerSpellListSeeded=false,
-		HealerMarkerStyle="cross",	-- cross | asterisk | dot
-		HealerMarkerSide="right",	-- right | left
 		SortHealersToTop=true,
 		HealerGreenEdge=true,
 		DimNonHealers=false,
@@ -2766,8 +2722,6 @@ function Ping:CheckDatabase()
 	local p = Ping.db.profile
 	if p.MarkHealers == nil then p.MarkHealers = Default_Profile.profile.MarkHealers end
 	if p.HealerDetectBy == nil then p.HealerDetectBy = Default_Profile.profile.HealerDetectBy end
-	if p.HealerMarkerStyle == nil then p.HealerMarkerStyle = Default_Profile.profile.HealerMarkerStyle end
-	if p.HealerMarkerSide == nil then p.HealerMarkerSide = Default_Profile.profile.HealerMarkerSide end
 	if p.SortHealersToTop == nil then p.SortHealersToTop = Default_Profile.profile.SortHealersToTop end
 	if p.HealerGreenEdge == nil then p.HealerGreenEdge = Default_Profile.profile.HealerGreenEdge end
 	if p.DimNonHealers == nil then p.DimNonHealers = Default_Profile.profile.DimNonHealers end

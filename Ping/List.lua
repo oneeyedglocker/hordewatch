@@ -371,7 +371,9 @@ function Ping:UpdateActiveCount()
 	-- fast to read, but "how many, and how many of them heal" stays useful.
 	local text
 	if Ping.db.profile.ShowAggregateHeader and healerCount > 0 then
-		local hc = Ping.db.profile.Colors["Ping"]["Healer Marker"]
+		-- One healer colour drives the edge stripe and this count. There used to
+		-- be a separate "Healer Marker" colour for the marker glyph, which is gone.
+		local hc = Ping.db.profile.Colors["Ping"]["Healer Edge"]
 		local hex = hc and format("%02x%02x%02x", hc.r * 255, hc.g * 255, hc.b * 255) or "4fe27a"
 		local count = Ping.db.profile.Colors.Ping.Count
 		local countHex = count and format("%02x%02x%02x", count.r * 255, count.g * 255, count.b * 255) or "0070de"
