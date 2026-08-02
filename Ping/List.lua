@@ -373,9 +373,13 @@ function Ping:UpdateActiveCount()
 	if Ping.db.profile.ShowAggregateHeader and healerCount > 0 then
 		local hc = Ping.db.profile.Colors["Ping"]["Healer Marker"]
 		local hex = hc and format("%02x%02x%02x", hc.r * 255, hc.g * 255, hc.b * 255) or "4fe27a"
-		text = format("|cFF0070DE%d|r |cff%s%dH|r", activeCount, hex, healerCount)
+		local count = Ping.db.profile.Colors.Ping.Count
+		local countHex = count and format("%02x%02x%02x", count.r * 255, count.g * 255, count.b * 255) or "0070de"
+		text = format("|cff%s%d|r |cff%s%dH|r", countHex, activeCount, hex, healerCount)
 	else
-		text = format("|cFF0070DE%d|r", activeCount)
+		local count = Ping.db.profile.Colors.Ping.Count
+		local countHex = count and format("%02x%02x%02x", count.r * 255, count.g * 255, count.b * 255) or "0070de"
+		text = format("|cff%s%d|r", countHex, activeCount)
 	end
 	theFrame.CountFrame.Text:SetText(text)
 end
@@ -602,6 +606,110 @@ function Ping:AddKOSData(name)
 	if Ping.db.profile.ShareKOSBetweenCharacters then
 		PingDB.removeKOSData[Ping.RealmName][Ping.FactionName][name] = nil
 	end
+end
+
+-- Merge the current character's original Spy database into Ping. Spy remains
+-- untouched; only compatible player/list fields are copied. Keeping this
+-- explicit instead of assigning SpyPerCharDB wholesale also avoids importing
+-- old transient UI state or replacing newer sightings already learned by Ping.
+local SpyPlayerFields = {
+	"name", "class", "level", "race", "guild", "faction", "isEnemy",
+	"isGuess", "time", "wins", "loses", "mapX", "mapY", "mapID", "zone",
+	"subZone", "kos", "isHealer", "healTotal", "healCount", "lastHeal",
+}
+
+local function mergeSpyPlayer(name, source)
+	if type(name) ~= "string" or type(source) ~= "table" then return false end
+	local target = PingPerCharDB.PlayerData[name]
+	local created = target == nil
+	if created then
+		target = { name = name }
+		PingPerCharDB.PlayerData[name] = target
+	end
+
+	local sourceIsNewer = (tonumber(source.time) or 0) >= (tonumber(target.time) or 0)
+	local sourceHasExactLevel = type(source.level) == "number" and source.isGuess == false
+	local targetHasExactLevel = type(target.level) == "number" and target.isGuess == false
+	for _, field in ipairs(SpyPlayerFields) do
+		local value = source[field]
+		-- Confidence outranks recency for level data. A combat-log guess made a
+		-- second ago must not beat a confirmed level Spy learned yesterday, and
+		-- a newer guess must never downgrade an exact level already held by Ping.
+		if field ~= "level" and field ~= "isGuess" and value ~= nil then
+			if field == "wins" or field == "loses" or field == "healTotal" or field == "healCount" then
+				target[field] = math.max(tonumber(target[field]) or 0, tonumber(value) or 0)
+			elseif target[field] == nil or sourceIsNewer then
+				target[field] = value
+			end
+		end
+	end
+	if sourceHasExactLevel and (not targetHasExactLevel or sourceIsNewer) then
+		target.level = source.level
+		target.isGuess = false
+	elseif not targetHasExactLevel and sourceIsNewer then
+		if type(source.level) == "number" then target.level = source.level end
+		if source.isGuess ~= nil then target.isGuess = source.isGuess end
+	end
+	if type(source.reason) == "table" then
+		target.reason = target.reason or {}
+		for reason, value in pairs(source.reason) do target.reason[reason] = value end
+	end
+	return created
+end
+
+function Ping:GetSpyImportStatus()
+	if type(_G.SpyPerCharDB) ~= "table" then
+		return L["SpyImportUnavailable"]
+	end
+	local players = type(_G.SpyPerCharDB.PlayerData) == "table" and _G.SpyPerCharDB.PlayerData or {}
+	local kos = type(_G.SpyPerCharDB.KOSData) == "table" and _G.SpyPerCharDB.KOSData or {}
+	local playerCount, kosCount = 0, 0
+	for _ in pairs(players) do playerCount = playerCount + 1 end
+	for _ in pairs(kos) do kosCount = kosCount + 1 end
+	if Ping.SpyImportStatus then return Ping.SpyImportStatus end
+	return format(L["SpyImportReady"], playerCount, kosCount)
+end
+
+function Ping:ImportSpyData(kosOnly)
+	local source = _G.SpyPerCharDB
+	if type(source) ~= "table" then
+		Ping.SpyImportStatus = L["SpyImportUnavailable"]
+		Ping:Print(Ping.SpyImportStatus)
+		return
+	end
+
+	local imported, kosImported, ignoredImported = 0, 0, 0
+	local players = type(source.PlayerData) == "table" and source.PlayerData or {}
+	local kos = type(source.KOSData) == "table" and source.KOSData or {}
+	local ignored = type(source.IgnoreData) == "table" and source.IgnoreData or {}
+
+	if not kosOnly then
+		for name, data in pairs(players) do
+			mergeSpyPlayer(name, data)
+			imported = imported + 1
+		end
+		for name, value in pairs(ignored) do
+			if value then
+				if players[name] then mergeSpyPlayer(name, players[name]) end
+				PingPerCharDB.IgnoreData[name] = value
+				ignoredImported = ignoredImported + 1
+			end
+		end
+	end
+	for name, added in pairs(kos) do
+		if players[name] then mergeSpyPlayer(name, players[name]) end
+		local old = PingPerCharDB.KOSData[name]
+		PingPerCharDB.KOSData[name] = math.max(tonumber(old) or 0, tonumber(added) or time())
+		PingPerCharDB.IgnoreData[name] = nil
+		if PingPerCharDB.PlayerData[name] then PingPerCharDB.PlayerData[name].kos = 1 end
+		kosImported = kosImported + 1
+	end
+
+	if Ping.db.profile.ShareKOSBetweenCharacters then Ping:RegenerateKOSCentralList() end
+	Ping:RegenerateKOSGuildList()
+	Ping:RefreshCurrentList()
+	Ping.SpyImportStatus = format(L["SpyImportComplete"], imported, kosImported, ignoredImported)
+	Ping:Print(Ping.SpyImportStatus)
 end
 
 function Ping:RemoveKOSData(name)
@@ -1056,13 +1164,15 @@ function Ping:RegenerateKOSListFromCentral()
 	for characterName in pairs(kosData) do
 		if characterName ~= Ping.CharacterName then
 			local characterKosData = kosData[characterName]
-			for player in pairs(characterKosData) do
-				if not PingDB.removeKOSData[Ping.RealmName][Ping.FactionName][player] then
-					local playerData = PingPerCharDB.PlayerData[player]
-					if not playerData then
-						playerData = Ping:AddPlayerData(player, class, level, race, guild, faction, isEnemy, isGuess)
-					end
-					local kosPlayerData = characterKosData[player]
+				for player in pairs(characterKosData) do
+					if not PingDB.removeKOSData[Ping.RealmName][Ping.FactionName][player] then
+						local kosPlayerData = characterKosData[player]
+						local playerData = PingPerCharDB.PlayerData[player]
+						if not playerData then
+							playerData = Ping:AddPlayerData(player, kosPlayerData.class, kosPlayerData.level,
+								kosPlayerData.race, kosPlayerData.guild, kosPlayerData.faction,
+								kosPlayerData.isEnemy ~= false, kosPlayerData.isGuess)
+						end
 					if kosPlayerData.time and (not playerData.time or (playerData.time and playerData.time < kosPlayerData.time)) then
 						playerData.time = kosPlayerData.time
 						if kosPlayerData.class then
@@ -1408,6 +1518,7 @@ end
 
 function Ping:AddDetectedToLists(player, timestamp, learnt, source)
 	if not Ping.NearbyList[player] then
+		Ping:RecordEncounter("detected", player, source and format(L["HistoryReportedBy"], source) or nil)
 		if Ping.db.profile.ShowOnDetection and not Ping.db.profile.MainWindowVis then
 			Ping:SetCurrentList(1)
 			Ping:EnablePing(true, true, true)
@@ -1437,6 +1548,7 @@ function Ping:AddDetectedToLists(player, timestamp, learnt, source)
 			end
 		end
 	elseif not Ping.ActiveList[player] then
+		Ping:RecordEncounter("returned", player, source and format(L["HistoryReportedBy"], source) or nil)
 		if Ping.db.profile.ShowOnDetection and not Ping.db.profile.MainWindowVis then
 			Ping:SetCurrentList(1)
 			Ping:EnablePing(true, true, true)

@@ -3,12 +3,42 @@
 Ping is a fork of the **Spy** addon by Slipjack, renamed so that both can be
 installed and run at the same time. It uses its own saved variables, frame names
 and slash command (`/ping`), so it shares nothing with Spy and cannot overwrite
-it — but that also means it starts with an empty database rather than inheriting
-your existing Spy history. Importing that is a separate feature; see BACKLOG.md.
+it. To copy existing history, enable Spy for one login and use **Ping Settings >
+Data > Spy Import**. The importer merges all lists or only Kill On Sight and
+never changes Spy's own saved data.
 
 Changes from Spy include confirmed-heal healer detection, class focus, enemy
 cooldown tracking, a rebuilt options panel, colour themes, and nameplate/view
-distance controls.
+distance controls. Ping also has native import/export codes under **Data > Import
+/ Export** for selected lists, spell rules, and appearance settings.
+
+The **Look** category is a single scrollable page: window/theme controls first,
+then row and typography controls. The **Blacked Out** theme removes nearly all
+colour and reduces class-bar fill while keeping combat signals legible. Theme
+palettes now include semantic colours for utility icons, navigation arrows, the
+enemy count, and the close button, so switching themes replaces the whole header
+palette instead of leaving colours behind.
+
+The full-artwork presets include **Obsidian Tactical**, **Arcane Glass**,
+**Warcamp**, **Minimal Ink**, **Clean Glass**, **Unitframe Clean**, and
+**Villain HUD**. Each adds compact history, targeting, navigation and close artwork,
+its own generated material panel, semantic chrome colours, and readable class
+fills. Choosing any classic colour theme restores Ping's legacy artwork, so the
+redesigns can be tested without committing the profile to them.
+
+Villain HUD also uses a theme-scoped comic typography hierarchy: OFL-licensed
+Bangers for its title, Expressway for readable player names, and OFL-licensed
+Bebas Neue for the count and level/class data. Switching themes restores the
+font selected in Ping's normal Look settings.
+
+**Data > History** contains a per-character, newest-first encounter timeline for
+sightings, hostile attacks, healer confirmations, watched cooldowns, stealth,
+kills, and deaths. The newest 250 entries are retained and the text can be copied.
+
+Healing spells can be edited under **Ping Settings > Target Picker > Healers**.
+Enter one spell name, spell ID, or shift-clicked spell link per line. Spells shown
+on enemy bars can be edited under **Target Picker > Cooldowns**; those entries
+need a spell ID (a shift-clicked spell link includes one automatically).
 
 ---
 
@@ -75,9 +105,10 @@ https://www.curseforge.com/wow/addons/ping/issues
 Currently enUS, deDE, koKR, ptBR, zhCN and zhTW. 
 Contact me if you are able to provide translations for other languages.
 
-**Authors**
-Created by Immolation from Cho'gall (US).
-Updated by Slipjack
+**Author**
+Oomkill
+
+Ping is a fork of Spy by Slipjack, originally created by Immolation.
 
 ---------
 

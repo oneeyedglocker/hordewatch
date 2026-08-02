@@ -13,7 +13,10 @@ function Ping:CreateFrame(Name, Title, Height, Width, ShowFunc, HideFunc)
 	theFrame:EnableMouse(true)
 	theFrame:SetMovable(true)
 	theFrame:SetScript("OnMouseDown", function(self, event) 
-		if (((not self.isLocked) or (self.isLocked == 0)) and (event == "LeftButton")) then
+		-- The main window has a dedicated title drag target. Letting its entire
+		-- background start a move makes ordinary player-row clicks reach this
+		-- protected call, especially during combat.
+		if Name ~= "Ping_MainWindow" and not InCombatLockdown() and (((not self.isLocked) or (self.isLocked == 0)) and (event == "LeftButton")) then
 			Ping:SetWindowTop(self)
 			self:StartMoving();
 			self.isMoving = true;

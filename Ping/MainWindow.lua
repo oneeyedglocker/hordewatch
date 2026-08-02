@@ -5,6 +5,15 @@ local AceLocale = LibStub("AceLocale-3.0")
 local L = AceLocale:GetLocale("Ping")
 local _
 
+local FULL_ARTWORK_STYLES = {
+	obsidian=true, arcane=true, warcamp=true, minimal=true,
+	clean=true, unitframe=true, villain=true,
+}
+
+local function usesFullArtwork()
+	return Ping.db and Ping.db.profile and FULL_ARTWORK_STYLES[Ping.db.profile.ArtworkStyle] == true
+end
+
 --++ Local FrameFlash functions derived from Blizzard code ++--
 local PingFrameFlashManager = CreateFrame("FRAME");
 local SPYFADEFRAMES = {};
@@ -266,6 +275,7 @@ function Ping:UpdateBarTextures()
 	if Ping.db.profile.Font then
 		Ping:SetFont(Ping.db.profile.Font)
 	end
+	Ping:ApplyThemeFonts()
 end
 
 function Ping:SetBarTextures(handle)
@@ -549,7 +559,7 @@ function Ping:CreateMainWindow()
 		theFrame.TitleClick:EnableMouse(true)
 		theFrame.TitleClick:SetScript("OnMouseDown", function(self, button) 
 			local parent = self:GetParent()
-			if (((not parent.isLocked) or (parent.isLocked == 0)) and (button == "LeftButton")) then
+			if not InCombatLockdown() and (((not parent.isLocked) or (parent.isLocked == 0)) and (button == "LeftButton")) then
 				Ping:SetWindowTop(parent)
 				parent:StartMoving();
 				parent.isMoving = true;
@@ -590,7 +600,7 @@ function Ping:CreateMainWindow()
 				theFrame.DragBottomRight:SetAlpha(1)
 			end)
 			theFrame.DragBottomRight:SetScript("OnMouseDown", function(self, button)
-				if (((not self:GetParent().isLocked) or (self:GetParent().isLocked == 0)) and (button == "LeftButton")) then 
+				if not InCombatLockdown() and (((not self:GetParent().isLocked) or (self:GetParent().isLocked == 0)) and (button == "LeftButton")) then 
 					self:GetParent().isResizing = true;
 					self:GetParent():StartSizing("BOTTOMRIGHT") 
 				end
@@ -621,7 +631,7 @@ function Ping:CreateMainWindow()
 				theFrame.DragBottomLeft:SetAlpha(1)
 			end)
 			theFrame.DragBottomLeft:SetScript("OnMouseDown", function(self, button)
-				if (((not self:GetParent().isLocked) or (self:GetParent().isLocked == 0)) and (button == "LeftButton")) then
+				if not InCombatLockdown() and (((not self:GetParent().isLocked) or (self:GetParent().isLocked == 0)) and (button == "LeftButton")) then
 					self:GetParent().isResizing = true;
 					self:GetParent():StartSizing("BOTTOMLEFT")
 				end
@@ -652,7 +662,7 @@ function Ping:CreateMainWindow()
 				theFrame.DragTopRight:SetAlpha(1)
 			end)
 			theFrame.DragTopRight:SetScript("OnMouseDown", function(self, button)
-				if (((not self:GetParent().isLocked) or (self:GetParent().isLocked == 0)) and (button == "LeftButton")) then
+				if not InCombatLockdown() and (((not self:GetParent().isLocked) or (self:GetParent().isLocked == 0)) and (button == "LeftButton")) then
 					self:GetParent().isResizing = true;
 					self:GetParent():StartSizing("TOPRIGHT")
 				end
@@ -683,7 +693,7 @@ function Ping:CreateMainWindow()
 				theFrame.DragTopLeft:SetAlpha(1)
 			end)		
 			theFrame.DragTopLeft:SetScript("OnMouseDown", function(self, button)
-				if (((not self:GetParent().isLocked) or (self:GetParent().isLocked == 0)) and (button == "LeftButton")) then
+				if not InCombatLockdown() and (((not self:GetParent().isLocked) or (self:GetParent().isLocked == 0)) and (button == "LeftButton")) then
 					self:GetParent().isResizing = true;
 					self:GetParent():StartSizing("TOPLEFT")
 				end
@@ -795,9 +805,9 @@ function Ping:CreateMainWindow()
 		theFrame.CountFrame = CreateFrame("Frame", "PingCountFrame", theFrame)
 		theFrame.CountFrame:SetPoint("RIGHT", theFrame.StatsButton,"LEFT", -4, 0)
 		theFrame.CountFrame:SetHeight(Ping.db.profile.MainWindow.RowHeight)
-		theFrame.CountFrame.Text = CountFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+		theFrame.CountFrame.Text = theFrame.CountFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 		theFrame.CountFrame.Text:SetPoint("RIGHT", theFrame.StatsButton,"LEFT", -4, 0)
-		theFrame.CountFrame.Text:SetFont(select(1, GameFontNormal:GetFont()) or STANDARD_TEXT_FONT or "Fonts\FRIZQT.TTF", Ping.db.profile.MainWindow.RowHeight * 0.85, "OUTLINE")
+		theFrame.CountFrame.Text:SetFont(select(1, GameFontNormal:GetFont()) or STANDARD_TEXT_FONT or "Fonts\\FRIZQT.TTF", Ping.db.profile.MainWindow.RowHeight * 0.85, "OUTLINE")
 		theFrame.CountFrame.Text:SetJustifyH("RIGHT")
 		theFrame.CountFrame.Text:SetJustifyV("MIDDLE")
 		theFrame.CountFrame.Text:SetTextColor(1, 1, 1, 1)
@@ -833,14 +843,11 @@ function Ping:CreateMainWindow()
 		Ping:RestoreMainWindowPosition(Ping.db.profile.MainWindow.Position.x, Ping.db.profile.MainWindow.Position.y, Ping.db.profile.MainWindow.Position.w, 34)
 		Ping:SetupMainWindowButtons()
 		Ping:ResizeMainWindow()
-		Ping:ScheduleRepeatingTimer("ManageExpirations", 10, true)
-		-- Ticks the enemy cooldown countdowns. Only redraws while at least one
-		-- tracked cooldown is actually running, so it idles at zero cost.
-		Ping:ScheduleRepeatingTimer("TickCooldowns", 1)
 		Ping:InitOrder()
 
 		Ping:ApplyWindowLocks()
 		Ping:ApplyWindowStyle()
+		Ping:ApplyThemeChrome()
 	end
 
 	if not Ping.AlertWindow then
@@ -1037,6 +1044,16 @@ function Ping:ApplyRowText(Row)
 
 	-- Apply the left-edge accent decided above.
 	if Row.RowEdge then
+		Row.RowEdge:ClearAllPoints()
+		if usesFullArtwork() then
+			Row.RowEdge:SetPoint("TOPLEFT", Row.StatusBar, "TOPLEFT", 2, -1)
+			Row.RowEdge:SetPoint("BOTTOMLEFT", Row.StatusBar, "BOTTOMLEFT", 2, 1)
+			Row.RowEdge:SetWidth(2)
+		else
+			Row.RowEdge:SetPoint("TOPLEFT", Row.StatusBar, "TOPLEFT", 0, 0)
+			Row.RowEdge:SetPoint("BOTTOMLEFT", Row.StatusBar, "BOTTOMLEFT", 0, 0)
+			Row.RowEdge:SetWidth(3)
+		end
 		if edgeColor then
 			Row.RowEdge:SetVertexColor(edgeColor.r, edgeColor.g, edgeColor.b, edgeColor.a or 1)
 			Row.RowEdge:Show()
@@ -1114,8 +1131,9 @@ end
 Ping.LookThemes = {
 	classic = {
 		name = "Classic Gold",
+		chrome = { Icon=rgb("e8c46a"), Navigation=rgb("7ab8ff"), Count=rgb("4aa3ff"), Close=rgb("ff4a4a") },
 		colors = {
-			{ "Window", "Background",   rgb("1a1712") },
+			{ "Window", "Background",   rgb("2b2113") },
 			{ "Window", "Title",        rgb("c8a04a") },
 			{ "Window", "Title Text",   rgb("ffd100") },
 			{ "Ping",    "Title Bar",    rgb("2e2412") },
@@ -1127,8 +1145,9 @@ Ping.LookThemes = {
 	},
 	midnight = {
 		name = "Midnight",
+		chrome = { Icon=rgb("c0d8ff"), Navigation=rgb("6ba7ff"), Count=rgb("7cc7ff"), Close=rgb("ff6b7a") },
 		colors = {
-			{ "Window", "Background",   rgb("0e1220") },
+			{ "Window", "Background",   rgb("111b33") },
 			{ "Window", "Title",        rgb("4f7fd6") },
 			{ "Window", "Title Text",   rgb("aaccff") },
 			{ "Ping",    "Title Bar",    rgb("1a2440") },
@@ -1140,8 +1159,9 @@ Ping.LookThemes = {
 	},
 	horde = {
 		name = "Horde",
+		chrome = { Icon=rgb("f2b0a0"), Navigation=rgb("ff7b63"), Count=rgb("ff9b70"), Close=rgb("ff4040") },
 		colors = {
-			{ "Window", "Background",   rgb("1c0e0e") },
+			{ "Window", "Background",   rgb("2b1010") },
 			{ "Window", "Title",        rgb("c8231e") },
 			{ "Window", "Title Text",   rgb("ff8a6a") },
 			{ "Ping",    "Title Bar",    rgb("4a1010") },
@@ -1153,8 +1173,9 @@ Ping.LookThemes = {
 	},
 	alliance = {
 		name = "Alliance",
+		chrome = { Icon=rgb("ead078"), Navigation=rgb("79baff"), Count=rgb("59c8ff"), Close=rgb("ff5757") },
 		colors = {
-			{ "Window", "Background",   rgb("0d1220") },
+			{ "Window", "Background",   rgb("101c38") },
 			{ "Window", "Title",        rgb("d4af37") },
 			{ "Window", "Title Text",   rgb("9fd0ff") },
 			{ "Ping",    "Title Bar",    rgb("12224a") },
@@ -1166,8 +1187,9 @@ Ping.LookThemes = {
 	},
 	emerald = {
 		name = "Emerald",
+		chrome = { Icon=rgb("c8ffe0"), Navigation=rgb("55d98a"), Count=rgb("55e6a0"), Close=rgb("ff5e5e") },
 		colors = {
-			{ "Window", "Background",   rgb("0c1a12") },
+			{ "Window", "Background",   rgb("0f2b1a") },
 			{ "Window", "Title",        rgb("3fd67f") },
 			{ "Window", "Title Text",   rgb("8cffbf") },
 			{ "Ping",    "Title Bar",    rgb("12402a") },
@@ -1179,8 +1201,9 @@ Ping.LookThemes = {
 	},
 	mono = {
 		name = "Monochrome",
+		chrome = { Icon=rgb("d8d8d8"), Navigation=rgb("b0b0b0"), Count=rgb("f0f0f0"), Close=rgb("d06060") },
 		colors = {
-			{ "Window", "Background",   rgb("161616") },
+			{ "Window", "Background",   rgb("222222") },
 			{ "Window", "Title",        rgb("b4b4b4") },
 			{ "Window", "Title Text",   rgb("ffffff") },
 			{ "Ping",    "Title Bar",    rgb("2c2c2c") },
@@ -1190,12 +1213,205 @@ Ping.LookThemes = {
 			{ "Ping",    "Cooldown",     rgb("999999") },
 		},
 	},
+	blackout = {
+		name = "Blacked Out",
+		chrome = { Icon=rgb("b0b0b0"), Navigation=rgb("8c8c8c"), Count=rgb("e0e0e0"), Close=rgb("c04040") },
+		colors = {
+			{ "Window", "Background",   rgb("020202") },
+			{ "Window", "Title",        rgb("181818") },
+			{ "Window", "Title Text",   rgb("f0f0f0") },
+			{ "Ping",    "Title Bar",    rgb("050505") },
+			{ "Ping",    "Window Border",rgb("242424") },
+			{ "Ping",    "Healer Marker",rgb("d8d8d8") },
+			{ "Ping",    "Healer Edge",  rgb("a8a8a8") },
+			{ "Ping",    "Cooldown",     rgb("b8b8b8") },
+		},
+		settings = {
+			ClassColoredNames = false,
+			BarOpacity = 0.12,
+			ShowBackground = true,
+			BackgroundOpacity = 1,
+			ShowBorder = true,
+			TitleBarOpacity = 1,
+		},
+	},
+	obsidian = {
+		name = "Obsidian Tactical (new artwork)",
+		artwork = "obsidian",
+		chrome = { Icon=rgb("d7e1e7"), Navigation=rgb("8ccbe6"), Count=rgb("3ec7f2"), Close=rgb("ef513f") },
+		colors = {
+			{ "Window", "Background",   rgb("0c0f12") },
+			{ "Window", "Title",        rgb("3a464e") },
+			{ "Window", "Title Text",   rgb("eef3f5") },
+			{ "Ping",    "Title Bar",    rgb("101419") },
+			{ "Ping",    "Window Border",rgb("5b7b89") },
+			{ "Ping",    "Healer Marker",rgb("53d5da") },
+			{ "Ping",    "Healer Edge",  rgb("53d5da") },
+			{ "Ping",    "Cooldown",     rgb("ff9c38") },
+		},
+		settings = {
+			ClassColoredNames = false,
+			BarOpacity = 0.55,
+			ShowBackground = true,
+			BackgroundOpacity = 0.98,
+			ShowBorder = true,
+			TitleBarOpacity = 1,
+			TitleBarStyle = "solid",
+			ObsidianArtworkRevision = 3,
+		},
+	},
+	arcane = {
+		name = "Arcane Glass (new artwork)",
+		artwork = "arcane",
+		chrome = { Icon=rgb("d8e8ff"), Navigation=rgb("79ddff"), Count=rgb("63efff"), Close=rgb("ff5e88") },
+		colors = {
+			{ "Window", "Background",   rgb("090d1b") },
+			{ "Window", "Title",        rgb("374f88") },
+			{ "Window", "Title Text",   rgb("e6edff") },
+			{ "Ping",    "Title Bar",    rgb("111a35") },
+			{ "Ping",    "Window Border",rgb("668ed8") },
+			{ "Ping",    "Healer Marker",rgb("62f2e7") },
+			{ "Ping",    "Healer Edge",  rgb("62f2e7") },
+			{ "Ping",    "Cooldown",     rgb("c69cff") },
+		},
+		settings = {
+			ClassColoredNames = false,
+			BarOpacity = 0.52,
+			ShowBackground = true,
+			BackgroundOpacity = 0.98,
+			ShowBorder = true,
+			TitleBarOpacity = 1,
+			TitleBarStyle = "solid",
+		},
+	},
+	warcamp = {
+		name = "Warcamp (new artwork)",
+		artwork = "warcamp",
+		chrome = { Icon=rgb("ead8b8"), Navigation=rgb("d9a254"), Count=rgb("ffc466"), Close=rgb("ef513f") },
+		colors = {
+			{ "Window", "Background",   rgb("15110e") },
+			{ "Window", "Title",        rgb("6b4b2a") },
+			{ "Window", "Title Text",   rgb("f1dfc0") },
+			{ "Ping",    "Title Bar",    rgb("211812") },
+			{ "Ping",    "Window Border",rgb("967044") },
+			{ "Ping",    "Healer Marker",rgb("75d887") },
+			{ "Ping",    "Healer Edge",  rgb("75d887") },
+			{ "Ping",    "Cooldown",     rgb("ffb44a") },
+		},
+		settings = {
+			ClassColoredNames = false,
+			BarOpacity = 0.55,
+			ShowBackground = true,
+			BackgroundOpacity = 0.98,
+			ShowBorder = true,
+			TitleBarOpacity = 1,
+			TitleBarStyle = "solid",
+		},
+	},
+	minimal = {
+		name = "Minimal Ink (new artwork)",
+		artwork = "minimal",
+		chrome = { Icon=rgb("d4d8dc"), Navigation=rgb("aeb7bf"), Count=rgb("f3f5f7"), Close=rgb("e06a6a") },
+		colors = {
+			{ "Window", "Background",   rgb("111316") },
+			{ "Window", "Title",        rgb("25292e") },
+			{ "Window", "Title Text",   rgb("f2f3f4") },
+			{ "Ping",    "Title Bar",    rgb("15181c") },
+			{ "Ping",    "Window Border",rgb("69727b") },
+			{ "Ping",    "Healer Marker",rgb("67d99a") },
+			{ "Ping",    "Healer Edge",  rgb("67d99a") },
+			{ "Ping",    "Cooldown",     rgb("e3bd70") },
+		},
+		settings = {
+			ClassColoredNames = false, BarOpacity = 0.85,
+			ShowBackground = true, BackgroundOpacity = 0.98, ShowBorder = false,
+			TitleBarOpacity = 1, TitleBarStyle = "solid",
+			CleanThemeBorderRevision = 1,
+		},
+	},
+	clean = {
+		name = "Clean Glass (new artwork)",
+		artwork = "clean",
+		chrome = { Icon=rgb("dcecff"), Navigation=rgb("84d9ff"), Count=rgb("a7ecff"), Close=rgb("ff6e79") },
+		colors = {
+			{ "Window", "Background",   rgb("07101a") },
+			{ "Window", "Title",        rgb("214b67") },
+			{ "Window", "Title Text",   rgb("e9f6ff") },
+			{ "Ping",    "Title Bar",    rgb("0a1723") },
+			{ "Ping",    "Window Border",rgb("70bce0") },
+			{ "Ping",    "Healer Marker",rgb("64e5cf") },
+			{ "Ping",    "Healer Edge",  rgb("64e5cf") },
+			{ "Ping",    "Cooldown",     rgb("82caff") },
+		},
+		settings = {
+			ClassColoredNames = false, BarOpacity = 0.85,
+			ShowBackground = true, BackgroundOpacity = 0.96, ShowBorder = false,
+			TitleBarOpacity = 1, TitleBarStyle = "solid",
+			CleanThemeBorderRevision = 1,
+		},
+	},
+	unitframe = {
+		name = "Unitframe Clean (new artwork)",
+		artwork = "unitframe",
+		chrome = { Icon=rgb("d0d4d8"), Navigation=rgb("65aee8"), Count=rgb("3da9ff"), Close=rgb("e45757") },
+		colors = {
+			{ "Window", "Background",   rgb("0d0e10") },
+			{ "Window", "Title",        rgb("30343a") },
+			{ "Window", "Title Text",   rgb("e5e7e9") },
+			{ "Ping",    "Title Bar",    rgb("111316") },
+			{ "Ping",    "Window Border",rgb("555b62") },
+			{ "Ping",    "Healer Marker",rgb("50d890") },
+			{ "Ping",    "Healer Edge",  rgb("50d890") },
+			{ "Ping",    "Cooldown",     rgb("e8b45f") },
+		},
+		settings = {
+			ClassColoredNames = false, BarOpacity = 0.88,
+			ShowBackground = true, BackgroundOpacity = 1, ShowBorder = false,
+			TitleBarOpacity = 1, TitleBarStyle = "solid",
+			CleanThemeBorderRevision = 1,
+		},
+	},
+	villain = {
+		name = "Villain HUD (new artwork)",
+		artwork = "villain",
+		chrome = { Icon=rgb("e2d7d7"), Navigation=rgb("d94a4a"), Count=rgb("ff6767"), Close=rgb("ff3434") },
+		colors = {
+			{ "Window", "Background",   rgb("0d0809") },
+			{ "Window", "Title",        rgb("50171b") },
+			{ "Window", "Title Text",   rgb("f4e8e8") },
+			{ "Ping",    "Title Bar",    rgb("170b0d") },
+			{ "Ping",    "Window Border",rgb("a72c34") },
+			{ "Ping",    "Healer Marker",rgb("68db8c") },
+			{ "Ping",    "Healer Edge",  rgb("68db8c") },
+			{ "Ping",    "Cooldown",     rgb("ff9a52") },
+		},
+		settings = {
+			ClassColoredNames = false, BarOpacity = 0.88,
+			ShowBackground = true, BackgroundOpacity = 0.99, ShowBorder = false,
+			TitleBarOpacity = 1, TitleBarStyle = "solid",
+			CleanThemeBorderRevision = 1,
+		},
+	},
 }
 
 function Ping:ApplyLookTheme(key)
 	local theme = Ping.LookThemes[key]
 	if not theme then return end
+	-- A theme selection is deterministic. Rebuild the structural settings that
+	-- Blacked Out changes instead of restoring a snapshot which may itself have
+	-- been captured after the old bug had already darkened the profile.
+	Ping.db.profile.BlackoutRestore = nil
+	if key ~= "blackout" then
+		local preset = Ping.db.profile.LookPreset or "classbars"
+		Ping.db.profile.ClassColoredNames = preset == "flat"
+		Ping.db.profile.BarOpacity = preset == "flat" and 0 or 1
+		Ping.db.profile.ShowBackground = true
+		Ping.db.profile.BackgroundOpacity = 1
+		Ping.db.profile.ShowBorder = false
+		Ping.db.profile.TitleBarOpacity = 1
+	end
 	Ping.db.profile.LookTheme = key
+	Ping.db.profile.ArtworkStyle = theme.artwork or "legacy"
 
 	for _, entry in ipairs(theme.colors) do
 		local branch, slot, colour = entry[1], entry[2], entry[3]
@@ -1206,13 +1422,43 @@ function Ping:ApplyLookTheme(key)
 			Ping.Colors:SetColor(branch, slot, colour)
 		end
 	end
+	for slot, colour in pairs(theme.chrome or {}) do Ping.Colors:SetColor("Ping", slot, colour) end
+	for setting, value in pairs(theme.settings or {}) do
+		Ping.db.profile[setting] = value
+	end
 
 	-- The themed title bar only draws in the solid style, so a theme switches to
 	-- it rather than silently doing nothing on the classic style.
 	Ping.db.profile.TitleBarStyle = "solid"
 	Ping:ApplyWindowStyle()
+	Ping:ApplyThemeChrome()
 	Ping:UpdateMainWindow()
 	Ping:RefreshCurrentList()
+end
+
+local function tintButton(button, color)
+	if not button or not color then return end
+	for _, texture in ipairs({ button:GetNormalTexture(), button:GetPushedTexture() }) do
+		if texture then
+			if texture.SetDesaturated then texture:SetDesaturated(true) end
+			texture:SetVertexColor(color.r, color.g, color.b, color.a or 1)
+		end
+	end
+	local highlight = button:GetHighlightTexture()
+	if highlight then highlight:SetVertexColor(1, 1, 1, 0.9) end
+end
+
+function Ping:ApplyThemeChrome()
+	local frame = Ping.MainWindow
+	if not frame or not Ping.db or not Ping.db.profile then return end
+	local colors = Ping.db.profile.Colors.Ping
+	tintButton(frame.StatsButton, colors.Icon)
+	tintButton(frame.ClearButton, colors.Icon)
+	tintButton(frame.CountButton, colors.Icon)
+	tintButton(frame.LeftButton, colors.Navigation)
+	tintButton(frame.RightButton, colors.Navigation)
+	tintButton(frame.CloseButton, colors.Close)
+	Ping:UpdateActiveCount()
 end
 
 function Ping:AutomaticallyResize()
@@ -1259,8 +1505,10 @@ function Ping:ResizeMainWindow()
 	end
 
 	local CurWidth = Ping.MainWindow:GetWidth() - 4
-	Ping.MainWindow.Title:SetWidth(CurWidth - 75)
-	for i,row in pairs(Ping.MainWindow.Rows) do
+	local headerReserve = usesFullArtwork() and 103 or 75
+	Ping.MainWindow.Title:SetWidth(math.max(50, CurWidth - headerReserve))
+	-- Rows can be absent if an earlier UI error interrupted window creation.
+	for i,row in pairs(Ping.MainWindow.Rows or {}) do
 		row:SetWidth(CurWidth)	
 	end
 
@@ -1290,6 +1538,9 @@ function Ping:UpdateWindowTitle()
 		local hc = Ping.db.profile.Colors["Ping"]["Healer Marker"]
 		local hex = hc and format("%02x%02x%02x", hc.r * 255, hc.g * 255, hc.b * 255) or "4fe27a"
 		title = title .. format(" |cff%s(%s)|r", hex, L["HealersOnlyTag"])
+	end
+	if usesFullArtwork() then
+		title = string.upper(title)
 	end
 	Ping.MainWindow.Title:SetText(title)
 end
@@ -1340,7 +1591,7 @@ function Ping:RestoreMainWindowPosition(x, y, width, height)
 		Ping.MainWindow:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x, y)	
 	end
 	Ping.MainWindow:SetWidth(width)
-	for i,row in pairs(Ping.MainWindow.Rows) do
+	for i,row in pairs(Ping.MainWindow.Rows or {}) do
 		row:SetWidth(width -4) 
 	end
 	Ping.MainWindow:SetHeight(height)
@@ -1377,6 +1628,172 @@ function Ping:ApplyWindowLocks()
 	for _, grip in pairs(grips) do
 		if hideGrips then grip:Hide() else grip:Show() end
 	end
+end
+
+local ARTWORK_ROOT = "Interface\\AddOns\\Ping\\Textures\\"
+local ARTWORK_STYLES = {
+	obsidian = { prefix = "obsidian-", showButtonPlate = false },
+	arcane = { prefix = "arcane-", showButtonPlate = true, buttonPlateAlpha = 0.50 },
+	warcamp = { prefix = "warcamp-", showButtonPlate = true, buttonPlateAlpha = 0.62 },
+	minimal = { prefix = "minimal-", showButtonPlate = false },
+	clean = { prefix = "clean-", showButtonPlate = true, buttonPlateAlpha = 0.28 },
+	unitframe = { prefix = "unitframe-", showButtonPlate = true, buttonPlateAlpha = 0.55 },
+	villain = { prefix = "villain-", showButtonPlate = true, buttonPlateAlpha = 0.46 },
+}
+local LEGACY_BUTTON_ART = {
+	StatsButton = { "Interface\\AddOns\\Ping\\Textures\\button-file.tga", "Interface\\AddOns\\Ping\\Textures\\button-file.tga" },
+	ClearButton = { "Interface\\AddOns\\Ping\\Textures\\button-clear.tga", "Interface\\AddOns\\Ping\\Textures\\button-clear.tga" },
+	CountButton = { "Interface\\AddOns\\Ping\\Textures\\button-crosshairs.tga", "Interface\\AddOns\\Ping\\Textures\\button-crosshairs.tga" },
+	LeftButton = { "Interface\\AddOns\\Ping\\Textures\\button-left.tga", "Interface\\AddOns\\Ping\\Textures\\button-left.tga" },
+	RightButton = { "Interface\\AddOns\\Ping\\Textures\\button-right.tga", "Interface\\AddOns\\Ping\\Textures\\button-right.tga" },
+	CloseButton = { "Interface\\Buttons\\UI-Panel-MinimizeButton-Up.blp", "Interface\\Buttons\\UI-Panel-MinimizeButton-Down.blp" },
+}
+local THEMED_BUTTON_ART = {
+	StatsButton = "history",
+	ClearButton = "target",
+	CountButton = "target",
+	LeftButton = "left",
+	RightButton = "right",
+	CloseButton = "close",
+}
+
+local function ensureThemedFrameArt(frame)
+	if frame.ThemedArt then return frame.ThemedArt end
+	local art = {}
+	frame.ThemedArt = art
+	for _, edge in ipairs({ "Top", "Bottom", "Left", "Right" }) do
+		local texture = frame:CreateTexture(nil, "OVERLAY")
+		texture:SetTexture("Interface\\Buttons\\WHITE8X8")
+		art[edge] = texture
+	end
+	art.Top:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+	art.Top:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, 0)
+	art.Top:SetHeight(1)
+	art.Bottom:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0)
+	art.Bottom:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
+	art.Bottom:SetHeight(1)
+	art.Left:SetPoint("TOPLEFT", frame, "TOPLEFT", 0, 0)
+	art.Left:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 0, 0)
+	art.Left:SetWidth(1)
+	art.Right:SetPoint("TOPRIGHT", frame, "TOPRIGHT", 0, 0)
+	art.Right:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", 0, 0)
+	art.Right:SetWidth(1)
+	return art
+end
+
+function Ping:ApplyArtworkStyle()
+	local frame = Ping.MainWindow
+	if not frame then return end
+	local style = ARTWORK_STYLES[Ping.db.profile.ArtworkStyle]
+	local art = ensureThemedFrameArt(frame)
+	local border = Ping.Colors:GetColor("Ping", "Window Border")
+
+	if style then
+		local artworkPath = ARTWORK_ROOT .. style.prefix
+		frame:SetBackdrop(nil)
+		frame.Background:SetTexture(artworkPath .. "panel.tga")
+		frame.Background:SetVertexColor(1, 1, 1, 1)
+		frame.TitleFill:SetTexture(artworkPath .. "panel.tga")
+		frame.TitleBar:SetBackdrop(nil)
+		frame.Title:SetShadowColor(0, 0, 0, 0.95)
+		frame.Title:SetShadowOffset(1, -1)
+		for _, texture in pairs(art) do
+			texture:SetVertexColor(border.r, border.g, border.b, border.a or 1)
+			if Ping.db.profile.ShowBorder then texture:Show() else texture:Hide() end
+		end
+		for buttonName, icon in pairs(THEMED_BUTTON_ART) do
+			local button = frame[buttonName]
+			button:SetNormalTexture(artworkPath .. icon .. ".tga")
+			button:SetPushedTexture(artworkPath .. icon .. ".tga")
+			button:SetHighlightTexture(artworkPath .. "hover.tga")
+			if not button.ThemeBackground then
+				button.ThemeBackground = button:CreateTexture(nil, "BACKGROUND")
+				button.ThemeBackground:SetAllPoints(button)
+			end
+			button.ThemeBackground:SetTexture(artworkPath .. "button.tga")
+			button.ThemeBackground:SetAlpha(style.buttonPlateAlpha or 1)
+			if style.showButtonPlate then button.ThemeBackground:Show() else button.ThemeBackground:Hide() end
+		end
+		local enabled = Ping.db.profile.MainWindow.Buttons or {}
+		for _, name in ipairs({ "StatsButton", "ClearButton", "LeftButton", "RightButton", "CloseButton" }) do
+			local button = frame[name]
+			local visible = name == "StatsButton" or name == "CloseButton" or enabled[name] ~= false
+			button:SetWidth(visible and 14 or 1)
+			button:SetHeight(14)
+		end
+		frame.CloseButton:ClearAllPoints()
+		frame.CloseButton:SetPoint("RIGHT", frame.TitleBar, "RIGHT", -3, 0)
+		frame.RightButton:ClearAllPoints()
+		frame.RightButton:SetPoint("RIGHT", frame.CloseButton, "LEFT", -1, 0)
+		frame.LeftButton:ClearAllPoints()
+		frame.LeftButton:SetPoint("RIGHT", frame.RightButton, "LEFT", -1, 0)
+		frame.ClearButton:ClearAllPoints()
+		frame.ClearButton:SetPoint("RIGHT", frame.LeftButton, "LEFT", -1, 0)
+		frame.StatsButton:ClearAllPoints()
+		frame.StatsButton:SetPoint("RIGHT", frame.ClearButton, "LEFT", -1, 0)
+		frame.CountFrame:ClearAllPoints()
+		frame.CountFrame:SetPoint("RIGHT", frame.StatsButton, "LEFT", -3, 0)
+		frame.CountFrame.Text:ClearAllPoints()
+		frame.CountFrame.Text:SetPoint("RIGHT", frame.StatsButton, "LEFT", -3, 0)
+		frame.CountButton:ClearAllPoints()
+		frame.CountButton:SetPoint("RIGHT", frame.StatsButton, "LEFT", -3, 0)
+	else
+		frame.Background:SetTexture("Interface\\CHARACTERFRAME\\UI-Party-Background")
+		frame.Background:SetVertexColor(1, 1, 1, 1)
+		frame.TitleFill:SetTexture("Interface\\Buttons\\WHITE8X8")
+		frame.TitleBar:SetBackdrop({
+			bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 8,
+			edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border", edgeSize = 12,
+			insets = {left = 2, right = 2, top = 2, bottom = 2},
+		})
+		frame.TitleBar:SetBackdropColor(0, 0, 0, 1)
+		frame.TitleBar:SetBackdropBorderColor(1, 1, 1, 1)
+		frame.Title:SetShadowOffset(0, 0)
+		for _, texture in pairs(art) do texture:Hide() end
+		for buttonName, paths in pairs(LEGACY_BUTTON_ART) do
+			local button = frame[buttonName]
+			button:SetNormalTexture(paths[1])
+			button:SetPushedTexture(paths[2])
+			button:SetHighlightTexture(buttonName == "CloseButton"
+				and "Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight.blp"
+				or "Interface\\AddOns\\Ping\\Textures\\button-highlight.tga")
+			if button.ThemeBackground then button.ThemeBackground:Hide() end
+		end
+		local enabled = Ping.db.profile.MainWindow.Buttons or {}
+		frame.CloseButton:SetSize(20, 20)
+		frame.CloseButton:ClearAllPoints()
+		if not Ping.db.profile.InvertPing then
+			frame.CloseButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -4, -12)
+		else
+			frame.CloseButton:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -4, -19)
+		end
+		frame.RightButton:SetSize(enabled.RightButton ~= false and 16 or 1, 16)
+		frame.RightButton:ClearAllPoints()
+		if not Ping.db.profile.InvertPing then
+			frame.RightButton:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -23, -14.5)
+		else
+			frame.RightButton:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -23, -16.5)
+		end
+		frame.LeftButton:SetSize(enabled.LeftButton ~= false and 16 or 1, 16)
+		frame.LeftButton:ClearAllPoints()
+		frame.LeftButton:SetPoint("RIGHT", frame.RightButton, "LEFT", 0, 0)
+		frame.ClearButton:SetSize(enabled.ClearButton ~= false and 16 or 1, 16)
+		frame.ClearButton:ClearAllPoints()
+		frame.ClearButton:SetPoint("RIGHT", frame.LeftButton, "LEFT", 0, 0)
+		frame.StatsButton:SetSize(12, 12)
+		frame.StatsButton:ClearAllPoints()
+		frame.StatsButton:SetPoint("RIGHT", frame.ClearButton, "LEFT", -4, 0)
+		frame.CountFrame:ClearAllPoints()
+		frame.CountFrame:SetPoint("RIGHT", frame.StatsButton, "LEFT", -4, 0)
+		frame.CountFrame.Text:ClearAllPoints()
+		frame.CountFrame.Text:SetPoint("RIGHT", frame.StatsButton, "LEFT", -4, 0)
+		frame.CountButton:SetSize(12, 12)
+		frame.CountButton:ClearAllPoints()
+		frame.CountButton:SetPoint("RIGHT", frame.StatsButton, "LEFT", -4, 0)
+	end
+	Ping:ApplyThemeFonts()
+	Ping:ResizeMainWindow()
+	Ping:UpdateWindowTitle()
 end
 
 -- Show/hide and recolour the window background fill and border, and apply the
@@ -1419,11 +1836,14 @@ function Ping:ApplyWindowStyle()
 		})
 		local bc = Ping.Colors:GetColor("Ping", "Window Border")
 		if bc then frame:SetBackdropBorderColor(bc.r, bc.g, bc.b, bc.a or 1) end
+		local bg = Ping.Colors:GetColor("Window", "Background")
+		if bg then frame:SetBackdropColor(bg.r, bg.g, bg.b, bg.a or 1) end
 	else
 		frame:SetBackdrop(nil)
 	end
 
 	frame:SetScale(Ping.db.profile.WindowScale or 1)
+	Ping:ApplyArtworkStyle()
 end
 
 function Ping:UpdateAlertWindow()
@@ -1432,6 +1852,7 @@ function Ping:UpdateAlertWindow()
 		Ping.AlertWindow:SetMovable(true)
 		Ping.AlertWindow:EnableMouse(true)
 		Ping.AlertWindow:SetScript("OnMouseDown", function(self, button) 
+			if InCombatLockdown() or button ~= "LeftButton" then return end
 			Ping.AlertWindow:StartMoving();
 			Ping.AlertWindow.isMoving = true;
 		end)
@@ -1698,6 +2119,7 @@ function Ping:BarsChanged()
 		Ping:SetFontSize(v.LeftText, math.max(Ping.db.profile.MainWindow.RowHeight * 0.75, Ping.db.profile.MainWindow.RowHeight - 3))
 		Ping:SetFontSize(v.RightText, math.max(Ping.db.profile.MainWindow.RowHeight * 0.5, Ping.db.profile.MainWindow.RowHeight - 12))
 	end
+	Ping:ApplyThemeFonts()
 	Ping:ResizeMainWindow()
 end
 

@@ -37,7 +37,7 @@ La fenêtre de statistiques contient une liste de toutes les rencontres avec des
 |cffffd000Bouton Tuer à Vue|cffffffff
 Si activé, ce bouton sera situé sur le cadre de cible des joueurs ennemis. En cliquant sur ce bouton, vous ajouterez/supprimerez la cible ennemie de la liste des Cibles Prioritaires. En cliquant avec le bouton droit sur le bouton, vous pourrez saisir les raisons de Tuer à Vue.
 
-|cffffd000 Auteur:|cffffffff Slipjack
+|cffffd000 Auteur:|cffffffff Oomkill
 ]]
 
 -- General Settings

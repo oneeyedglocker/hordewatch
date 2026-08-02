@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.1.0"
+Ping.Version = "2.8.1"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -27,6 +27,10 @@ Ping.PlayerCommList = {}
 Ping.ListAmountDisplayed = 0
 Ping.ButtonName = {}
 Ping.EnabledInZone = false
+-- Do not use Ping.IsEnabled for private state: AceAddon embeds IsEnabled() as a
+-- method. Treating that function as a boolean made OnEnable return before any
+-- detection events were registered.
+Ping.RuntimeEnabled = false
 Ping.InInstance = false
 Ping.AlertType = nil
 Ping.UpgradeMessageSent = false
@@ -1062,18 +1066,18 @@ Ping.options = {
 				},
 			},
 		},
-		Look = {
+			Look = {
 			name = L["TPageLook"],
 			desc = L["TPageLook"],
 			type = "group",
 			order = 5,
-			childGroups = "tab",
-			args = {
-				Rows = {
+				args = {
+					Rows = {
 					name = L["TTabRows"],
 					desc = L["TTabRows"],
 					type = "group",
-					order = 1,
+						order = 2,
+						inline = true,
 					args = {
 						LookPreset = {
 							name = L["LookPreset"],
@@ -1185,18 +1189,19 @@ Ping.options = {
 						},
 					},
 				},
-				WindowTab = {
+					WindowTab = {
 					name = L["TTabWindow"],
 					desc = L["TTabWindow"],
 					type = "group",
-					order = 2,
+						order = 1,
+						inline = true,
 					args = {
 						themeHeader = {
 							name = L["LookThemeHeader"],
 							type = "header",
 							order = 0,
 						},
-						LookTheme = {
+							LookTheme = {
 							name = L["LookTheme"],
 							desc = L["LookThemeDescription"],
 							type = "select",
@@ -1340,6 +1345,23 @@ Ping.options = {
 								Ping.db.profile.MainWindow.AlphaBG = value
 								Ping:UpdateMainWindow()
 							end,
+						},
+						ChromeColors = {
+							name = L["ChromeColors"], type = "group", inline = true, order = 10.5,
+							args = {
+								IconColor = { name = L["IconColor"], type = "color", order = 1,
+									get = function() local c=Ping.db.profile.Colors.Ping.Icon return c.r,c.g,c.b end,
+									set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Icon",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
+								NavigationColor = { name = L["NavigationColor"], type = "color", order = 2,
+									get = function() local c=Ping.db.profile.Colors.Ping.Navigation return c.r,c.g,c.b end,
+									set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Navigation",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
+								CountColor = { name = L["CountColor"], type = "color", order = 3,
+									get = function() local c=Ping.db.profile.Colors.Ping.Count return c.r,c.g,c.b end,
+									set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Count",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
+								CloseColor = { name = L["CloseColor"], type = "color", order = 4,
+									get = function() local c=Ping.db.profile.Colors.Ping.Close return c.r,c.g,c.b end,
+									set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Close",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
+							},
 						},
 						TitleBarStyle = {
 							name = L["TitleBarStyle"],
@@ -1711,11 +1733,51 @@ Ping.options = {
 				},
 			},
 		},
-		Data = {
+			MinimapButton = {
+				name = L["MinimapButtonPage"],
+				desc = L["MinimapButtonDescription"],
+				type = "group",
+				order = 6,
+				args = {
+					ShowMinimapButton = {
+						name = L["ShowMinimapButton"], type = "toggle", order = 1, width = "full",
+						get = function() return Ping.db.profile.ShowMinimapButton end,
+						set = function(_, v) Ping.db.profile.ShowMinimapButton = v Ping:UpdateMinimapButton() end,
+					},
+					LockMinimapButton = {
+						name = L["LockMinimapButton"], type = "toggle", order = 2, width = "full",
+						get = function() return Ping.db.profile.LockMinimapButton end,
+						set = function(_, v) Ping.db.profile.LockMinimapButton = v end,
+					},
+					HideMinimapButtonInCombat = {
+						name = L["HideMinimapButtonInCombat"], type = "toggle", order = 3, width = "full",
+						get = function() return Ping.db.profile.HideMinimapButtonInCombat end,
+						set = function(_, v) Ping.db.profile.HideMinimapButtonInCombat = v Ping:UpdateMinimapButton() end,
+					},
+					LeftClick = {
+						name = L["MinimapLeftClick"], type = "select", order = 4,
+						values = { toggle = L["MinimapActionToggle"], settings = L["MinimapActionSettings"], cycle = L["MinimapActionCycle"] },
+						get = function() return Ping.db.profile.MinimapLeftClick end,
+						set = function(_, v) Ping.db.profile.MinimapLeftClick = v end,
+					},
+					RightClick = {
+						name = L["MinimapRightClick"], type = "select", order = 5,
+						values = { settings = L["MinimapActionSettings"], toggle = L["MinimapActionToggle"], enable = L["MinimapActionEnable"] },
+						get = function() return Ping.db.profile.MinimapRightClick end,
+						set = function(_, v) Ping.db.profile.MinimapRightClick = v end,
+					},
+					MinimapButtonCount = {
+						name = L["MinimapButtonCount"], type = "toggle", order = 6, width = "full",
+						get = function() return Ping.db.profile.MinimapButtonCount end,
+						set = function(_, v) Ping.db.profile.MinimapButtonCount = v end,
+					},
+				},
+			},
+			Data = {
 			name = L["TPageData"],
 			desc = L["TPageData"],
 			type = "group",
-			order = 7,
+				order = 7,
 			childGroups = "tab",
 			args = {
 				Storage = {
@@ -1918,7 +1980,7 @@ Ping.options = {
 						},
 					},
 				},
-				Sharing = {
+					Sharing = {
 					name = L["TTabSharing"],
 					desc = L["TTabSharing"],
 					type = "group",
@@ -1967,12 +2029,116 @@ Ping.options = {
 							end,
 						},
 					},
-				},
-				DiagnosticsTab = {
+					},
+					SpyImport = {
+						name = L["TTabSpyImport"],
+						desc = L["TTabSpyImport"],
+						type = "group",
+						order = 3,
+						args = {
+							intro = {
+								name = L["SpyImportDescription"],
+								type = "description",
+								order = 1,
+								fontSize = "medium",
+							},
+							status = {
+								name = function() return Ping:GetSpyImportStatus() end,
+								type = "description",
+								order = 2,
+							},
+							all = {
+								name = L["SpyImportAll"],
+								desc = L["SpyImportAllDescription"],
+								type = "execute",
+								order = 3,
+								disabled = function() return type(_G.SpyPerCharDB) ~= "table" end,
+								func = function() Ping:ImportSpyData(false) end,
+							},
+							kos = {
+								name = L["SpyImportKOS"],
+								desc = L["SpyImportKOSDescription"],
+								type = "execute",
+								order = 4,
+								disabled = function() return type(_G.SpyPerCharDB) ~= "table" end,
+								func = function() Ping:ImportSpyData(true) end,
+							},
+						},
+					},
+					Transfer = {
+						name = L["TTabTransfer"],
+						desc = L["TransferDescription"],
+						type = "group",
+						order = 4,
+						args = {
+							intro = { name = L["TransferDescription"], type = "description", order = 1, fontSize = "medium" },
+							lists = {
+								name = L["TransferLists"], type = "toggle", order = 2,
+								get = function() return Ping:GetTransferScope("lists") end,
+								set = function(_, v) Ping:SetTransferScope("lists", v) end,
+							},
+							spells = {
+								name = L["TransferSpells"], type = "toggle", order = 3,
+								get = function() return Ping:GetTransferScope("spells") end,
+								set = function(_, v) Ping:SetTransferScope("spells", v) end,
+							},
+							appearance = {
+								name = L["TransferAppearance"], type = "toggle", order = 4,
+								get = function() return Ping:GetTransferScope("appearance") end,
+								set = function(_, v) Ping:SetTransferScope("appearance", v) end,
+							},
+							generate = {
+								name = L["TransferGenerate"], desc = L["TransferGenerateDescription"],
+								type = "execute", order = 5, func = function() Ping:GenerateTransferCode() end,
+							},
+							apply = {
+								name = L["TransferApply"], desc = L["TransferApplyDescription"],
+								type = "execute", order = 6,
+								confirm = function() return L["TransferConfirm"] end,
+								func = function() Ping:ApplyTransferCode() end,
+							},
+							code = {
+								name = L["TransferCode"], desc = L["TransferCodeDescription"],
+								type = "input", multiline = 14, width = "full", order = 7,
+								get = function() return Ping:GetTransferText() end,
+								set = function(_, v) Ping:SetTransferText(v) end,
+							},
+							status = {
+								name = function() return Ping:GetTransferStatus() end,
+								type = "description", order = 8,
+							},
+						},
+						},
+						History = {
+							name = L["TTabHistory"],
+							desc = L["HistoryDescription"],
+							type = "group",
+							order = 5,
+							args = {
+								intro = { name = L["HistoryDescription"], type = "description", order = 1, fontSize = "medium" },
+								count = {
+									name = function() return format(L["HistoryCount"], Ping:GetEncounterHistoryCount()) end,
+									type = "description", order = 2,
+								},
+								clear = {
+									name = L["HistoryClear"], desc = L["HistoryClearDescription"],
+									type = "execute", order = 3,
+									confirm = function() return L["HistoryClearConfirm"] end,
+									func = function() Ping:ClearEncounterHistory() end,
+								},
+								log = {
+									name = L["HistoryLog"], desc = L["HistoryLogDescription"],
+									type = "input", multiline = 20, width = "full", order = 4,
+									get = function() return Ping:GetEncounterHistoryText() end,
+									set = function() end,
+								},
+							},
+						},
+					DiagnosticsTab = {
 					name = L["TTabDiagnostics"],
 					desc = L["TTabDiagnostics"],
 					type = "group",
-					order = 3,
+						order = 6,
 					args = {
 						intro = {
 							name = L["DebugModeDescription"],
@@ -2245,7 +2411,11 @@ local Default_Profile = {
 				["KoS Edge"] = { r = 1, g = 0, b = 0, a = 1 },
 				["Window Border"] = { r = 1, g = 1, b = 1, a = 1 },
 				["Title Bar"] = { r = 13/255, g = 11/255, b = 10/255, a = 1 },
-				["Cooldown"] = { r = 1, g = 0.82, b = 0, a = 1 },
+					["Cooldown"] = { r = 1, g = 0.82, b = 0, a = 1 },
+					["Icon"] = { r = 0.85, g = 0.85, b = 0.85, a = 1 },
+					["Navigation"] = { r = 0.3, g = 0.7, b = 1, a = 1 },
+					["Count"] = { r = 0, g = 0.44, b = 0.87, a = 1 },
+					["Close"] = { r = 1, g = 0.2, b = 0.2, a = 1 },
 			},
 		},
 		MainWindow={
@@ -2285,13 +2455,21 @@ local Default_Profile = {
 		},
 		BarTexture="Flat",
 		MainWindowVis=true,
+		ShowMinimapButton=true,
+		LockMinimapButton=true,
+		HideMinimapButtonInCombat=false,
+		MinimapButtonAngle=225,
+		MinimapLeftClick="toggle",
+		MinimapRightClick="settings",
+		MinimapButtonCount=true,
 		CurrentList=1,
 		Locked=false,
 
 		-- ===== Target-picker enhancements =====
 		-- Rows / look
-		LookPreset="classbars",		-- classbars | flat | compact
-		LookTheme="classic",		-- which colour bundle WindowTab's Theme picker last applied
+			LookPreset="classbars",		-- classbars | flat | compact
+			LookTheme="classic",		-- which colour bundle WindowTab's Theme picker last applied
+			ArtworkStyle="legacy",		-- legacy or one of the full generated-artwork themes
 		ClassColoredNames=false,	-- colour the name text by class (flat look)
 		BarOpacity=1,				-- class-bar fill opacity (0 hides the fill)
 		-- Healer detection & marking
@@ -2435,6 +2613,9 @@ function Ping:CheckDatabase()
 	if not PingPerCharDB.KOSData then
 		PingPerCharDB.KOSData = {}
 	end
+	if not PingPerCharDB.EncounterHistory then
+		PingPerCharDB.EncounterHistory = {}
+	end
 	if PingDB.kosData == nil then PingDB.kosData = {} end
 	if PingDB.kosData[Ping.RealmName] == nil then PingDB.kosData[Ping.RealmName] = {} end
 	if PingDB.kosData[Ping.RealmName][Ping.FactionName] == nil then PingDB.kosData[Ping.RealmName][Ping.FactionName] = {} end
@@ -2515,6 +2696,13 @@ function Ping:CheckDatabase()
 	if Ping.db.profile.AlertWindowLocationSize == nil then Ping.db.profile.AlertWindowLocationSize = Default_Profile.profile.AlertWindowLocationSize end
 	if Ping.db.profile.BarTexture == nil then Ping.db.profile.BarTexture = Default_Profile.profile.BarTexture end
 	if Ping.db.profile.MainWindowVis == nil then Ping.db.profile.MainWindowVis = Default_Profile.profile.MainWindowVis end
+	if Ping.db.profile.ShowMinimapButton == nil then Ping.db.profile.ShowMinimapButton = Default_Profile.profile.ShowMinimapButton end
+	if Ping.db.profile.LockMinimapButton == nil then Ping.db.profile.LockMinimapButton = Default_Profile.profile.LockMinimapButton end
+	if Ping.db.profile.HideMinimapButtonInCombat == nil then Ping.db.profile.HideMinimapButtonInCombat = Default_Profile.profile.HideMinimapButtonInCombat end
+	if Ping.db.profile.MinimapButtonAngle == nil then Ping.db.profile.MinimapButtonAngle = Default_Profile.profile.MinimapButtonAngle end
+	if Ping.db.profile.MinimapLeftClick == nil then Ping.db.profile.MinimapLeftClick = Default_Profile.profile.MinimapLeftClick end
+	if Ping.db.profile.MinimapRightClick == nil then Ping.db.profile.MinimapRightClick = Default_Profile.profile.MinimapRightClick end
+	if Ping.db.profile.MinimapButtonCount == nil then Ping.db.profile.MinimapButtonCount = Default_Profile.profile.MinimapButtonCount end
 	if Ping.db.profile.CurrentList == nil then Ping.db.profile.CurrentList = Default_Profile.profile.CurrentList end
 	if Ping.db.profile.Locked == nil then Ping.db.profile.Locked = Default_Profile.profile.Locked end
 	if Ping.db.profile.Font == nil then Ping.db.profile.Font = Default_Profile.profile.Font end
@@ -2603,6 +2791,25 @@ function Ping:CheckDatabase()
 	end
 	p.ExtraCooldownsText = nil
 	if p.LookTheme == nil then p.LookTheme = Default_Profile.profile.LookTheme end
+	if p.ArtworkStyle == nil then
+		local theme = Ping.LookThemes and Ping.LookThemes[p.LookTheme]
+		p.ArtworkStyle = theme and theme.artwork or "legacy"
+	end
+	-- The first Obsidian pass was intentionally subdued, but in the live game
+	-- the class fills did not separate enough from its dark generated panel.
+	-- Apply this once so existing profiles receive the readability correction.
+	if p.ArtworkStyle == "obsidian" and (tonumber(p.ObsidianArtworkRevision) or 0) < 3 then
+		p.BarOpacity = 0.55
+		p.ObsidianArtworkRevision = 3
+	end
+	-- These generated panels already draw their own edge. Earlier presets also
+	-- enabled Ping's overlay border, producing a redundant double outline.
+	local cleanArtwork = p.ArtworkStyle == "minimal" or p.ArtworkStyle == "clean"
+		or p.ArtworkStyle == "unitframe" or p.ArtworkStyle == "villain"
+	if cleanArtwork and (tonumber(p.CleanThemeBorderRevision) or 0) < 1 then
+		p.ShowBorder = false
+		p.CleanThemeBorderRevision = 1
+	end
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
 	for _, k in ipairs({"NameplateDistanceMode","NameplateDistanceValue",
@@ -2661,10 +2868,12 @@ function Ping:ResetProfile()
 end
 
 function Ping:HandleProfileChanges()
+	Ping:UpdateMinimapButton()
 	Ping:CreateMainWindow()
 	Ping:RestoreMainWindowPosition(Ping.db.profile.MainWindow.Position.x, Ping.db.profile.MainWindow.Position.y, Ping.db.profile.MainWindow.Position.w, 34)
 	Ping:ResizeMainWindow()
 	Ping:UpdateTimeoutSettings()
+	Ping:ApplyThemeChrome()
 	Ping:LockWindows(Ping.db.profile.Locked)
 	Ping:ApplyWindowLocks()
 	Ping:ApplyWindowStyle()
@@ -2692,6 +2901,7 @@ function Ping:SetupOptions()
 	self.optionsFrames.Finding = ACD3:AddToBlizOptions("Ping", L["TPageFinding"], L["Ping Option"], "Finding")
 	self.optionsFrames.Look = ACD3:AddToBlizOptions("Ping", L["TPageLook"], L["Ping Option"], "Look")
 	self.optionsFrames.Alerts = ACD3:AddToBlizOptions("Ping", L["TPageAlerts"], L["Ping Option"], "Alerts")
+	self.optionsFrames.MinimapButton = ACD3:AddToBlizOptions("Ping", L["MinimapButtonPage"], L["Ping Option"], "MinimapButton")
 	self.optionsFrames.Data = ACD3:AddToBlizOptions("Ping", L["TPageData"], L["Ping Option"], "Data")
 
 	self:RegisterModuleOptions("Profiles", LibStub("AceDBOptions-3.0"):GetOptionsTable(self.db), L["Profiles"])
@@ -2751,12 +2961,16 @@ function Ping:ShowConfig()
 end
 
 function Ping:OnEnable(first)
+	-- EnablePing can be called merely to reveal the window on a new detection.
+	-- Do not register everything again or leak another pair of repeating timers.
+	if Ping.RuntimeEnabled then return end
 	-- Resolve the healer spell whitelist to localised names, and merge any
 	-- user-added cooldowns into the runtime lookup. Done here rather than at
 	-- file scope because GetSpellInfo is not reliable until the addon is enabled.
 	Ping:BuildHealerSpellNames()
 	Ping:BuildCooldownLookup()
 	Ping.timeid = Ping:ScheduleRepeatingTimer("ManageExpirations", 10, true)
+	Ping.cooldownTimer = Ping:ScheduleRepeatingTimer("TickCooldowns", 1)
 	Ping:RegisterEvent("ZONE_CHANGED", "ZoneChangedEvent")
 	Ping:RegisterEvent("ZONE_CHANGED_INDOORS", "ZoneChangedEvent")
 --	Ping:RegisterEvent("ZONE_CHANGED_NEW_AREA", "ZoneChangedEvent")
@@ -2773,23 +2987,32 @@ function Ping:OnEnable(first)
 	Ping:RegisterEvent("CHAT_MSG_CHANNEL_NOTICE", "ChannelNoticeEvent")
 	Ping:RegisterEvent("NAME_PLATE_UNIT_ADDED", "NamePlateEvent")
 	Ping:RegisterEvent("NAME_PLATE_UNIT_REMOVED", "NamePlateEvent")
-	-- Enemy defensive cooldowns (PvP trinket, immunities) are NOT emitted by the
-	-- combat log - they only surface through the spellcast events.
+	-- Unit events catch target/nameplate tokens; the combat-log handler supplies
+	-- coverage for hostile players without a current unit token.
 	Ping:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED", "UnitSpellcastEvent")
 	Ping:RegisterComm(Ping.Signature, "CommReceived")
 	if Ping.HookDebugErrors then Ping:HookDebugErrors() end
 	if Ping:IsDebugging() then Ping:CaptureDebugEnvironment() end
-	Ping.IsEnabled = true
+	Ping.RuntimeEnabled = true
+	-- Do not wait for the channel-notice settling window before deciding whether
+	-- detection is allowed. On reload that old six-second blackout let Spy fill
+	-- its window while Ping remained at zero.
+	Ping:ZoneChanged()
+	Ping.detectionHealthTimer = Ping:ScheduleTimer("EnsureDetectionActive", 2)
 --	Ping:RefreshCurrentList()
 end
 
 function Ping:OnDisable()
-	if not Ping.IsEnabled then
+	if not Ping.RuntimeEnabled then
 		return
 	end
 	if Ping.timeid then
 		Ping:CancelTimer(Ping.timeid)
 		Ping.timeid = nil
+	end
+	if Ping.cooldownTimer then
+		Ping:CancelTimer(Ping.cooldownTimer)
+		Ping.cooldownTimer = nil
 	end
 	Ping:UnregisterEvent("ZONE_CHANGED")
 	Ping:UnregisterEvent("ZONE_CHANGED_NEW_AREA")
@@ -2806,7 +3029,7 @@ function Ping:OnDisable()
 	Ping:UnregisterEvent("NAME_PLATE_UNIT_REMOVED")
 	Ping:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
 	Ping:UnregisterComm(Ping.Signature)
-	Ping.IsEnabled = false
+	Ping.RuntimeEnabled = false
 end
 
 function Ping:EnablePing(value, changeDisplay, hideEnabledMessage)
@@ -2834,6 +3057,35 @@ function Ping:EnableSound(value)
 		DEFAULT_CHAT_FRAME:AddMessage(L["SoundEnabled"]) 
 	else
 		DEFAULT_CHAT_FRAME:AddMessage(L["SoundDisabled"])
+	end
+end
+
+-- Re-checks the critical runtime pieces after login/reload and processes enemy
+-- unit tokens that already existed before Ping registered its events. This is a
+-- guarded recovery path, not a second detector; normal events remain primary.
+function Ping:EnsureDetectionActive()
+	if not Ping.db or Ping.db.profile.Enabled == false then return end
+	-- CallbackHandler safely replaces an existing registration for this object,
+	-- so re-registering these critical events is both compatible with the older
+	-- bundled AceEvent and idempotent.
+	Ping:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED", "CombatLogEvent")
+	Ping:RegisterEvent("NAME_PLATE_UNIT_ADDED", "NamePlateEvent")
+	Ping:RegisterEvent("PLAYER_TARGET_CHANGED", "PlayerTargetEvent")
+	if not Ping.timeid then Ping.timeid = Ping:ScheduleRepeatingTimer("ManageExpirations", 10, true) end
+	if not Ping.cooldownTimer then Ping.cooldownTimer = Ping:ScheduleRepeatingTimer("TickCooldowns", 1) end
+	Ping:ZoneChanged()
+	Ping:ScanVisibleEnemies()
+end
+
+function Ping:ScanVisibleEnemies()
+	if not Ping.EnabledInZone then return end
+	Ping:PlayerTargetEvent()
+	Ping:PlayerMouseoverEvent()
+	if C_NamePlate and C_NamePlate.GetNamePlates then
+		for _, plate in ipairs(C_NamePlate.GetNamePlates()) do
+			local unit = plate.namePlateUnitToken
+			if unit then Ping:NamePlateEvent(nil, unit) end
+		end
 	end
 end
 
@@ -2900,6 +3152,7 @@ function Ping:OnInitialize()
 
 	Ping.db = acedb:New("PingDB", Default_Profile)
 	Ping:CheckDatabase()
+	Ping:CreateMinimapButton()
 
 --	self.db.RegisterCallback(self, "OnNewProfile", "ResetProfile")
 	self.db.RegisterCallback(self, "OnNewProfile", "HandleProfileChanges")
@@ -2951,33 +3204,26 @@ function Ping:ChannelNoticeEvent(_, chStatus, _, _, Channel)
 end
 
 function Ping:PlayerEnteringWorldEvent()
-	Ping.EnabledInZone = false
 	local now = time()
+	Ping:ZoneChanged()
 	if Ping.ChnlTime > (now - 6) then
 		self:ScheduleTimer("PlayerEnteringWorldEvent",6)
-		return	
-	else 
-		Ping:ZoneChanged()
 	end
 end
 
 function Ping:ZoneChangedEvent()
 	local now = time()
+	Ping:ZoneChanged()
 	if Ping.ChnlTime > (now - 6) then
 		self:ScheduleTimer("ZoneChangedEvent",6)
-		return
-	else 
-		Ping:ZoneChanged()
 	end
 end
 
 function Ping:ZoneChangedNewAreaEvent()
 	local now = time()
+	Ping:ZoneChanged()
 	if Ping.ChnlTime > (now - 6) then
 		self:ScheduleTimer("ZoneChangedNewAreaEvent",6)
-		return
-	else 
-		Ping:ZoneChanged()
 	end
 end
 
@@ -3018,6 +3264,7 @@ function Ping:ZoneChanged()
 			if not InCombatLockdown() then Ping.MainWindow:Show() end
 			Ping:RefreshCurrentList()
 		end
+		Ping:ScanVisibleEnemies()
 	else
 		if not InCombatLockdown() then Ping.MainWindow:Hide() end
 	end
@@ -3244,7 +3491,7 @@ local function defaultCooldownListText()
 		local info = Ping.TrackedCooldowns[id]
 		local mins = info.cd / 60
 		local pretty = (mins >= 1) and (format("%gm", mins)) or (format("%ds", info.cd))
-		lines[#lines + 1] = format("%d  -- %s (%s)", id, info.name, pretty)
+		lines[#lines + 1] = format("%s (%d) = %d  -- %s", info.name, id, info.cd, pretty)
 	end
 	defaultCooldownListTextCache = table.concat(lines, "\n")
 	return defaultCooldownListTextCache
@@ -3278,17 +3525,18 @@ function Ping:BuildCooldownLookup()
 	for line in (p.CooldownListText or ""):gmatch("[^\n]+") do
 		local trimmed = line:gsub("^%s+", ""):gsub("%s+$", "")
 		if trimmed ~= "" and trimmed:sub(1, 2) ~= "--" then
-			local id = tonumber(trimmed:match("spell:(%d+)")) or tonumber(trimmed:match("^(%d+)"))
+			local id = tonumber(trimmed:match("spell:(%d+)")) or tonumber(trimmed:match("%((%d+)%)")) or tonumber(trimmed:match("^(%d+)"))
 			if id then
 				local known = Ping.TrackedCooldowns[id]
-				if known then
+				local explicitDuration = tonumber(trimmed:match("=%s*(%d+)"))
+				if known and not explicitDuration then
 					Ping.CooldownLookup[id] = known
 				else
 					local ok, name = pcall(GetSpellInfo, id)
-					name = (ok and type(name) == "string" and name ~= "") and name or ("Spell "..id)
+					name = (ok and type(name) == "string" and name ~= "") and name or (known and known.name) or ("Spell "..id)
 					Ping.CooldownLookup[id] = {
 						name = name,
-						cd = resolveCooldownSeconds(id) or 120,
+						cd = explicitDuration or (known and known.cd) or resolveCooldownSeconds(id) or 120,
 						short = (#name <= 6) and name or name:sub(1, 6),
 					}
 				end
@@ -3307,25 +3555,22 @@ function Ping:ResetCooldownList()
 	Ping:BuildCooldownLookup()
 end
 
-function Ping:UnitSpellcastEvent(_, unit, _, spellId)
+function Ping:RecordCooldownUse(name, spellId)
 	if not Ping.db.profile.TrackCooldowns then return end
-	if not unit or not spellId then return end
+	if not name or not spellId then return end
 	local info = Ping.CooldownLookup[spellId]
 	if not info then return end
-	-- only care about hostile players
-	if not UnitExists(unit) or not UnitIsPlayer(unit) then return end
-	if not UnitCanAttack("player", unit) then return end
-
-	local name = GetUnitName(unit, true)
-	if not name then return end
-	name = gsub(name, " %- ", "-")
 	local playerData = PingPerCharDB.PlayerData[name]
 	if not playerData then return end
+	local now = GetTime()
+	if playerData.cdSpellId == spellId and playerData.cdUsed and (now - playerData.cdUsed) < 0.5 then return end
 
 	playerData.cdSpell = info.short
 	playerData.cdName = info.name
-	playerData.cdUsed = GetTime()
-	playerData.cdExpires = GetTime() + info.cd
+	playerData.cdSpellId = spellId
+	playerData.cdUsed = now
+	playerData.cdExpires = now + info.cd
+	Ping:RecordEncounter("cooldown", name, info.name)
 
 	if Ping.db.profile.AnnounceCooldowns then
 		DEFAULT_CHAT_FRAME:AddMessage(format(L["CooldownUsed"], name, info.name))
@@ -3454,6 +3699,14 @@ function Ping:ApplyZoneLevelFloor(playerData)
 	end
 end
 
+function Ping:UnitSpellcastEvent(_, unit, _, spellId)
+	if not unit or not spellId then return end
+	if not UnitExists(unit) or not UnitIsPlayer(unit) or not UnitCanAttack("player", unit) then return end
+	local name = GetUnitName(unit, true)
+	if not name then return end
+	Ping:RecordCooldownUse(gsub(name, " %- ", "-"), spellId)
+end
+
 -- Heals that reach another player but say nothing about being a healer:
 -- passive procs, leech/lifetap effects, pet upkeep, consumables and shadow
 -- specs' party leech. Rule 1 (source ~= destination) already discards pure
@@ -3522,7 +3775,7 @@ local function defaultHealerListText()
 	for _, id in ipairs(Ping_HealerSpellIDs) do
 		local ok, name = pcall(GetSpellInfo, id)
 		if ok and type(name) == "string" and name ~= "" then
-			names[#names + 1] = name
+			names[#names + 1] = format("%s (%d)", name, id)
 		end
 	end
 	table.sort(names)
@@ -3541,7 +3794,7 @@ local function parseSpellListLine(line)
 	if line == "" or line:sub(1, 2) == "--" then return nil end
 	local bracketed = line:match("%[([^%]]+)%]")
 	if bracketed then return bracketed end
-	local id = tonumber(line)
+	local id = tonumber(line:match("spell:(%d+)")) or tonumber(line:match("%((%d+)%)")) or tonumber(line)
 	if id and GetSpellInfo then
 		local ok, name = pcall(GetSpellInfo, id)
 		if ok and type(name) == "string" and name ~= "" then return name end
@@ -3652,7 +3905,7 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 		-- analyse the source unit
 		if bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE and srcGUID and srcName and not PingPerCharDB.IgnoreData[srcName] then
 			local srcType = strsub(srcGUID, 1,6)
-			if srcType == "Player" then
+				if srcType == "Player" then
 				local _, class, race, raceFile, _, name = GetPlayerInfoByGUID(srcGUID)
 				if not Ping.ValidClasses[class] then
 					class = nil
@@ -3670,18 +3923,22 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 					detected = Ping:UpdatePlayerData(srcName, class, nil, race, nil, nil, true, nil)
 				end
 
-				if detected then
-					Ping:AddDetected(srcName, timestamp, learnt)
-					if event == "SPELL_AURA_APPLIED" and (arg13 == L["Stealth"]) then
-						Ping:AlertStealthPlayer(srcName)
-					end	
-					if event == "SPELL_AURA_APPLIED" and (arg13 == L["Prowl"]) then
-						Ping:AlertProwlPlayer(srcName)
+					if detected then
+						Ping:AddDetected(srcName, timestamp, learnt)
+						if event == "SPELL_CAST_SUCCESS" then Ping:RecordCooldownUse(srcName, arg12) end
+						if event == "SPELL_AURA_APPLIED" and (arg13 == L["Stealth"]) then
+							Ping:RecordEncounter("stealth", srcName, arg13)
+							Ping:AlertStealthPlayer(srcName)
+						end	
+						if event == "SPELL_AURA_APPLIED" and (arg13 == L["Prowl"]) then
+							Ping:RecordEncounter("stealth", srcName, arg13)
+							Ping:AlertProwlPlayer(srcName)
 					end
 				end
 			end
 
 			if dstGUID == UnitGUID("player") then
+				Ping:RecordEncounter("attacked", srcName, arg13)
 				Ping.LastAttack = srcName
 				Ping.LastAttackTime = GetTime()
 --				print(Ping.LastAttackTime, " ", Ping.LastAttack)
@@ -3740,8 +3997,9 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 						-- meaningful = a big single heal, or sustained healing
 						local big = amount >= (Ping.db.profile.HealerMinHeal or 400)
 						local enough = playerData.healCount >= (Ping.db.profile.HealerMinHeals or 2)
-						if (big or enough) and not playerData.isHealer then
-							playerData.isHealer = true
+							if (big or enough) and not playerData.isHealer then
+								playerData.isHealer = true
+								Ping:RecordEncounter("healer", srcName, arg13)
 							if Ping.db.profile.MarkHealers then Ping:RefreshCurrentList() end
 							Ping:UpdateActiveCount()
 						end
@@ -3758,7 +4016,8 @@ timestamp, event, hideCaster, srcGUID, srcName, srcFlags, sourceRaidFlags, dstGU
 					if not playerData.wins then
 						playerData.wins = 0
 					end
-					playerData.wins = playerData.wins + 1
+						playerData.wins = playerData.wins + 1
+						Ping:RecordEncounter("killed", dstName)
 				end
 			end
 		end
@@ -3818,7 +4077,8 @@ function Ping:PlayerDeadEvent()
 				if not playerData.loses then
 					playerData.loses = 0
 				end
-				playerData.loses = playerData.loses + 1
+					playerData.loses = playerData.loses + 1
+					Ping:RecordEncounter("killed_by", Ping.LastAttack)
 			end
 		end
 	end
@@ -4032,14 +4292,15 @@ function Ping:ShowMapNote(player)
 end
 
 function Ping:GetPlayerLocation(playerData)
-	local location = playerData.zone
-	local mapX = playerData.mapX
-	local mapY = playerData.mapY
+	if not playerData then return L["Unknown"] or "Unknown" end
+	local location = playerData.zone or L["Unknown"] or "Unknown"
+	local mapX = tonumber(playerData.mapX)
+	local mapY = tonumber(playerData.mapY)
 	if location and playerData.subZone and playerData.subZone ~= "" and playerData.subZone ~= location then
 		location = playerData.subZone..", "..location
 	end
 	if mapX and mapX ~= 0 and mapY and mapY ~= 0 then
-		location = location.." ("..math.floor(tonumber(mapX) * 100)..","..math.floor(tonumber(mapY) * 100)..")"
+		location = location.." ("..math.floor(mapX * 100)..","..math.floor(mapY * 100)..")"
 	end
 	return location
 end

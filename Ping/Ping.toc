@@ -1,6 +1,6 @@
 ﻿## Interface: 20505
 ## Title: Ping
-## Version: 2.1.0
+## Version: 2.8.1
 ## Notes: Detects and alerts you to the presence of nearby enemy players.
 ## Notes-deDE: Detektiert und warnt Sie vor, in der Nähe befindlichen, Gegnern.
 ## Notes-esES: Detecta y te alerta sobre la presencia de jugadores enemigos cercanos.
@@ -12,8 +12,8 @@
 ## Notes-ruRU: Обнаруживает и предупреждает вас о присутствии ближайших вражеских игроков.
 ## Notes-zhCN: 检测并提醒您附近有敌方玩家。
 ## Notes-zhTW: 偵測並警告你附近有敵方玩家出沒。
-## Creator: Immolation
-## Author: Slipjack
+## Creator: Oomkill
+## Author: Oomkill
 ## X-Credits-ptBR: Localization: Kasth, Cruzluz
 ## X-Credits-zhTW: Localization: Jaspy10
 ## X-Credits-deDE: Localization: Jana
@@ -23,7 +23,7 @@
 ## X-Credits-ruRU: Localization: TeHbZShadow, TemaZ
 ## X-Credits-esMX: Localization: Cruzluz
 ## X-Credits-esES: Localization: Cruzluz
-## OptionalDeps: Ace3, LibSharedMedia-3.0, TomTom
+## OptionalDeps: Ace3, LibSharedMedia-3.0, TomTom, Spy
 ## SavedVariables: PingDB, PingDebugDB
 ## SavedVariablesPerCharacter: PingPerCharDB
 
@@ -51,6 +51,9 @@ Colors.lua
 Widgets.lua
 WindowOrder.lua
 MainWindow.lua
+MinimapButton.lua
+Transfer.lua
+EncounterHistory.lua
 List.lua
 Distance.lua
 Debug.lua

@@ -37,7 +37,7 @@ L["PingDescription3"] = [[
 |cffffd000 Кнопка Kill On Sight |cffffffff
 Если включено, эта кнопка появится на рамке цели вражеского игрока. Нажатие кнопки добавит/удалит цель врага в/из списка Kill On Sight. Клик ПКМ по кнопке позволит ввести причину для Kill On Sight.
 
-|cffffd000 автор:|cffffffff Slipjack
+|cffffd000 автор:|cffffffff Oomkill
 ]]
 
 -- General Settings

@@ -37,7 +37,7 @@ La ventana de estadísticas contiene una lista de todos los encuentros con enemi
 |cffffd000Botón de matar a la vista|cffffffff
 Si está activado, este botón estará ubicado en el marco del objetivo de los jugadores enemigos. Al hacer clic en este botón, se añadirá/eliminará el objetivo enemigo de la lista de matar a la vista. Al hacer clic derecho en el botón, podrás introducir razones para matar a la vista.
 
-|cffffd000 Autor:|cffffffff Slipjack
+|cffffd000 Autor:|cffffffff Oomkill
 ]]
 
 -- General Settings

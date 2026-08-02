@@ -7,37 +7,88 @@ L["Ping"] = "Ping"
 L["Version"] = "Version"
 L["Ping Option"] = "Ping"
 L["Profiles"] = "Profiles"
+L["Unknown"] = "Unknown"
+L["TTabSpyImport"] = "Spy Import"
+L["SpyImportDescription"] = "Merge lists from Spy for this character into Ping. Spy's saved data is never changed, and importing again is safe. Keep Spy enabled for one login so Ping can read its saved variables."
+L["SpyImportUnavailable"] = "|cffff8000Spy data is not loaded.|r Enable the Spy addon, reload the UI, then return here."
+L["SpyImportReady"] = "Spy data found: %d known players and %d Kill On Sight players."
+L["SpyImportAll"] = "Import all Spy lists"
+L["SpyImportAllDescription"] = "Imports player history, Ignore, and Kill On Sight lists. Existing Ping data is merged, not erased."
+L["SpyImportKOS"] = "Import Kill On Sight only"
+L["SpyImportKOSDescription"] = "Imports only Spy's Kill On Sight players and their known details."
+L["SpyImportComplete"] = "Spy import complete: %d players, %d Kill On Sight, %d ignored."
+L["TTabTransfer"] = "Import / Export"
+L["TransferDescription"] = "Create a portable Ping code or paste one from another character. Only the selected sections are exported or applied. Imports are validated and merged; they never execute code."
+L["TransferLists"] = "KoS and Ignore lists"
+L["TransferSpells"] = "Healing and cooldown spells"
+L["TransferAppearance"] = "Appearance settings"
+L["TransferGenerate"] = "Generate export code"
+L["TransferGenerateDescription"] = "Replaces the box below with a code containing the selected sections."
+L["TransferApply"] = "Import pasted code"
+L["TransferApplyDescription"] = "Validates and applies the selected sections from the pasted code."
+L["TransferConfirm"] = "Import the selected Ping data? Existing KoS and Ignore entries are merged; selected spell and appearance settings are replaced."
+L["TransferCode"] = "Ping transfer code"
+L["TransferCodeDescription"] = "Copy this entire value for export, or replace it with a complete Ping code to import."
+L["TransferReady"] = "Ready. Select sections, then generate or paste a code."
+L["TransferGenerated"] = "Export created: %d characters."
+L["TransferImported"] = "Import complete: %d KoS, %d ignored; spells=%s; appearance=%s."
+L["TransferInvalid"] = "|cffff4040Import failed: %s|r"
+L["MinimapButtonPage"] = "Minimap Button"
+L["MinimapButtonDescription"] = "Configure Ping's minimap launcher. Unlock it to drag it around the minimap."
+L["ShowMinimapButton"] = "Show Ping button on the minimap"
+L["LockMinimapButton"] = "Lock button position"
+L["HideMinimapButtonInCombat"] = "Hide while in combat"
+L["MinimapLeftClick"] = "Left click"
+L["MinimapRightClick"] = "Right click"
+L["MinimapActionToggle"] = "Show / hide Ping window"
+L["MinimapActionSettings"] = "Open Ping settings"
+L["MinimapActionCycle"] = "Cycle list"
+L["MinimapActionEnable"] = "Enable / disable Ping"
+L["MinimapButtonCount"] = "Show detected enemy count on hover"
+L["MinimapNearbyCount"] = "%d nearby enemies"
+L["MinimapLeft"] = "Left"
+L["MinimapRight"] = "Right"
 
 -- Information
 L["About"] = "About"
 L["PingDescription1"] = [[
-Ping is an addon that will alert you to the presence of nearby enemy players. These are some of the main features.
+Ping is a world-PvP awareness addon. It detects hostile-player activity, keeps useful encounter history, and helps you identify priority targets before a fight develops.
 
+|cffffd000 Detection and alerts|cffffffff
+• Detects hostile players through combat events, targets, mouseover units and nameplates.
+• Distinct nearby, stealth, Kill On Sight, KoS-guild and race alerts with configurable sounds and channels.
+• Optional nameplate and world-view distance controls, with the accepted client values reported in settings.
+• Humanoid tracking integration can enrich minimap tooltips with known enemy details.
 ]]
 
 L["PingDescription2"] = [[
-|cffffd000 Nearby List |cffffffff
-Displays enemy players that have been detected nearby. Players are removed from the list if they have not been detected after a period of time.
+|cffffd000 Lists and target selection|cffffffff
+• Nearby, Last Hour, Ignore and Kill On Sight lists, with configurable expiry and automatic resizing.
+• KoS reasons, KoS-guild detection, class focus, healer-only filtering and kill-priority ordering.
+• Confirmed-healer detection based on observed healing of other players. The healing-spell whitelist is editable.
+• Editable enemy cooldown watch list. Used defensives and trinkets display a live countdown on the enemy row.
+• Healer markers, healer/KoS edge accents, aggregate enemy/healer count, class bars and class-coloured names.
 
-|cffffd000 Last Hour List |cffffffff
-Displays all enemies that have been detected in the last hour.
-
-|cffffd000 Ignore List |cffffffff
-Players that are added to the Ignore list will not be reported by Ping. You can add and remove players to/from this list by using the button's drop down menu or by holding the Control key while clicking the button.
-
-|cffffd000 Kill On Sight List |cffffffff
-Players on your Kill On Sight list cause an alarm to sound when detected. You can add and remove players to/from this list by using the button's drop down menu or by holding the Shift key while clicking the button. The drop down menu can also be used to set the reasons why you have added someone to the Kill On Sight list. If you want to enter a specific reason that is not in the list, then use the "Enter your own reason..." in the Other list.
+|cffffd000 History, maps and sharing|cffffffff
+• Searchable encounter statistics with guild, level, wins, losses, last-seen location and KoS filters.
+• Per-character encounter timeline for sightings, hostile attacks, healer evidence, cooldowns, stealth, kills and deaths.
+• World-map/minimap notes for shared sightings and optional TomTom waypoints to the last known position.
+• Encounter sharing with other Ping users in the party, raid or guild.
+• Safe Spy import for all lists or Kill On Sight only; Spy's original data is never changed.
+• Native Ping import/export codes for selected lists, spell rules and appearance settings.
 
 ]]
 
 L["PingDescription3"] = [[
-|cffffd000 Statistics Window |cffffffff
-The Statistics Window contains a list of all enemy encounters which can be sorted by name, level, guild, wins, losses and the last time an enemy was detected. It also provides the ability to search for a specific enemy by name or guild and has filters to show only enemies that are marked as Kill on Sight, with a Win/Loss or entered Reasons.
+|cffffd000 Interface and customization|cffffffff
+• Moveable, resizable and scalable main window with position, size and screen-clamp locks.
+• One-page Look editor with semantic theme colours for the header controls, plus row presets, fonts, SharedMedia bar textures, opacity, background, title and border controls.
+• Configurable minimap launcher: show/hide Ping, open settings, cycle lists or enable/disable detection.
+• Moveable alert window, target-frame KoS button, chat announcements, slash commands and AceDB profiles.
+• Optional diagnostics capture for API compatibility, detection counts, level-guess accuracy and Ping errors.
 
-|cffffd000 Kill On Sight Button |cffffffff
-If enabled, this button will be located on the enemy players target frame. Clicking on this button will add/remove the enemy target to/from the Kill On Sight list. Right clicking on the button will allow you to enter Kill on Sight reasons.
-
-|cffffd000 Author:|cffffffff Slipjack
+|cffffd000 Author:|cffffffff Oomkill
+|cffffd000 Heritage:|cffffffff Forked from Spy by Slipjack, originally created by Immolation.
 ]]
 
 -- General Settings
@@ -665,6 +716,26 @@ L["TPageData"] = "Data"
 L["TTabStorage"] = "Storage"
 L["TTabSharing"] = "Sharing"
 L["TTabDiagnostics"] = "Diagnostics"
+L["TTabHistory"] = "History"
+
+L["HistoryDescription"] = "A per-character, newest-first timeline of enemy sightings, attacks, healer evidence, cooldown use, stealth, kills and deaths. Ping keeps the latest 250 entries."
+L["HistoryCount"] = "%d encounters saved."
+L["HistoryClear"] = "Clear history"
+L["HistoryClearDescription"] = "Permanently clears this character's encounter timeline. Player records and win/loss totals are not changed."
+L["HistoryClearConfirm"] = "Clear this character's encounter history?"
+L["HistoryLog"] = "Encounter timeline"
+L["HistoryLogDescription"] = "This field is read-only. Select and copy its text if you want to save or share the timeline."
+L["HistoryEmpty"] = "No encounters recorded yet."
+L["HistoryEncounter"] = "Encounter"
+L["HistoryDetected"] = "Detected"
+L["HistoryReturned"] = "Returned"
+L["HistoryAttacked"] = "Attacked you"
+L["HistoryCooldown"] = "Used cooldown"
+L["HistoryHealer"] = "Confirmed healer"
+L["HistoryStealth"] = "Entered stealth"
+L["HistoryKilled"] = "You killed"
+L["HistoryKilledBy"] = "Killed you"
+L["HistoryReportedBy"] = "reported by %s"
 
 ------------------------------------------------------------------------------
 -- Sight distance
@@ -703,7 +774,7 @@ L["DistanceCeilings"] = "Highest your client accepts: nameplates %s yards, view 
 L["HealerSpellListHeader"] = "Healing spells"
 L["HealerSpellListIntro"] = "Only these spells mark a healer. Delete a line to stop counting it; add a name, spell id, or shift-clicked spell link to start."
 L["HealerSpellList"] = "Whitelisted healing spells"
-L["HealerSpellListDescription"] = "One spell per line. Blank lines and lines starting with -- are ignored."
+L["HealerSpellListDescription"] = "One spell per line in Spell Name (ID) format. IDs, names, and shift-clicked spell links are also accepted."
 L["HealerSpellListStatus"] = "%d spells recognised right now."
 L["HealerSpellListReset"] = "Reset to the researched TBC list"
 L["HealerSpellListResetDescription"] = "Discards every edit and restores the 24 spells Ping shipped with."
@@ -717,11 +788,16 @@ L["HealerSpellListResetDescription"] = "Discards every edit and restores the 24 
 ------------------------------------------------------------------------------
 L["LookThemeHeader"] = "Theme"
 L["LookTheme"] = "Colour theme"
-L["LookThemeDescription"] = "Sets the title bar, border, healer marker and cooldown colours together. Each can still be changed individually afterwards."
+L["LookThemeDescription"] = "Applies a coordinated palette. Themes marked as new artwork also replace the window textures and control icons. Choosing any legacy theme restores the original Ping artwork."
+L["ChromeColors"] = "Header controls"
+L["IconColor"] = "Utility icons"
+L["NavigationColor"] = "Navigation arrows"
+L["CountColor"] = "Enemy count"
+L["CloseColor"] = "Close button"
 L["CooldownListHeader"] = "Cooldowns watched"
 L["CooldownListIntro"] = "Only these spells are tracked. Delete a line to stop watching it; add a spell id or a shift-clicked spell link to start."
 L["CooldownList"] = "Watched spells"
-L["CooldownListDescription"] = "One spell id per line - a name alone cannot be matched. Anything after the id is a comment."
+L["CooldownListDescription"] = "One spell per line in Spell Name (ID) = seconds format. The duration is optional; IDs and shift-clicked spell links are also accepted."
 L["CooldownListStatus"] = "%d spells watched."
 L["CooldownListStatusWithWarning"] = "%d spells watched. |cffff8000%d lines have no spell id|r and are being ignored."
 L["CooldownListReset"] = "Reset to the ten defaults"

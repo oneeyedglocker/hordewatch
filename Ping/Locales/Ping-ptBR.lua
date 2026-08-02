@@ -37,7 +37,7 @@ A Janela de Estatísticas contém uma lista de todos os encontros com inimigos q
 |cffffd000Botão de Alvo Prioritário|cffffffff
 Se ativado, este botão estará localizado no quadro de alvo dos jogadores inimigos. Clicar neste botão adicionará/removerá o alvo inimigo da lista de Alvo Prioritário. Clicar com o botão direito no botão permitirá que você insira razões de Alvo Prioritário.
 
-|cffffd000Autor:|cffffffff Slipjack|cffffffff
+|cffffd000Autor:|cffffffff Oomkill|cffffffff
 ]]
 
 -- General Settings
