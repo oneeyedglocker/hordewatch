@@ -1,6 +1,6 @@
 ﻿## Interface: 20505
 ## Title: Ping
-## Version: 2.8.4
+## Version: 2.8.5
 ## Notes: Detects and alerts you to the presence of nearby enemy players.
 ## Notes-deDE: Detektiert und warnt Sie vor, in der Nähe befindlichen, Gegnern.
 ## Notes-esES: Detecta y te alerta sobre la presencia de jugadores enemigos cercanos.
