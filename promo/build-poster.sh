@@ -29,6 +29,14 @@ for n in range(1, 7):
                        '', s, count=1, flags=re.S)
         if k: print('dropped feature F%d' % n)
 
+# Same for the second block in column two.
+if 'COL2B_TITLE' not in copy:
+    for pat in (r'\s*<div class="cap c"[^>]*>\{\{COL2B_TITLE\}\}</div>',
+                r'\s*<div class="sub"[^>]*>\{\{COL2B_TEXT\}\}</div>'):
+        s, k = re.subn(pat, '', s, count=1, flags=re.S)
+        if not k: raise SystemExit('could not drop COL2B: ' + pat)
+    print('dropped the column-2 sub-block')
+
 needed = set(re.findall(r'\{\{(\w+)\}\}', s))
 missing = needed - set(copy)
 extra   = set(copy) - needed

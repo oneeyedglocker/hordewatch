@@ -9,20 +9,20 @@
 #
 # Delete both lines of an F block to drop that feature from the poster.
 
-TAGLINE      = Know who to hit first.
+TAGLINE      = A Spy fork - know who to hit first.
 BANNER       = ALL SPY FEATURES — PLUS
 COL1_TITLE   = COOLDOWNS
 COL1_TEXT    = Track cooldowns you want to see in the Ping window.
 COL2_TITLE   = HEALERS
 COL2_TEXT    = Healers marked in Ping window. This is configurable to look for specific spells.
-COL2B_TITLE  = KILL PRIORITY
-COL2B_TEXT   = Need to quickly target Warlocks in BGs before they cast Seed of Corruption? Want to focus squishies in WPvP for a monster Ambush or Silencing Garrote? Sort the Ping window based on class.
+COL2B_TITLE  = SPY IMPORT
+COL2B_TEXT   = Ping is built to replace Spy. One click brings your Kill On Sight list, wins and losses across. Keep both installed while you try it - they do not conflict.
 COL3_TITLE   = 14 THEMES
 COL3_TEXT    = Seven with new colors. Seven with new artwork.
+F1_TITLE     = KILL PRIORITY
+F1_TEXT      = Target Warlocks in BGs before Seed of Corruption lands, or focus squishies in WPvP for a monster Ambush. Sort the window by class.
 F2_TITLE     = HEALER-ONLY VIEW
 F2_TEXT      = Hide everyone who cannot heal. Cuts a mass fight down to targets.
-F4_TITLE     = SPY IMPORT
-F4_TEXT      = KoS list, wins and losses in one click. Runs alongside Spy.
 F5_TITLE     = SEE THEM SOONER
 F5_TEXT      = Pushes nameplate and view distance to the client maximum.
 F6_TITLE     = ENCOUNTER LOG
