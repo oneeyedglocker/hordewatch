@@ -67,7 +67,7 @@ L["PingDescription2"] = [[
 • KoS reasons, KoS-guild detection, class focus, healer-only filtering and kill-priority ordering.
 • Confirmed-healer detection based on observed healing of other players. The healing-spell whitelist is editable.
 • Editable enemy cooldown watch list. Used defensives and trinkets display a live countdown on the enemy row.
-• Healer and KoS edge accents, aggregate enemy/healer count, class bars and class-coloured names.
+• Healer and KoS edge accents, aggregate enemy/healer count, class bars and class-colored names.
 
 |cffffd000 History, maps and sharing|cffffffff
 • Searchable encounter statistics with guild, level, wins, losses, last-seen location and KoS filters.
@@ -82,7 +82,7 @@ L["PingDescription2"] = [[
 L["PingDescription3"] = [[
 |cffffd000 Interface and customization|cffffffff
 • Moveable, resizable and scalable main window with position, size and screen-clamp locks.
-• One-page Look editor with semantic theme colours for the header controls, plus row presets, fonts, SharedMedia bar textures, opacity, background, title and border controls.
+• One-page Look editor with semantic theme colors for the header controls, plus row presets, fonts, SharedMedia bar textures, opacity, background, title and border controls.
 • Configurable minimap launcher: show/hide Ping, open settings, cycle lists or enable/disable detection.
 • Moveable alert window, target-frame KoS button, chat announcements, slash commands and AceDB profiles.
 • Optional diagnostics capture for API compatibility, detection counts, level-guess accuracy and Ping errors.
@@ -245,7 +245,7 @@ L["TrackCooldowns"] = "Track enemy defensive cooldowns"
 L["TrackCooldownsDescription"] = "Show a countdown beside an enemy after they burn a PvP trinket, bubble, Ice Block or similar - so you know when they're out of outs."
 L["AnnounceCooldowns"] = "Announce cooldowns in chat"
 L["AnnounceCooldownsDescription"] = "Also print a chat line when an enemy uses one of these cooldowns."
-L["CooldownColor"] = "Cooldown timer colour"
+L["CooldownColor"] = "Cooldown timer color"
 L["CooldownUsed"] = "%s used %s"
 L["KOSGuildAlertCooldown"] = "Kill-on-Sight guild alert cooldown (seconds)"
 L["KOSGuildAlertCooldownDescription"] = "Minimum time between alerts for the same Kill-on-Sight guild, so running into several of their members doesn't fire a stack of warnings. Set to 0 to alert every time."
@@ -258,24 +258,24 @@ L["HealerMarkerSide"] = "Marker side"
 L["HealerMarkerSideDescription"] = "Which side of the row the healer marker sits on."
 L["HealerMarkerRight"] = "Right"
 L["HealerMarkerLeft"] = "Left"
-L["HealerMarkerColor"] = "Marker colour"
+L["HealerMarkerColor"] = "Marker color"
 L["SortHealersToTop"] = "Sort healers to the top"
 L["SortHealersToTopDescription"] = "Float likely healers above other players within the Nearby list."
 L["HealerGreenEdge"] = "Healer edge accent"
-L["HealerGreenEdgeDescription"] = "Show a coloured stripe on the left edge of healer rows."
-L["HealerEdgeColor"] = "Healer colour"
+L["HealerGreenEdgeDescription"] = "Show a colored stripe on the left edge of healer rows."
+L["HealerEdgeColor"] = "Healer color"
 L["DimNonHealers"] = "Dim non-healers"
 L["DimNonHealersDescription"] = "Lower the opacity of non-healer (and non-KoS) rows to make healers pop."
 L["TLook"] = "List Look"
 L["LookPreset"] = "Look preset"
-L["LookPresetDescription"] = "A quick style for the rows. Adjusts row height, name colouring and bar fill under the hood."
+L["LookPresetDescription"] = "A quick style for the rows. Adjusts row height, name coloring and bar fill under the hood."
 L["LookClassBars"] = "Class bars"
 L["LookFlat"] = "Flat"
 L["LookCompact"] = "Compact"
-L["ClassColoredNames"] = "Class-coloured names"
-L["ClassColoredNamesDescription"] = "Colour each player's name by their class instead of using the bar text colour."
+L["ClassColoredNames"] = "Class-colored names"
+L["ClassColoredNamesDescription"] = "Color each player's name by their class instead of using the bar text color."
 L["BarOpacity"] = "Bar fill opacity"
-L["BarOpacityDescription"] = "How solid the class-coloured bar fill looks. Set to 0 for a flat, text-only list."
+L["BarOpacityDescription"] = "How solid the class-colored bar fill looks. Set to 0 for a flat, text-only list."
 L["TWindow"] = "Window"
 L["LockPosition"] = "Lock position"
 L["LockPositionDescription"] = "Keep the window where it is and stop it being dragged around."
@@ -286,20 +286,20 @@ L["ShowBackgroundDescription"] = "Show the window's background fill behind the r
 L["BackgroundOpacity"] = "Background opacity"
 L["BackgroundOpacityDescription"] = "How solid the window background looks."
 L["TitleBarStyle"] = "Title bar style"
-L["TitleBarStyleDescription"] = "How the window's title bar looks. Classic is Ping's original subtle bar; Solid is an opaque coloured strip."
+L["TitleBarStyleDescription"] = "How the window's title bar looks. Classic is Ping's original subtle bar; Solid is an opaque colored strip."
 L["TitleBarClassic"] = "Classic (subtle)"
 L["TitleBarSolid"] = "Solid strip"
-L["TitleBarColor"] = "Title bar colour"
-L["TitleBarColorDescription"] = "Colour of the solid title strip."
+L["TitleBarColor"] = "Title bar color"
+L["TitleBarColorDescription"] = "Color of the solid title strip."
 L["TitleBarOpacity"] = "Title bar opacity"
 L["TitleBarOpacityDescription"] = "Transparency of the solid title strip. Lower is see-through."
 L["ShowBorder"] = "Show border"
 L["ShowBorderDescription"] = "Draw a border around the window."
-L["WindowBorderColor"] = "Border colour"
+L["WindowBorderColor"] = "Border color"
 L["WindowScale"] = "Window scale"
 L["WindowScaleDescription"] = "Scale the whole Ping window up or down."
-L["KoSEdgeColor"] = "Kill-on-Sight edge colour"
-L["KoSEdgeColorDescription"] = "Colour of the left-edge accent on Kill-on-Sight rows."
+L["KoSEdgeColor"] = "Kill-on-Sight edge color"
+L["KoSEdgeColorDescription"] = "Color of the left-edge accent on Kill-on-Sight rows."
 
 -- Alerts
 L["AlertOptions"] = "Alerts"
@@ -796,8 +796,8 @@ L["SpellListUnresolvedId"] = "Spell ID %d is not in this client's data - added, 
 -- Look themes
 ------------------------------------------------------------------------------
 L["LookThemeHeader"] = "Theme"
-L["LookTheme"] = "Colour theme"
-L["LookThemeDescription"] = "Applies a coordinated palette. Themes marked as new artwork also replace the window textures and control icons. Choosing any legacy theme restores the original Ping artwork."
+L["LookTheme"] = "Color theme"
+L["LookThemeDescription"] = "Above the line: recolors Ping's original artwork. Below it: also replaces the window textures and control icons, and for Villain HUD the fonts. Picking one from above the line restores the original artwork."
 L["ChromeColors"] = "Header controls"
 L["IconColor"] = "Utility icons"
 L["NavigationColor"] = "Navigation arrows"
@@ -816,7 +816,7 @@ L["CooldownListResetDescription"] = "Discards every edit and restores the spells
 -- Class focus
 ------------------------------------------------------------------------------
 L["FocusClassHeader"] = "Focus classes"
-L["FocusClassIntro"] = "Float chosen classes to the top of the list, or show only those classes. Works alongside the healer controls above - healers still outrank focused classes when both are on."
+L["FocusClassIntro"] = "Float chosen classes to the top of the list, or show only those classes. Healers still outrank them: anyone caught by \"Sort healers to the top\" sits above every focused class. Selected classes are one group with no order between them."
 L["FocusClassMode"] = "Class focus"
 L["FocusClassModeDescription"] = "Off, sort chosen classes to the top, or hide everything except them."
 L["FocusClassOff"] = "Off"

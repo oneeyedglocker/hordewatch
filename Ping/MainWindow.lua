@@ -1200,7 +1200,7 @@ Ping.LookThemes = {
 		},
 	},
 	obsidian = {
-		name = "Obsidian Tactical (new artwork)",
+		name = "Obsidian Tactical",
 		artwork = "obsidian",
 		chrome = { Icon=rgb("d7e1e7"), Navigation=rgb("8ccbe6"), Count=rgb("3ec7f2"), Close=rgb("ef513f") },
 		colors = {
@@ -1225,7 +1225,7 @@ Ping.LookThemes = {
 		},
 	},
 	arcane = {
-		name = "Arcane Glass (new artwork)",
+		name = "Arcane Glass",
 		artwork = "arcane",
 		chrome = { Icon=rgb("d8e8ff"), Navigation=rgb("79ddff"), Count=rgb("63efff"), Close=rgb("ff5e88") },
 		colors = {
@@ -1249,7 +1249,7 @@ Ping.LookThemes = {
 		},
 	},
 	warcamp = {
-		name = "Warcamp (new artwork)",
+		name = "Warcamp",
 		artwork = "warcamp",
 		chrome = { Icon=rgb("ead8b8"), Navigation=rgb("d9a254"), Count=rgb("ffc466"), Close=rgb("ef513f") },
 		colors = {
@@ -1273,7 +1273,7 @@ Ping.LookThemes = {
 		},
 	},
 	minimal = {
-		name = "Minimal Ink (new artwork)",
+		name = "Minimal Ink",
 		artwork = "minimal",
 		chrome = { Icon=rgb("d4d8dc"), Navigation=rgb("aeb7bf"), Count=rgb("f3f5f7"), Close=rgb("e06a6a") },
 		colors = {
@@ -1294,7 +1294,7 @@ Ping.LookThemes = {
 		},
 	},
 	clean = {
-		name = "Clean Glass (new artwork)",
+		name = "Clean Glass",
 		artwork = "clean",
 		chrome = { Icon=rgb("dcecff"), Navigation=rgb("84d9ff"), Count=rgb("a7ecff"), Close=rgb("ff6e79") },
 		colors = {
@@ -1315,7 +1315,7 @@ Ping.LookThemes = {
 		},
 	},
 	unitframe = {
-		name = "Unitframe Clean (new artwork)",
+		name = "Unitframe Clean",
 		artwork = "unitframe",
 		chrome = { Icon=rgb("d0d4d8"), Navigation=rgb("65aee8"), Count=rgb("3da9ff"), Close=rgb("e45757") },
 		colors = {
@@ -1336,7 +1336,7 @@ Ping.LookThemes = {
 		},
 	},
 	villain = {
-		name = "Villain HUD (new artwork)",
+		name = "Villain HUD",
 		artwork = "villain",
 		chrome = { Icon=rgb("e2d7d7"), Navigation=rgb("d94a4a"), Count=rgb("ff6767"), Close=rgb("ff3434") },
 		colors = {
@@ -1356,6 +1356,21 @@ Ping.LookThemes = {
 			CleanThemeBorderRevision = 1,
 		},
 	},
+}
+
+-- Display order for the theme dropdown. pairs() over LookThemes is unordered,
+-- so without this the list shuffles between sessions. The separator splits the
+-- two kinds of theme: the first group only recolours Ping's original artwork,
+-- the second replaces the window textures, control icons and (for Villain HUD)
+-- the fonts as well. Picking the separator does nothing - ApplyLookTheme
+-- returns on any key that is not a theme.
+Ping.LookThemeSeparator = "__separator"
+Ping.LookThemeOrder = {
+	-- colour only
+	"classic", "midnight", "horde", "alliance", "emerald", "mono", "blackout",
+	Ping.LookThemeSeparator,
+	-- full artwork
+	"obsidian", "arcane", "warcamp", "minimal", "clean", "unitframe", "villain",
 }
 
 function Ping:ApplyLookTheme(key)

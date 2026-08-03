@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.8.5"
+Ping.Version = "2.8.6"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -1161,8 +1161,14 @@ Ping.options = {
 							values = function()
 								local t = {}
 								for key, theme in pairs(Ping.LookThemes) do t[key] = theme.name end
+								t[Ping.LookThemeSeparator] = "————————————"
 								return t
 							end,
+							-- Explicit order, so the colour-only themes come first and
+							-- the artwork ones sit below the separator. Without this
+							-- AceConfig sorts the labels alphabetically and the two
+							-- kinds interleave.
+							sorting = function() return Ping.LookThemeOrder end,
 							get = function() return Ping.db.profile.LookTheme end,
 							set = function(_, v) Ping:ApplyLookTheme(v) end,
 						},
