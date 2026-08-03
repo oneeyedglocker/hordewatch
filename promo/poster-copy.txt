@@ -9,7 +9,7 @@
 #
 # Delete both lines of an F block to drop that feature from the poster.
 
-TAGLINE      = A Spy fork - know who to hit first.
+TAGLINE      = A Spy fork with more features.
 BANNER       = ALL SPY FEATURES — PLUS
 COL1_TITLE   = COOLDOWNS
 COL1_TEXT    = Track cooldowns you want to see in the Ping window.
