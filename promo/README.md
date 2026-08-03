@@ -13,6 +13,8 @@ zips only the `Ping/` folder, so nothing here reaches end users.
 - `build-poster.sh` — fills the template from the copy sheet and renders the PNG.
 - `shots/` — the three in-game windows cropped out of a real screenshot
   (cooldown window, artwork theme, healer row). The poster composites these.
+- `ping-logo.png` — the CurseForge project avatar (800×800 radar mark).
+- `logo.html` — its source; re-render the same way as the poster.
 
 ## To change the wording and re-render
 

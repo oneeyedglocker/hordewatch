@@ -1,0 +1,49 @@
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#222}
+
+#R{width:800px;height:800px;position:relative;overflow:hidden;border-radius:150px;
+  background:radial-gradient(120% 120% at 32% 22%,#233b31 0%,#12251c 42%,#0a120d 78%,#070c09 100%);}
+
+.ring{position:absolute;border-radius:50%;left:50%;top:50%;transform:translate(-50%,-50%);}
+.grid{border:7px solid rgba(120,240,170,.16);}
+.r1{width:250px;height:250px;border-color:rgba(120,240,170,.34);}
+.r2{width:470px;height:470px;border-color:rgba(120,240,170,.24);}
+.r3{width:690px;height:690px;border-color:rgba(120,240,170,.15);}
+
+/* crosshair graticule */
+.cross{position:absolute;background:rgba(120,240,170,.18);left:50%;top:50%;}
+.cx{width:690px;height:4px;transform:translate(-50%,-50%);}
+.cy{height:690px;width:4px;transform:translate(-50%,-50%);}
+
+/* sweep wedge */
+.sweep{width:690px;height:690px;
+  background:conic-gradient(from -38deg,
+    rgba(88,240,150,.65), rgba(88,240,150,.10) 55deg, rgba(88,240,150,0) 78deg);}
+
+/* leading edge of the sweep, brighter */
+.edge{width:690px;height:690px;
+  background:conic-gradient(from -38deg, rgba(150,255,190,.9), rgba(150,255,190,0) 6deg);}
+
+/* enemy blip */
+.blip{width:78px;height:78px;background:#ff4040;
+  box-shadow:0 0 40px 12px rgba(255,64,64,.8);left:64%;top:37%;}
+.blip::after{content:'';position:absolute;inset:-26px;border-radius:50%;
+  border:5px solid rgba(255,64,64,.45);}
+
+/* faint centre dot = you */
+.you{width:26px;height:26px;background:rgba(150,255,190,.9);
+  box-shadow:0 0 18px 4px rgba(120,240,170,.6);}
+</style>
+
+<div id="R">
+  <div class="ring grid r3"></div>
+  <div class="ring grid r2"></div>
+  <div class="ring grid r1"></div>
+  <div class="cross cx"></div>
+  <div class="cross cy"></div>
+  <div class="ring sweep"></div>
+  <div class="ring edge"></div>
+  <div class="ring you"></div>
+  <div class="ring blip"></div>
+</div>
