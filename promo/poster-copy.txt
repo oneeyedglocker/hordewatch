@@ -1,0 +1,30 @@
+# Ping poster copy. Edit the text to the right of each '=' and send this
+# file back. Layout, colors and screenshots are untouched.
+#
+# Keep titles SHORT - they are set in a condensed face and will not wrap.
+# Body lines wrap to two lines comfortably, three is a squeeze.
+#
+# Column 1 = the cooldown window   Column 2 = the healer row
+# Column 3 = the artwork theme     F1-F6    = the items along the bottom
+#
+# Delete both lines of an F block to drop that feature from the poster.
+
+TAGLINE      = Know who to hit first.
+BANNER       = ALL SPY FEATURES — PLUS
+COL1_TITLE   = COOLDOWNS
+COL1_TEXT    = Track cooldowns you want to see in the Ping window.
+COL2_TITLE   = HEALERS
+COL2_TEXT    = Healers marked in Ping window. This is configurable to look for specific spells.
+COL2B_TITLE  = KILL PRIORITY
+COL2B_TEXT   = Want to unalive healers first? Need to quickly target Warlocks casting Seed of Corruption in AV? Sort Ping windows based on class.
+COL3_TITLE   = 14 THEMES
+COL3_TEXT    = Seven with new colors. Seven with new artwork.
+F2_TITLE     = HEALER-ONLY VIEW
+F2_TEXT      = Hide everyone who cannot heal. Cuts a mass fight down to targets.
+F4_TITLE     = SPY IMPORT
+F4_TEXT      = KoS list, wins and losses in one click. Runs alongside Spy.
+F5_TITLE     = SEE THEM SOONER
+F5_TEXT      = Pushes nameplate and view distance to the client maximum.
+F6_TITLE     = ENCOUNTER LOG
+F6_TEXT      = Your last 250 sightings, ganks and deaths, per character.
+FOOTER       = /PING · TBC CLASSIC · IMPORTS YOUR SPY DATA
