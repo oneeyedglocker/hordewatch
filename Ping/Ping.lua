@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.8.7"
+Ping.Version = "2.8.8"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -1364,6 +1364,26 @@ Ping.options = {
 							set = function(_, value)
 								Ping.db.profile.TitleBarOpacity = value
 								Ping:ApplyWindowStyle()
+							end,
+						},
+						TitleTextColor = {
+							name = L["TitleTextColor"],
+							desc = L["TitleTextColorDescription"],
+							type = "color",
+							order = 13.5,
+							hasAlpha = true,
+							-- Written through Colors:SetColor, not straight into the
+							-- table: the title is a REGISTERED font, so it is painted
+							-- once at creation and only repaints when the colour system
+							-- is told. A direct table write changes the saved value and
+							-- nothing on screen until a reload.
+							get = function()
+								local c = Ping.Colors:GetColor("Window", "Title Text")
+								return c.r, c.g, c.b, c.a or 1
+							end,
+							set = function(_, r, g, b, a)
+								Ping.Colors:SetColor("Window", "Title Text",
+									{ r = r, g = g, b = b, a = a })
 							end,
 						},
 						ShowBorder = {
