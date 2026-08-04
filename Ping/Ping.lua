@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.8.6"
+Ping.Version = "2.8.7"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -3648,12 +3648,17 @@ end
 
 -- Applies the floor to a stored record. Only ever raises a GUESSED level -
 -- a level read directly off a unit is authoritative and left alone.
-function Ping:ApplyZoneLevelFloor(playerData)
+-- knownMapID lets a caller pass the map it has already resolved, so a hot
+-- detection path does not re-query C_Map for every single event.
+function Ping:ApplyZoneLevelFloor(playerData, knownMapID)
 	if not playerData or playerData.isGuess == false then return end
 	-- mapID is only recorded on a first sighting where coordinates resolved, so
 	-- it's nil for most records. Detection always happens near us, so fall back
 	-- to the zone we're standing in.
-	local floor = Ping:GetZoneLevelFloor(playerData.mapID) or Ping:GetZoneLevelFloor()
+	local floor = Ping:GetZoneLevelFloor(playerData.mapID or knownMapID)
+	if not floor and playerData.mapID and knownMapID then
+		floor = Ping:GetZoneLevelFloor(knownMapID)
+	end
 	if Ping.DebugZone then
 		Ping:DebugZone(playerData.mapID or (C_Map and C_Map.GetBestMapForUnit
 			and C_Map.GetBestMapForUnit("player")))

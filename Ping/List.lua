@@ -65,6 +65,30 @@ end
 -- KoS guild used to spam five near-identical warnings. Rate-limit to one alert
 -- per guild per KOSGuildAlertCooldown seconds (0 = no throttle).
 local kosGuildAlerted = {}
+
+-- Where WE are. Identical for every detection in the same instant, so
+-- resolving it per detection meant the same C_Map work hundreds of times a
+-- second in a battleground - Ping fell visibly behind Spy, which sidesteps the
+-- cost by only ever reading position on a player's FIRST detection and letting
+-- it go stale afterwards.
+--
+-- Cached for one second instead. Coordinates still track you as you move, so
+-- a chased player's last-known spot stays current, at a fraction of the cost.
+local posCache = { stamp = -1 }
+local function playerPosition()
+	local now = GetTime and GetTime() or 0
+	if now - posCache.stamp < 1 then return posCache end
+	posCache.stamp = now
+	posCache.mapID = (C_Map and C_Map.GetBestMapForUnit) and C_Map.GetBestMapForUnit("player") or nil
+	posCache.x, posCache.y = nil, nil
+	if posCache.mapID and C_Map.GetPlayerMapPosition then
+		local ok, pos = pcall(C_Map.GetPlayerMapPosition, posCache.mapID, "player")
+		if ok and pos then posCache.x, posCache.y = pos:GetXY() end
+	end
+	posCache.zone = GetZoneText and GetZoneText() or nil
+	posCache.subZone = GetSubZoneText and GetSubZoneText() or nil
+	return posCache
+end
 function Ping:AllowKOSGuildAlert(guild)
 	if not guild then return false end
 	local cd = Ping.db.profile.KOSGuildAlertCooldown
@@ -517,7 +541,8 @@ function Ping:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy
 			Ping:DebugLevelCheck(name, level)
 		end
 		playerData.time = time()
-		Ping:ApplyZoneLevelFloor(playerData)
+		local here = playerPosition()
+		Ping:ApplyZoneLevelFloor(playerData, here.mapID)
 		-- Detection accounting. This was written and then never called, so every
 		-- dump reported zero detections for every session.
 		if Ping.DebugDetection then
@@ -534,15 +559,13 @@ function Ping:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy
 			WorldMapFrame:SetMapID(C_Map.GetBestMapForUnit("player"))
 		end
 
-		local mapID = C_Map.GetBestMapForUnit("player")
-		local position = mapID and C_Map.GetPlayerMapPosition(mapID, "player")
-		if not position then
+		local mapID, mapX, mapY = here.mapID, here.x, here.y
+		if not mapID or not mapX then
 			if isNewDetection then
 				playerData.zone = GetInstanceInfo()
 				playerData.subZone = ""
 			end
 		else
-			local mapX, mapY = position:GetXY()
 			if mapX and mapY and mapX ~= 0 and mapY ~= 0 then
 				-- Store at full precision. This used to floor to 2 decimals,
 				-- which in a zone ~3500 yards across is a 35 yard grid, biased
@@ -550,8 +573,8 @@ function Ping:UpdatePlayerData(name, class, level, race, guild, faction, isEnemy
 				playerData.mapX = mapX
 				playerData.mapY = mapY
 				playerData.mapID = mapID
-				playerData.zone = GetZoneText()
-				playerData.subZone = GetSubZoneText()
+				playerData.zone = here.zone
+				playerData.subZone = here.subZone
 			elseif isNewDetection then
 				detected = false
 			end
