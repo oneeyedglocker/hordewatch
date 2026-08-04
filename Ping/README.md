@@ -8,22 +8,22 @@ Data > Spy Import**. The importer merges all lists or only Kill On Sight and
 never changes Spy's own saved data.
 
 Changes from Spy include confirmed-heal healer detection, class focus, enemy
-cooldown tracking, a rebuilt options panel, colour themes, and nameplate/view
+cooldown tracking, a rebuilt options panel, color themes, and nameplate/view
 distance controls. Ping also has native import/export codes under **Data > Import
 / Export** for selected lists, spell rules, and appearance settings.
 
 The **Look** category is a single scrollable page: window/theme controls first,
 then row and typography controls. The **Blacked Out** theme removes nearly all
-colour and reduces class-bar fill while keeping combat signals legible. Theme
-palettes now include semantic colours for utility icons, navigation arrows, the
+color and reduces class-bar fill while keeping combat signals legible. Theme
+palettes now include semantic colors for utility icons, navigation arrows, the
 enemy count, and the close button, so switching themes replaces the whole header
-palette instead of leaving colours behind.
+palette instead of leaving colors behind.
 
 The full-artwork presets include **Obsidian Tactical**, **Arcane Glass**,
 **Warcamp**, **Minimal Ink**, **Clean Glass**, **Unitframe Clean**, and
 **Villain HUD**. Each adds compact history, targeting, navigation and close artwork,
-its own generated material panel, semantic chrome colours, and readable class
-fills. Choosing any classic colour theme restores Ping's legacy artwork, so the
+its own generated material panel, semantic chrome colors, and readable class
+fills. Choosing any classic color theme restores Ping's legacy artwork, so the
 redesigns can be tested without committing the profile to them.
 
 Villain HUD also uses a theme-scoped comic typography hierarchy: OFL-licensed

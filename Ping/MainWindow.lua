@@ -251,8 +251,8 @@ function Ping:SetupBar(row)
 	Ping.Colors:RegisterFont("Bar", "Bar Text", row.LeftText)
 	Ping.Colors:RegisterFont("Bar", "Bar Text", row.RightText)
 
-	-- Healer marker: a small independent glyph whose colour is driven by
-	-- Ping:ApplyRowText (not the Bar Text colour), so it can stay green.
+	-- Healer marker: a small independent glyph whose color is driven by
+	-- Ping:ApplyRowText (not the Bar Text color), so it can stay green.
 	row.HealerMarker = row.StatusBar:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	row.HealerMarker:SetHeight(Ping.db.profile.MainWindow.TextHeight)
 	Ping:SetFontSize(row.HealerMarker, math.max(Ping.db.profile.MainWindow.RowHeight * 0.9, Ping.db.profile.MainWindow.RowHeight - 2))
@@ -928,7 +928,7 @@ function Ping:SetBar(num, name, desc, value, colorgroup, colorclass, tooltipData
 
 	if colorgroup and colorclass and type(colorclass) == "string" then
 		Ping.Colors:UnregisterItem(Row.StatusBar)
-		-- BarOpacity lets a look preset hide the class-coloured fill entirely
+		-- BarOpacity lets a look preset hide the class-colored fill entirely
 		-- (flat preset) while keeping the name/level text.
 		local barOpacity = Ping.db.profile.BarOpacity
 		if barOpacity == nil then barOpacity = 1 end
@@ -939,7 +939,7 @@ function Ping:SetBar(num, name, desc, value, colorgroup, colorclass, tooltipData
 	Ping:ApplyRowText(Row)
 end
 
--- Renders a row's text, name colour, healer marker, left-edge accent and
+-- Renders a row's text, name color, healer marker, left-edge accent and
 -- non-healer dimming from the stored Row.Name / Row.BaseDesc. Called on every
 -- SetBar so all target-picker styling stays live with the profile settings.
 function Ping:ApplyRowText(Row)
@@ -975,7 +975,7 @@ function Ping:ApplyRowText(Row)
 	Row.LeftText:SetText(name)
 	Row.RightText:SetText(desc)
 
-	-- Name colour: class-coloured (flat/compact look) or the Bar Text colour.
+	-- Name color: class-colored (flat/compact look) or the Bar Text color.
 	local barText = Ping.db.profile.Colors.Bar["Bar Text"]
 	if Ping.db.profile.ClassColoredNames then
 		local class = playerData and playerData.class
@@ -983,8 +983,8 @@ function Ping:ApplyRowText(Row)
 		if cc then
 			Row.LeftText:SetTextColor(cc.r, cc.g, cc.b, opacity)
 		else
-			-- Unknown class: class colour would be near-black and unreadable,
-			-- so keep the normal bar text colour.
+			-- Unknown class: class color would be near-black and unreadable,
+			-- so keep the normal bar text color.
 			Row.LeftText:SetTextColor(barText.r, barText.g, barText.b, opacity)
 		end
 	else
@@ -1036,8 +1036,8 @@ function Ping:ApplyRowText(Row)
 end
 
 -- Applies a look preset by setting the handful of underlying knobs it drives,
--- then restyling live. classbars = stock class-coloured bars; flat = no fill,
--- class-coloured names; compact = denser rows.
+-- then restyling live. classbars = stock class-colored bars; flat = no fill,
+-- class-colored names; compact = denser rows.
 function Ping:ApplyLookPreset(preset)
 	Ping.db.profile.LookPreset = preset
 	if preset == "flat" then
@@ -1060,8 +1060,8 @@ function Ping:ApplyLookPreset(preset)
 end
 
 -- ============================================================
--- Look themes: one-click colour bundles, distinct from LookPreset above.
--- LookPreset changes ROW LAYOUT (bar opacity, row height, class colours);
+-- Look themes: one-click color bundles, distinct from LookPreset above.
+-- LookPreset changes ROW LAYOUT (bar opacity, row height, class colors);
 -- a theme changes the WINDOW'S palette without touching layout.
 --
 -- Two things went wrong in the first version and both are fixed here:
@@ -1071,7 +1071,7 @@ end
 --     the window BACKGROUND and a genuinely contrasting title bar - the two
 --     largest areas of the window - so the change is unmistakable.
 --
---  2. Colours were written straight into the profile table. That works for
+--  2. Colors were written straight into the profile table. That works for
 --     values re-read on every draw, but Window/Background and Window/Title are
 --     REGISTERED widgets (see Colors:RegisterBackground / RegisterBorder) which
 --     are painted once and only repaint when pushed through Colors:SetColor.
@@ -1079,7 +1079,7 @@ end
 --
 -- KoS Edge is deliberately not themed: red-for-danger is a signal the eye
 -- should never have to relearn, so it stays constant and is only ever changed
--- from its own colour picker.
+-- from its own color picker.
 -- ============================================================
 local function rgb(hex, a)
 	return {
@@ -1090,7 +1090,7 @@ local function rgb(hex, a)
 	}
 end
 
--- Each entry is { branch, slot, colour }. Branch matters: "Window" holds the
+-- Each entry is { branch, slot, color }. Branch matters: "Window" holds the
 -- backdrop and frame the eye actually reads, "Ping" holds the accents.
 Ping.LookThemes = {
 	classic = {
@@ -1360,13 +1360,13 @@ Ping.LookThemes = {
 
 -- Display order for the theme dropdown. pairs() over LookThemes is unordered,
 -- so without this the list shuffles between sessions. The separator splits the
--- two kinds of theme: the first group only recolours Ping's original artwork,
+-- two kinds of theme: the first group only recolors Ping's original artwork,
 -- the second replaces the window textures, control icons and (for Villain HUD)
 -- the fonts as well. Picking the separator does nothing - ApplyLookTheme
 -- returns on any key that is not a theme.
 Ping.LookThemeSeparator = "__separator"
 Ping.LookThemeOrder = {
-	-- colour only
+	-- color only
 	"classic", "midnight", "horde", "alliance", "emerald", "mono", "blackout",
 	Ping.LookThemeSeparator,
 	-- full artwork
@@ -1393,15 +1393,15 @@ function Ping:ApplyLookTheme(key)
 	Ping.db.profile.ArtworkStyle = theme.artwork or "legacy"
 
 	for _, entry in ipairs(theme.colors) do
-		local branch, slot, colour = entry[1], entry[2], entry[3]
+		local branch, slot, color = entry[1], entry[2], entry[3]
 		local target = Ping.db.profile.Colors[branch]
 		if target and target[slot] then
 			-- Through SetColor, not a raw write: registered widgets only repaint
 			-- when told to, and Window/Background is one of them.
-			Ping.Colors:SetColor(branch, slot, colour)
+			Ping.Colors:SetColor(branch, slot, color)
 		end
 	end
-	for slot, colour in pairs(theme.chrome or {}) do Ping.Colors:SetColor("Ping", slot, colour) end
+	for slot, color in pairs(theme.chrome or {}) do Ping.Colors:SetColor("Ping", slot, color) end
 	for setting, value in pairs(theme.settings or {}) do
 		Ping.db.profile[setting] = value
 	end
@@ -1775,7 +1775,7 @@ function Ping:ApplyArtworkStyle()
 	Ping:UpdateWindowTitle()
 end
 
--- Show/hide and recolour the window background fill and border, and apply the
+-- Show/hide and recolor the window background fill and border, and apply the
 -- window scale. Safe to call any time after the main window exists.
 function Ping:ApplyWindowStyle()
 	local frame = Ping.MainWindow
@@ -1792,7 +1792,7 @@ function Ping:ApplyWindowStyle()
 		end
 	end
 	-- Title bar: "classic" hides the solid strip and lets the stock subtle
-	-- backdrop show through; "solid" draws the coloured strip at its own
+	-- backdrop show through; "solid" draws the colored strip at its own
 	-- opacity, independent of the window background toggle.
 	if frame.TitleFill then
 		if Ping.db.profile.TitleBarStyle == "solid" then

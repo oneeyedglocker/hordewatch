@@ -37,7 +37,7 @@ Kill-on-Sight, then confirmed healers, then whoever is actually in the fight.
 **Healer-only view.** Hide everyone who can't heal. Cuts a mass fight down to the
 targets that matter.
 
-**14 themes.** Seven recolour the window; seven replace the artwork, control
+**14 themes.** Seven recolor the window; seven replace the artwork, control
 icons, and (for Villain HUD) the fonts.
 
 **And more:** Kill-on-Sight with reasons and guild flagging · stealth alerts ·

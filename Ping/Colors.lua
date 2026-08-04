@@ -86,7 +86,7 @@ function Colors:UpdateColor(Branch, Name)
 
 	local c = Colors:GetColor(Branch, Name)
 
-	-- Some colours (e.g. the target-picker healer marker/edge) are read
+	-- Some colors (e.g. the target-picker healer marker/edge) are read
 	-- directly at render time rather than pushed through a registered widget,
 	-- so they have no live-update entries. Storing the new value is enough -
 	-- the next RefreshCurrentList repaints them - so bail out quietly here

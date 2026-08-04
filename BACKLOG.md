@@ -10,21 +10,21 @@ Work that is agreed but not started. Newest ideas at the bottom of each section.
 
 Six palettes exist (Classic Gold, Midnight, Horde, Alliance, Emerald, Monochrome).
 As of the theme fix they set the window background, title bar, border, title text,
-healer marker and cooldown colour — the background and title bar are what make the
+healer marker and cooldown color — the background and title bar are what make the
 change visible.
 
 Still to do:
 
 - **Class bars are not themed.** They are the dominant visual element of every row
-  and currently stay at their stock class colours under every theme. Options: leave
+  and currently stay at their stock class colors under every theme. Options: leave
   them (class identity is information, not decoration — a strong argument), or let a
   theme apply a saturation/tint pass over them.
 - **Bar texture and font** are not themed at all; they sit in Rows & Text as
   independent settings. Decide whether a theme should set them.
 - **Preview / undo.** Picking a theme applies immediately with no way to see it
-  first and no revert beyond picking another. Worth capturing the pre-theme colours
+  first and no revert beyond picking another. Worth capturing the pre-theme colors
   so a single "revert" is possible.
-- **Custom themes.** Save current colours as a named theme, export/import as a
+- **Custom themes.** Save current colors as a named theme, export/import as a
   string. The natural end state.
 
 ---

@@ -1164,7 +1164,7 @@ Ping.options = {
 								t[Ping.LookThemeSeparator] = "————————————"
 								return t
 							end,
-							-- Explicit order, so the colour-only themes come first and
+							-- Explicit order, so the color-only themes come first and
 							-- the artwork ones sit below the separator. Without this
 							-- AceConfig sorts the labels alphabetically and the two
 							-- kinds interleave.
@@ -1374,7 +1374,7 @@ Ping.options = {
 							hasAlpha = true,
 							-- Written through Colors:SetColor, not straight into the
 							-- table: the title is a REGISTERED font, so it is painted
-							-- once at creation and only repaints when the colour system
+							-- once at creation and only repaints when the color system
 							-- is told. A direct table write changes the saved value and
 							-- nothing on screen until a reload.
 							get = function()
@@ -2394,7 +2394,7 @@ local Default_Profile = {
 				["HOSTILE"] = { r = 0.7, g = 0.1, b = 0.1, a = 0.6 },
 				["UNGROUPED"] = { r = 0.63, g = 0.58, b = 0.24, a = 0.6 },
 			},
-			-- Target-picker (healer marking / window styling) colours.
+			-- Target-picker (healer marking / window styling) colors.
 			["Ping"] = {
 				["Healer Marker"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
 				["Healer Edge"] = { r = 79/255, g = 226/255, b = 122/255, a = 1 },
@@ -2458,9 +2458,9 @@ local Default_Profile = {
 		-- ===== Target-picker enhancements =====
 		-- Rows / look
 			LookPreset="classbars",		-- classbars | flat | compact
-			LookTheme="classic",		-- which colour bundle WindowTab's Theme picker last applied
+			LookTheme="classic",		-- which color bundle WindowTab's Theme picker last applied
 			ArtworkStyle="legacy",		-- legacy or one of the full generated-artwork themes
-		ClassColoredNames=false,	-- colour the name text by class (flat look)
+		ClassColoredNames=false,	-- color the name text by class (flat look)
 		BarOpacity=1,				-- class-bar fill opacity (0 hides the fill)
 		-- Healer detection & marking
 		MarkHealers=true,
