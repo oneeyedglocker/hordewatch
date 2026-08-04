@@ -96,6 +96,45 @@ characters goes through **Data → Transfer** instead, which covers it, but a
 
 ---
 
+## 5. A Guild Sightings window
+
+Shared detections currently land in the same Nearby list as your own. That is
+fine for a party or raid, who are usually standing near you, but guild-wide
+sharing pulls in every enemy seen by anyone in the guild across the continent.
+
+The problem is not clutter, it is that it **degrades the sort**. The window
+draws 15 rows (`Ping.ButtonLimit`) but sorts the whole pool, and kill priority
+scores KoS at +1000 against only +100 for "actively detected". So a KoS target
+three zones away outranks somebody standing on top of you.
+
+Proposal: give shared sightings their own list, alongside Nearby / Last Hour /
+Ignore / Kill On Sight, reachable with the same left/right arrows.
+
+What it would take:
+
+- **A fifth list type.** `Ping.ListTypes` drives the arrows and the title, so
+  the navigation is close to free. The list tables (`NearbyList`, `LastHourList`,
+  …) are parallel, so a `GuildList` follows the same shape.
+- **Route shares to it.** `CommReceived` → `AddDetected(player, time, learnt,
+  source)` already carries `source`, and a non-nil source that is not us *is*
+  the signal. Today that only decides the alert sound and Active vs Inactive.
+- **Decide the overlap rule.** If you detect someone yourself who is also in the
+  guild list, do they appear in both? Probably yes, with your own detection
+  winning the Nearby row.
+- **Expiry.** Guild sightings want a longer timeout than Nearby - the point is
+  "somebody saw them recently", not "they are next to me".
+- **Column difference.** This list wants *who reported it* and *where*, which
+  Nearby does not show. That is the only real UI work.
+
+The rest of the plumbing exists. The risk is in `RefreshCurrentList`, which
+assumes list identity in a few places, and in the Statistics window, which
+enumerates list types.
+
+Alternative considered and rejected: filtering shares by zone. Cheaper, but it
+throws away the cross-zone intel rather than giving it a home.
+
+---
+
 ## Unfiled
 
 - _(nothing yet)_
