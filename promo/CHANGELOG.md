@@ -10,6 +10,16 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.9.6
+
+### New Features and Improvements
+
+- **No theme turns the border on any more.** Four of the artwork themes still
+  asked for one on top of artwork that already draws its own edge. Every theme
+  now leaves the border off; the toggle in Look is still there if you want one.
+
+---
+
 ## 2.9.5
 
 ### New Features and Improvements
