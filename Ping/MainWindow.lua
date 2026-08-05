@@ -1740,11 +1740,11 @@ function Ping:RestoreAlertWindowPosition(x, y)
 end
 
 function Ping:UpdateMainWindow()
-	if Ping.InInstance then
-		Ping.MainWindow:SetAlpha(Ping.db.profile.MainWindow.AlphaBG)
-	else
-		Ping.MainWindow:SetAlpha(Ping.db.profile.MainWindow.Alpha)
-	end
+	-- One transparency everywhere. There used to be a second value used inside
+	-- instances, but it was labelled "in BGs" while IsInInstance() is also true
+	-- in dungeons and raids, so it dimmed the window in places the label never
+	-- implied - and nobody wants a different number there anyway.
+	Ping.MainWindow:SetAlpha(Ping.db.profile.MainWindow.Alpha)
 end
 
 -- Position lock keeps the saved spot but refuses drags (SetMovable(false) makes

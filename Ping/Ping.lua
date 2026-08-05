@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.9.4"
+Ping.Version = "2.9.5"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -1159,6 +1159,27 @@ Ping.options = {
 						},
 					},
 				},
+					HeaderTab = {
+						name = L["ChromeColors"],
+					desc = L["ChromeColors"],
+					type = "group",
+					order = 3,
+					inline = true,
+						args = {
+							IconColor = { name = L["IconColor"], type = "color", order = 1,
+								get = function() local c=Ping.db.profile.Colors.Ping.Icon return c.r,c.g,c.b end,
+								set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Icon",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
+							NavigationColor = { name = L["NavigationColor"], type = "color", order = 2,
+								get = function() local c=Ping.db.profile.Colors.Ping.Navigation return c.r,c.g,c.b end,
+								set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Navigation",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
+							CountColor = { name = L["CountColor"], type = "color", order = 3,
+								get = function() local c=Ping.db.profile.Colors.Ping.Count return c.r,c.g,c.b end,
+								set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Count",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
+							CloseColor = { name = L["CloseColor"], type = "color", order = 4,
+								get = function() local c=Ping.db.profile.Colors.Ping.Close return c.r,c.g,c.b end,
+								set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Close",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
+						},
+					},
 					WindowTab = {
 					name = L["TTabWindow"],
 					desc = L["TTabWindow"],
@@ -1373,17 +1394,6 @@ Ping.options = {
 								Ping:ApplyWindowStyle()
 							end,
 						},
-						ShowBackground = {
-							name = L["ShowBackground"],
-							desc = L["ShowBackgroundDescription"],
-							type = "toggle",
-							order = 7,
-							get = function() return Ping.db.profile.ShowBackground end,
-							set = function(_, value)
-								Ping.db.profile.ShowBackground = value
-								Ping:ApplyWindowStyle()
-							end,
-						},
 						BackgroundOpacity = {
 							name = L["BackgroundOpacity"],
 							desc = L["BackgroundOpacityDescription"],
@@ -1412,38 +1422,6 @@ Ping.options = {
 								Ping:UpdateMainWindow()
 
 							end,
-						},
-						AlphaBG = {
-							name = L["AlphaBG"],
-							desc = L["AlphaBGDescription"],
-							type = "range",
-							order = 10,
-		--					width = "double",
-							min = 0, max = 1, step = 0.01,
-							isPercent = true,
-							get = function()
-								return Ping.db.profile.MainWindow.AlphaBG end,
-							set = function(info, value)
-								Ping.db.profile.MainWindow.AlphaBG = value
-								Ping:UpdateMainWindow()
-							end,
-						},
-						ChromeColors = {
-							name = L["ChromeColors"], type = "group", inline = true, order = 10.5,
-							args = {
-								IconColor = { name = L["IconColor"], type = "color", order = 1,
-									get = function() local c=Ping.db.profile.Colors.Ping.Icon return c.r,c.g,c.b end,
-									set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Icon",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
-								NavigationColor = { name = L["NavigationColor"], type = "color", order = 2,
-									get = function() local c=Ping.db.profile.Colors.Ping.Navigation return c.r,c.g,c.b end,
-									set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Navigation",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
-								CountColor = { name = L["CountColor"], type = "color", order = 3,
-									get = function() local c=Ping.db.profile.Colors.Ping.Count return c.r,c.g,c.b end,
-									set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Count",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
-								CloseColor = { name = L["CloseColor"], type = "color", order = 4,
-									get = function() local c=Ping.db.profile.Colors.Ping.Close return c.r,c.g,c.b end,
-									set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Close",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
-							},
 						},
 						TitleBarStyle = {
 							name = L["TitleBarStyle"],
@@ -2535,7 +2513,6 @@ local Default_Profile = {
 		},
 		MainWindow={
 			Alpha=1,
-			AlphaBG=1,
 			Buttons={
 				ClearButton=true,
 				LeftButton=true,
@@ -2926,6 +2903,9 @@ function Ping:CheckDatabase()
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
 	if p.LockFont == nil then p.LockFont = Default_Profile.profile.LockFont end
+	-- The Show background toggle is gone; the window always has one. Anyone who
+	-- had turned it off would otherwise be stuck with no control to turn it on.
+	p.ShowBackground = true
 	-- UserFont is deliberately left nil until a font is chosen or the lock is
 	-- turned on; nil means 'no opinion yet'.
 	for _, k in ipairs({"NameplateDistanceMode","NameplateDistanceValue",

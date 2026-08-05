@@ -14,7 +14,7 @@ local APPEARANCE_FIELDS = {
 	"TitleBarOpacity", "HealerGreenEdge",
 	"MarkHealers", "DimNonHealers", "ArtworkStyle",
 }
-local MAIN_WINDOW_FIELDS = { "RowHeight", "RowSpacing", "TextHeight", "Alpha", "AlphaBG" }
+local MAIN_WINDOW_FIELDS = { "RowHeight", "RowSpacing", "TextHeight", "Alpha" }
 local COLOR_BRANCHES = { "Window", "Bar", "Ping", "Class" }
 
 local function copyValue(value, depth)

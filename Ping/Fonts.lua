@@ -47,19 +47,32 @@ function Ping:ApplyThemeFonts()
 	local frame = Ping.MainWindow
 	if not frame or not Ping.db or not Ping.db.profile then return end
 
-	local profileFont = SM:Fetch("font", Ping.db.profile.Font or "Friz Quadrata TT")
-	local villain = Ping.db.profile.ArtworkStyle == "villain"
+	local p = Ping.db.profile
+
+	-- LockFont has to be honoured HERE, not only where a theme writes
+	-- profile.Font. Villain HUD never used that path: it hardcodes its three
+	-- faces from ArtworkStyle, so guarding the write did nothing and the lock
+	-- appeared broken to anyone wearing Villain.
+	local locked = p.LockFont and true or false
+	local wanted = (locked and p.UserFont) or p.Font or "Friz Quadrata TT"
+	local profileFont = SM:Fetch("font", wanted)
+
+	-- Villain's font hierarchy applies only when the user has not asked to keep
+	-- their own. The OUTLINE and the larger title stay either way - those are
+	-- the artwork's shape, not its typeface.
+	local villain = (p.ArtworkStyle == "villain") and not locked
+	local styled = p.ArtworkStyle == "villain"
 	local titleFont = villain and SM:Fetch("font", "Ping Bangers") or profileFont
 	local rowFont = villain and SM:Fetch("font", "Expressway") or profileFont
 	local dataFont = villain and SM:Fetch("font", "Ping Bebas Neue") or profileFont
 	local rowHeight = Ping.db.profile.MainWindow.RowHeight or 15
 
 	if frame.Title then
-		frame.Title:SetFont(titleFont, villain and math.max(13, rowHeight * 0.95) or math.max(11, rowHeight * 0.8), villain and "OUTLINE" or "")
+		frame.Title:SetFont(titleFont, styled and math.max(13, rowHeight * 0.95) or math.max(11, rowHeight * 0.8), styled and "OUTLINE" or "")
 	end
 	for _, row in pairs(frame.Rows or {}) do
-		if row.LeftText then row.LeftText:SetFont(rowFont, math.max(rowHeight * 0.75, rowHeight - 3), villain and "OUTLINE" or "") end
-		if row.RightText then row.RightText:SetFont(dataFont, math.max(rowHeight * 0.65, rowHeight - 12), villain and "OUTLINE" or "") end
+		if row.LeftText then row.LeftText:SetFont(rowFont, math.max(rowHeight * 0.75, rowHeight - 3), styled and "OUTLINE" or "") end
+		if row.RightText then row.RightText:SetFont(dataFont, math.max(rowHeight * 0.65, rowHeight - 12), styled and "OUTLINE" or "") end
 		if row.HealerMarker then row.HealerMarker:SetFont(rowFont, math.max(rowHeight * 0.9, rowHeight - 2), "OUTLINE") end
 	end
 	if frame.CountFrame and frame.CountFrame.Text then
