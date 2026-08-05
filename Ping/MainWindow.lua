@@ -1308,7 +1308,6 @@ Ping.LookThemes = {
 		},
 		settings = {
 			UppercaseTitle = true,
-			ButtonPlateAlpha = 0,
 			Font = "Expressway",
 			ClassColoredNames = false,
 			BarOpacity = 0.55,
@@ -1335,7 +1334,6 @@ Ping.LookThemes = {
 		},
 		settings = {
 			UppercaseTitle = true,
-			ButtonPlateAlpha = 0.5,
 			Font = "Myriad",
 			ClassColoredNames = false,
 			BarOpacity = 0.52,
@@ -1362,7 +1360,6 @@ Ping.LookThemes = {
 		},
 		settings = {
 			UppercaseTitle = true,
-			ButtonPlateAlpha = 0.62,
 			Font = "Big Noodle Titling",
 			ClassColoredNames = false,
 			BarOpacity = 0.55,
@@ -1389,7 +1386,6 @@ Ping.LookThemes = {
 		},
 		settings = {
 			UppercaseTitle = true,
-			ButtonPlateAlpha = 0,
 			Font = "Expressway",
 			ClassColoredNames = false, BarOpacity = 0.85,
 			ShowBackground = true, BackgroundOpacity = 0.98, ShowBorder = false,
@@ -1412,7 +1408,6 @@ Ping.LookThemes = {
 		},
 		settings = {
 			UppercaseTitle = true,
-			ButtonPlateAlpha = 0.28,
 			Font = "Myriad",
 			ClassColoredNames = false, BarOpacity = 0.85,
 			ShowBackground = true, BackgroundOpacity = 0.96, ShowBorder = false,
@@ -1435,7 +1430,6 @@ Ping.LookThemes = {
 		},
 		settings = {
 			UppercaseTitle = true,
-			ButtonPlateAlpha = 0.55,
 			Font = "Friz Quadrata TT",
 			ClassColoredNames = false, BarOpacity = 0.88,
 			ShowBackground = true, BackgroundOpacity = 1, ShowBorder = false,
@@ -1458,7 +1452,6 @@ Ping.LookThemes = {
 		},
 		settings = {
 			UppercaseTitle = true,
-			ButtonPlateAlpha = 0.46,
 			Font = "Ping Bangers",
 			RowFont = "Expressway",
 			DataFont = "Ping Bebas Neue",
@@ -1527,7 +1520,7 @@ local THEMED_SETTINGS = {
 	"ClassColoredNames", "BarOpacity", "ShowBackground", "BackgroundOpacity",
 	"ShowBorder", "TitleBarOpacity", "TitleBarStyle",
 	"LookTheme", "BarTexture", "Font", "RowFont", "DataFont", "BoldFont",
-	"UppercaseTitle", "ButtonPlateAlpha",
+	"UppercaseTitle",
 }
 
 -- Captures the look BEFORE a theme lands, so one revert undoes it. Deliberately
@@ -1615,7 +1608,6 @@ function Ping:ApplyLookTheme(key)
 	Ping.db.profile.DataFont = nil
 	Ping.db.profile.BoldFont = false
 	Ping.db.profile.UppercaseTitle = false
-	Ping.db.profile.ButtonPlateAlpha = 0
 	Ping.db.profile.LookTheme = key
 
 	for _, entry in ipairs(theme.colors) do
@@ -1927,27 +1919,16 @@ function Ping:ApplyHeaderLayout()
 		if p.ShowBorder then texture:Show() else texture:Hide() end
 	end
 
-	-- A theme asks for the plate by giving it an alpha. Zero means no plate,
-	-- which is what the styles that set showButtonPlate = false used to do.
-	local plateAlpha = tonumber(p.ButtonPlateAlpha) or 0
+	-- Header glyphs sit straight on the title bar, tinted by ApplyThemeChrome.
+	-- There used to be a backing plate here; on dark-border themes it read as a
+	-- black box behind every button, so it is gone.
 	for buttonName, icon in pairs(BUTTON_ART) do
 		local button = frame[buttonName]
 		if button then
 			button:SetNormalTexture(ARTWORK_ROOT .. icon .. ".tga")
 			button:SetPushedTexture(ARTWORK_ROOT .. icon .. ".tga")
 			button:SetHighlightTexture("Interface\\Buttons\\WHITE8X8")
-			if not button.ThemeBackground then
-				button.ThemeBackground = button:CreateTexture(nil, "BACKGROUND")
-				button.ThemeBackground:SetAllPoints(button)
-				button.ThemeBackground:SetTexture(ARTWORK_ROOT .. "icon-plate.tga")
-			end
-			if plateAlpha > 0 then
-				button.ThemeBackground:SetVertexColor(border.r, border.g, border.b, 1)
-				button.ThemeBackground:SetAlpha(plateAlpha)
-				button.ThemeBackground:Show()
-			else
-				button.ThemeBackground:Hide()
-			end
+			if button.ThemeBackground then button.ThemeBackground:Hide() end
 		end
 	end
 

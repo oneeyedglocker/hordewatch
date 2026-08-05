@@ -10,6 +10,18 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.10.2
+
+### Bug Fixes
+
+- **Removed the black box behind the header buttons.** Several themes drew a
+  small plate behind each of the title-bar buttons; on themes with a dark
+  border it read as a black square. The buttons are now just their icons,
+  tinted to match the theme, sitting on the title bar the way the lighter
+  themes already showed them.
+
+---
+
 ## 2.10.1
 
 ### Bug Fixes

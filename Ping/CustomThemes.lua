@@ -78,7 +78,7 @@ function Ping:CaptureCurrentLook()
 	for _, key in ipairs({ "ClassColoredNames", "BarOpacity", "ShowBackground",
 		"BackgroundOpacity", "ShowBorder", "TitleBarOpacity", "TitleBarStyle",
 		"BarTexture", "Font", "RowFont", "DataFont", "BoldFont",
-		"UppercaseTitle", "ButtonPlateAlpha" }) do
+		"UppercaseTitle" }) do
 		look.settings[key] = p[key]
 	end
 	return look
@@ -161,7 +161,7 @@ local ALLOWED_SETTINGS = {
 	ShowBorder = "boolean", TitleBarOpacity = "number",
 	TitleBarStyle = "string", BarTexture = "string", Font = "string",
 	RowFont = "string", DataFont = "string", BoldFont = "boolean",
-	UppercaseTitle = "boolean", ButtonPlateAlpha = "number",
+	UppercaseTitle = "boolean",
 }
 
 local function sanitizeColor(c)

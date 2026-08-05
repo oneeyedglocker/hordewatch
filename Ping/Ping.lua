@@ -2596,7 +2596,6 @@ local Default_Profile = {
 		LockFont=false,		-- when true a theme may not change the font
 		UserFont=nil,		-- the font the user picked by hand, restored when LockFont is on
 		UppercaseTitle=false,		-- theme setting: title rendered in caps
-		ButtonPlateAlpha=0,			-- theme setting: backing plate behind header glyphs, 0 = none
 		RowFont=nil,				-- theme setting: face for the row names, nil = use Font
 		DataFont=nil,				-- theme setting: face for the numeric column, nil = use Font
 		BoldFont=false,				-- theme setting: outline the text and enlarge the title
@@ -2931,7 +2930,6 @@ function Ping:CheckDatabase()
 		p.DataFont = nil
 		p.BoldFont = false
 		p.UppercaseTitle = false
-		p.ButtonPlateAlpha = 0
 		p.pendingArtworkRetireTheme = Ping.LookThemes and Ping.LookThemes[p.LookTheme] and p.LookTheme or nil
 		p.ArtworkRetired = true
 	end
