@@ -10,6 +10,17 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.9.0
+
+### New Features and Improvements
+
+- **TomTom waypoints can now be turned off.** *Radar → Map → Alt-click a name to
+  set a TomTom waypoint*. The feature already worked and was on by default, but
+  there was no way to reach it in the options. Greyed out if TomTom is not
+  installed.
+
+---
+
 ## 2.8.9
 
 ### New Features and Improvements

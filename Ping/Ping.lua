@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.8.9"
+Ping.Version = "2.9.0"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -951,6 +951,21 @@ Ping.options = {
 							end,
 							set = function(info, value)
 								Ping.db.profile.DisplayOnMap = value
+							end,
+						},
+						TomTomOnAltClick = {
+							name = L["TomTomOnAltClick"],
+							desc = L["TomTomOnAltClickDescription"],
+							type = "toggle",
+							order = 4.5,
+							width = "full",
+							-- Greyed out rather than hidden when TomTom is absent, so
+							-- the feature is discoverable by someone deciding whether
+							-- to install TomTom at all.
+							disabled = function() return not Ping:HasTomTom() end,
+							get = function() return Ping.db.profile.TomTomOnAltClick end,
+							set = function(_, value)
+								Ping.db.profile.TomTomOnAltClick = value
 							end,
 						},
 						SwitchToZone = {
