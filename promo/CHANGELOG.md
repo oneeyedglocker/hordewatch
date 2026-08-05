@@ -10,6 +10,33 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.9.5
+
+### New Features and Improvements
+
+- **Header controls is now its own section** in Look, alongside Rows & text,
+  instead of a box tucked inside Window.
+- **Panel opacity and Window opacity** are named for what they do. Panel opacity
+  fades only the background behind the list; Window opacity fades everything
+  including the text.
+
+### Bug Fixes
+
+- **"Keep my font" did nothing under Villain HUD.** That theme sets its three
+  faces directly from the artwork style rather than through the normal font
+  setting, so the lock was guarding a path it never used. It is honoured there
+  now. The outline and larger title stay — those belong to the artwork, not the
+  typeface.
+
+### Removed
+
+- **Show background.** The window always has one.
+- **Transparency in BGs.** It applied in dungeons and raids too, not just
+  battlegrounds, and there is no reason to want a different number there. One
+  transparency now applies everywhere.
+
+---
+
 ## 2.9.4
 
 ### Bug Fixes
