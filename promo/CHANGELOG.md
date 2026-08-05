@@ -10,6 +10,18 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.9.4
+
+### Bug Fixes
+
+- **"Keep my font when changing themes" kept the wrong font.** It only stopped a
+  theme writing the font, so it pinned whatever was showing — usually the last
+  theme's font, not one you had chosen. Ping now remembers the font you pick in
+  Rows & Text and puts that one back on every theme change. Turning the setting
+  on adopts the font showing at that moment as yours.
+
+---
+
 ## 2.9.3
 
 ### New Features and Improvements
