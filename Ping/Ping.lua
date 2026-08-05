@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.9.0"
+Ping.Version = "2.9.1"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -1186,6 +1186,14 @@ Ping.options = {
 							sorting = function() return Ping.LookThemeOrder end,
 							get = function() return Ping.db.profile.LookTheme end,
 							set = function(_, v) Ping:ApplyLookTheme(v) end,
+						},
+						RevertLookTheme = {
+							name = L["ThemeRevert"],
+							desc = L["ThemeRevertDescription"],
+							type = "execute",
+							order = 0.6,
+							disabled = function() return not Ping:CanRevertLookTheme() end,
+							func = function() Ping:RevertLookTheme() end,
 						},
 						LockPosition = {
 							name = L["LockPosition"],

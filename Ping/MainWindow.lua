@@ -1373,9 +1373,70 @@ Ping.LookThemeOrder = {
 	"obsidian", "arcane", "warcamp", "minimal", "clean", "unitframe", "villain",
 }
 
+-- Structural settings a theme is allowed to move. Snapshotted alongside the
+-- colors so a revert puts back everything the theme touched, and nothing else.
+local THEMED_SETTINGS = {
+	"ClassColoredNames", "BarOpacity", "ShowBackground", "BackgroundOpacity",
+	"ShowBorder", "TitleBarOpacity", "TitleBarStyle", "ArtworkStyle",
+	"LookTheme", "BarTexture", "Font",
+}
+
+-- Captures the look BEFORE a theme lands, so one revert undoes it. Deliberately
+-- taken on every apply rather than only the first: undo means "back to how it
+-- was a moment ago", so picking Horde then Emerald and reverting returns you to
+-- Horde, not to whatever you had before you started trying themes.
+local function snapshotLook()
+	local p = Ping.db.profile
+	local snap = { colors = {}, settings = {} }
+	for branch, slots in pairs(p.Colors or {}) do
+		snap.colors[branch] = {}
+		for slot, c in pairs(slots) do
+			if type(c) == "table" then
+				snap.colors[branch][slot] = { r = c.r, g = c.g, b = c.b, a = c.a }
+			end
+		end
+	end
+	for _, key in ipairs(THEMED_SETTINGS) do snap.settings[key] = p[key] end
+	p.ThemeUndo = snap
+end
+
+function Ping:CanRevertLookTheme()
+	local u = Ping.db and Ping.db.profile and Ping.db.profile.ThemeUndo
+	return type(u) == "table" and type(u.colors) == "table"
+end
+
+-- Puts back what snapshotLook captured. Colors go through SetColor for the same
+-- reason ApplyLookTheme does: registered widgets repaint only when told.
+function Ping:RevertLookTheme()
+	local p = Ping.db.profile
+	local snap = p.ThemeUndo
+	if type(snap) ~= "table" or type(snap.colors) ~= "table" then return end
+
+	for branch, slots in pairs(snap.colors) do
+		if p.Colors[branch] then
+			for slot, c in pairs(slots) do
+				if p.Colors[branch][slot] then
+					Ping.Colors:SetColor(branch, slot, c)
+				end
+			end
+		end
+	end
+	for key, value in pairs(snap.settings or {}) do p[key] = value end
+
+	-- One level of undo only. Clearing it stops a second click from "reverting"
+	-- to the state the first revert just left, which reads as nothing happening.
+	p.ThemeUndo = nil
+
+	Ping:ApplyWindowStyle()
+	Ping:ApplyThemeChrome()
+	Ping:UpdateMainWindow()
+	Ping:RefreshCurrentList()
+end
+
 function Ping:ApplyLookTheme(key)
 	local theme = Ping.LookThemes[key]
 	if not theme then return end
+	snapshotLook()
 	-- A theme selection is deterministic. Rebuild the structural settings that
 	-- Blacked Out changes instead of restoring a snapshot which may itself have
 	-- been captured after the old bug had already darkened the profile.

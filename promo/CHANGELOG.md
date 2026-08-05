@@ -10,6 +10,16 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.9.1
+
+### New Features and Improvements
+
+- **Undo theme.** *Look → Window → Undo theme* puts back the colors and window
+  settings you had before the last theme was applied. One step, so trying a
+  theme is no longer a one-way door.
+
+---
+
 ## 2.9.0
 
 ### New Features and Improvements
