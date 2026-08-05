@@ -1095,6 +1095,7 @@ end
 Ping.LookThemes = {
 	classic = {
 		name = "Classic Gold",
+		classTint = { toward = rgb("c8a04a"), mix = 0.18 },
 		chrome = { Icon=rgb("e8c46a"), Navigation=rgb("7ab8ff"), Count=rgb("4aa3ff"), Close=rgb("ff4a4a") },
 		colors = {
 			{ "Window", "Background",   rgb("2b2113") },
@@ -1109,6 +1110,7 @@ Ping.LookThemes = {
 	},
 	midnight = {
 		name = "Midnight",
+		classTint = { toward = rgb("66d9ff"), mix = 0.2, value = 0.95 },
 		chrome = { Icon=rgb("c0d8ff"), Navigation=rgb("6ba7ff"), Count=rgb("7cc7ff"), Close=rgb("ff6b7a") },
 		colors = {
 			{ "Window", "Background",   rgb("111b33") },
@@ -1123,6 +1125,7 @@ Ping.LookThemes = {
 	},
 	horde = {
 		name = "Horde",
+		classTint = { toward = rgb("8c1c1c"), mix = 0.22 },
 		chrome = { Icon=rgb("f2b0a0"), Navigation=rgb("ff7b63"), Count=rgb("ff9b70"), Close=rgb("ff4040") },
 		colors = {
 			{ "Window", "Background",   rgb("2b1010") },
@@ -1137,6 +1140,7 @@ Ping.LookThemes = {
 	},
 	alliance = {
 		name = "Alliance",
+		classTint = { toward = rgb("1c3f8c"), mix = 0.22 },
 		chrome = { Icon=rgb("ead078"), Navigation=rgb("79baff"), Count=rgb("59c8ff"), Close=rgb("ff5757") },
 		colors = {
 			{ "Window", "Background",   rgb("101c38") },
@@ -1151,6 +1155,7 @@ Ping.LookThemes = {
 	},
 	emerald = {
 		name = "Emerald",
+		classTint = { toward = rgb("2f8f5b"), mix = 0.2 },
 		chrome = { Icon=rgb("c8ffe0"), Navigation=rgb("55d98a"), Count=rgb("55e6a0"), Close=rgb("ff5e5e") },
 		colors = {
 			{ "Window", "Background",   rgb("0f2b1a") },
@@ -1165,6 +1170,7 @@ Ping.LookThemes = {
 	},
 	mono = {
 		name = "Monochrome",
+		classTint = { toward = rgb("c8c8c8"), mix = 0.45 },
 		chrome = { Icon=rgb("d8d8d8"), Navigation=rgb("b0b0b0"), Count=rgb("f0f0f0"), Close=rgb("d06060") },
 		colors = {
 			{ "Window", "Background",   rgb("222222") },
@@ -1179,6 +1185,7 @@ Ping.LookThemes = {
 	},
 	blackout = {
 		name = "Blacked Out",
+		classTint = { toward = rgb("202020"), mix = 0.3, value = 0.85 },
 		chrome = { Icon=rgb("b0b0b0"), Navigation=rgb("8c8c8c"), Count=rgb("e0e0e0"), Close=rgb("c04040") },
 		colors = {
 			{ "Window", "Background",   rgb("020202") },
@@ -1201,6 +1208,7 @@ Ping.LookThemes = {
 	},
 	obsidian = {
 		name = "Obsidian Tactical",
+		classTint = { toward = rgb("53d5da"), mix = 0.22 },
 		artwork = "obsidian",
 		chrome = { Icon=rgb("d7e1e7"), Navigation=rgb("8ccbe6"), Count=rgb("3ec7f2"), Close=rgb("ef513f") },
 		colors = {
@@ -1214,6 +1222,7 @@ Ping.LookThemes = {
 			{ "Ping",    "Cooldown",     rgb("ff9c38") },
 		},
 		settings = {
+			Font = "Expressway",
 			ClassColoredNames = false,
 			BarOpacity = 0.55,
 			ShowBackground = true,
@@ -1226,6 +1235,7 @@ Ping.LookThemes = {
 	},
 	arcane = {
 		name = "Arcane Glass",
+		classTint = { toward = rgb("8a6fd4"), mix = 0.24 },
 		artwork = "arcane",
 		chrome = { Icon=rgb("d8e8ff"), Navigation=rgb("79ddff"), Count=rgb("63efff"), Close=rgb("ff5e88") },
 		colors = {
@@ -1239,6 +1249,7 @@ Ping.LookThemes = {
 			{ "Ping",    "Cooldown",     rgb("c69cff") },
 		},
 		settings = {
+			Font = "Myriad",
 			ClassColoredNames = false,
 			BarOpacity = 0.52,
 			ShowBackground = true,
@@ -1250,6 +1261,7 @@ Ping.LookThemes = {
 	},
 	warcamp = {
 		name = "Warcamp",
+		classTint = { toward = rgb("a05a2a"), mix = 0.24 },
 		artwork = "warcamp",
 		chrome = { Icon=rgb("ead8b8"), Navigation=rgb("d9a254"), Count=rgb("ffc466"), Close=rgb("ef513f") },
 		colors = {
@@ -1263,6 +1275,7 @@ Ping.LookThemes = {
 			{ "Ping",    "Cooldown",     rgb("ffb44a") },
 		},
 		settings = {
+			Font = "Big Noodle Titling",
 			ClassColoredNames = false,
 			BarOpacity = 0.55,
 			ShowBackground = true,
@@ -1274,6 +1287,7 @@ Ping.LookThemes = {
 	},
 	minimal = {
 		name = "Minimal Ink",
+		classTint = { toward = rgb("d8d8d8"), mix = 0.16 },
 		artwork = "minimal",
 		chrome = { Icon=rgb("d4d8dc"), Navigation=rgb("aeb7bf"), Count=rgb("f3f5f7"), Close=rgb("e06a6a") },
 		colors = {
@@ -1287,6 +1301,7 @@ Ping.LookThemes = {
 			{ "Ping",    "Cooldown",     rgb("e3bd70") },
 		},
 		settings = {
+			Font = "Expressway",
 			ClassColoredNames = false, BarOpacity = 0.85,
 			ShowBackground = true, BackgroundOpacity = 0.98, ShowBorder = false,
 			TitleBarOpacity = 1, TitleBarStyle = "solid",
@@ -1295,6 +1310,7 @@ Ping.LookThemes = {
 	},
 	clean = {
 		name = "Clean Glass",
+		classTint = { toward = rgb("9fd3ff"), mix = 0.16 },
 		artwork = "clean",
 		chrome = { Icon=rgb("dcecff"), Navigation=rgb("84d9ff"), Count=rgb("a7ecff"), Close=rgb("ff6e79") },
 		colors = {
@@ -1308,6 +1324,7 @@ Ping.LookThemes = {
 			{ "Ping",    "Cooldown",     rgb("82caff") },
 		},
 		settings = {
+			Font = "Myriad",
 			ClassColoredNames = false, BarOpacity = 0.85,
 			ShowBackground = true, BackgroundOpacity = 0.96, ShowBorder = false,
 			TitleBarOpacity = 1, TitleBarStyle = "solid",
@@ -1316,6 +1333,7 @@ Ping.LookThemes = {
 	},
 	unitframe = {
 		name = "Unitframe Clean",
+		classTint = { toward = rgb("b8b8b8"), mix = 0.18 },
 		artwork = "unitframe",
 		chrome = { Icon=rgb("d0d4d8"), Navigation=rgb("65aee8"), Count=rgb("3da9ff"), Close=rgb("e45757") },
 		colors = {
@@ -1329,6 +1347,7 @@ Ping.LookThemes = {
 			{ "Ping",    "Cooldown",     rgb("e8b45f") },
 		},
 		settings = {
+			Font = "Friz Quadrata TT",
 			ClassColoredNames = false, BarOpacity = 0.88,
 			ShowBackground = true, BackgroundOpacity = 1, ShowBorder = false,
 			TitleBarOpacity = 1, TitleBarStyle = "solid",
@@ -1337,6 +1356,7 @@ Ping.LookThemes = {
 	},
 	villain = {
 		name = "Villain HUD",
+		classTint = { toward = rgb("e04a3c"), mix = 0.26 },
 		artwork = "villain",
 		chrome = { Icon=rgb("e2d7d7"), Navigation=rgb("d94a4a"), Count=rgb("ff6767"), Close=rgb("ff3434") },
 		colors = {
@@ -1350,6 +1370,7 @@ Ping.LookThemes = {
 			{ "Ping",    "Cooldown",     rgb("ff9a52") },
 		},
 		settings = {
+			Font = "Ping Bangers",
 			ClassColoredNames = false, BarOpacity = 0.88,
 			ShowBackground = true, BackgroundOpacity = 0.99, ShowBorder = false,
 			TitleBarOpacity = 1, TitleBarStyle = "solid",
@@ -1372,6 +1393,43 @@ Ping.LookThemeOrder = {
 	-- full artwork
 	"obsidian", "arcane", "warcamp", "minimal", "clean", "unitframe", "villain",
 }
+
+-- The stock class colors, kept as the source of truth so a theme tints THESE
+-- rather than compounding on whatever the last theme left behind.
+local STOCK_CLASS = {
+	HUNTER  = {0.67, 0.83, 0.45}, WARLOCK = {0.53, 0.53, 0.93},
+	PRIEST  = {1.00, 1.00, 1.00}, PALADIN = {0.96, 0.55, 0.73},
+	MAGE    = {0.25, 0.78, 0.92}, ROGUE   = {1.00, 0.96, 0.41},
+	DRUID   = {1.00, 0.49, 0.04}, SHAMAN  = {0.00, 0.44, 0.87},
+	WARRIOR = {0.78, 0.61, 0.43}, PET     = {0.09, 0.61, 0.55},
+}
+
+-- Class bars are tinted, never replaced. A theme supplies a pull colour and a
+-- strength; each class is blended that far toward it. Blending preserves the
+-- ORDER of the hues, so Warlock stays bluer than Druid and Priest stays the
+-- lightest, which is what makes a class identifiable at a glance. Hand-picking
+-- 126 values per theme would not guarantee that.
+--
+-- Strength is capped at 0.45 for the same reason: past roughly half way the
+-- classes converge on the theme colour and stop being distinguishable.
+local function tintedClass(class, tint)
+	local base = STOCK_CLASS[class]
+	if not base then return nil end
+	local r, g, b = base[1], base[2], base[3]
+	if tint and tint.toward then
+		local mix = math.min(tint.mix or 0.25, 0.45)
+		local t = tint.toward
+		r = r + (t.r - r) * mix
+		g = g + (t.g - g) * mix
+		b = b + (t.b - b) * mix
+	end
+	-- Optional lift/darken, applied after the blend so it cannot invert the mix.
+	local v = tint and tint.value
+	if v then
+		r, g, b = math.min(r * v, 1), math.min(g * v, 1), math.min(b * v, 1)
+	end
+	return { r = r, g = g, b = b, a = 0.6 }
+end
 
 -- Structural settings a theme is allowed to move. Snapshotted alongside the
 -- colors so a revert puts back everything the theme touched, and nothing else.
@@ -1463,8 +1521,22 @@ function Ping:ApplyLookTheme(key)
 		end
 	end
 	for slot, color in pairs(theme.chrome or {}) do Ping.Colors:SetColor("Ping", slot, color) end
+
+	-- Class bars follow the theme. Always recomputed from STOCK_CLASS, so
+	-- switching themes never stacks tint on tint.
+	for class in pairs(STOCK_CLASS) do
+		local c = tintedClass(class, theme.classTint)
+		if c and Ping.db.profile.Colors.Class and Ping.db.profile.Colors.Class[class] then
+			Ping.Colors:SetColor("Class", class, c)
+		end
+	end
 	for setting, value in pairs(theme.settings or {}) do
-		Ping.db.profile[setting] = value
+		-- LockFont makes the font a personal choice a theme cannot take back.
+		-- Someone who has picked a face they can read at a glance should not
+		-- lose it for trying a theme on.
+		if not (setting == "Font" and Ping.db.profile.LockFont) then
+			Ping.db.profile[setting] = value
+		end
 	end
 
 	-- The themed title bar only draws in the solid style, so a theme switches to

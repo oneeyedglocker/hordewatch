@@ -10,6 +10,21 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.9.2
+
+### New Features and Improvements
+
+- **Themes now color the class bars.** All fourteen themes tint the class bars
+  to match. The tint is a blend, never a replacement, so Warlock stays bluer
+  than Druid and Priest stays the lightest — classes remain identifiable at a
+  glance under every theme.
+- **Artwork themes set their own font.** The seven artwork themes now carry a
+  matching typeface, the way Villain HUD already did.
+- **Keep my font when changing themes.** *Look → Window* — turn it on and no
+  theme will replace the font you picked in Rows & Text.
+
+---
+
 ## 2.9.1
 
 ### New Features and Improvements

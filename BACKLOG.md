@@ -6,26 +6,38 @@ Work that is agreed but not started. Newest ideas at the bottom of each section.
 
 ---
 
-## 1. Finish out themes
+## 1. Finish out themes — mostly **DONE**
 
-Six palettes exist (Classic Gold, Midnight, Horde, Alliance, Emerald, Monochrome).
-As of the theme fix they set the window background, title bar, border, title text,
-healer marker and cooldown color — the background and title bar are what make the
-change visible.
+Fourteen themes. Each sets the window background, title bar, border, title text,
+healer marker, cooldown color, the chrome icons, **and the class bars**.
 
-Still to do:
+Shipped since this entry was written:
 
-- **Class bars are not themed.** They are the dominant visual element of every row
-  and currently stay at their stock class colors under every theme. Options: leave
-  them (class identity is information, not decoration — a strong argument), or let a
-  theme apply a saturation/tint pass over them.
-- **Bar texture and font** are not themed at all; they sit in Rows & Text as
-  independent settings. Decide whether a theme should set them.
-- **Preview / undo.** Picking a theme applies immediately with no way to see it
-  first and no revert beyond picking another. Worth capturing the pre-theme colors
-  so a single "revert" is possible.
-- **Custom themes.** Save current colors as a named theme, export/import as a
-  string. The natural end state.
+- **Class bars are themed** (2.9.2). A theme supplies a pull color and a
+  strength; each class is blended that far toward it from the STOCK_CLASS table,
+  so tints never compound when switching themes. Strength is capped at 0.45.
+  A test asserts no theme crushes any two classes below 50% of their untinted
+  separation — worst case is Monochrome at 55%.
+- **Fonts are themed** (2.9.2), for the seven artwork themes. `LockFont` lets
+  someone keep their own face.
+- **Undo** (2.9.1). One step, snapshot taken on every apply.
+
+Still open:
+
+- **Bar texture is not themed.** The mechanism exists — `theme.settings` writes
+  any profile key, and `BarTexture` is already in the undo snapshot — so this is
+  choosing textures per theme, not code.
+- **Custom themes.** Save the current colors as a named theme, export/import as
+  a string. The natural end state, and the piece that would benefit from a
+  `Ping:InstallTheme(name, table)` registration API of the kind Details! uses,
+  which would also let other addons ship Ping themes.
+
+Closed as won't-do:
+
+- ~~Tinting class bars was argued against on the grounds that class color is
+  information rather than decoration.~~ Overruled deliberately: the blend
+  approach preserves hue order, and the test above enforces that it stays
+  readable.
 
 ---
 
