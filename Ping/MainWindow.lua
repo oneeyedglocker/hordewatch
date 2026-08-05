@@ -269,6 +269,7 @@ function Ping:SetupBar(row)
 end
 
 function Ping:UpdateBarTextures()
+	if not (Ping.MainWindow and Ping.MainWindow.Rows) then return end
 	for k, v in pairs(Ping.MainWindow.Rows) do
 		v.StatusBar:SetStatusBarTexture(SM:Fetch(SM.MediaType.STATUSBAR, Ping.db.profile.BarTexture))
 	end
@@ -1206,6 +1207,106 @@ Ping.LookThemes = {
 			TitleBarOpacity = 1,
 		},
 	},
+	-- The six below take their cue from the damage-meter skins people already
+	-- run: a flat, high-contrast panel, near-white text, and a crisp bar rather
+	-- than a gradient. That is where the "sharp" reading comes from, so each of
+	-- them names a bar texture instead of inheriting whatever was set before.
+	slate = {
+		name = "Slate",
+		classTint = { toward = rgb("ffffff"), mix = 0.06 },
+		chrome = { Icon=rgb("dfe4ea"), Navigation=rgb("7fb4e8"), Count=rgb("9fd0ff"), Close=rgb("e2564f") },
+		colors = {
+			{ "Window", "Background",   rgb("15171a") },
+			{ "Window", "Title",        rgb("2a2f36") },
+			{ "Window", "Title Text",   rgb("f4f6f8") },
+			{ "Ping",    "Title Bar",    rgb("101215") },
+			{ "Ping",    "Window Border",rgb("454c55") },
+			{ "Ping",    "Healer Marker",rgb("4fe27a") },
+			{ "Ping",    "Healer Edge",  rgb("4fe27a") },
+			{ "Ping",    "Cooldown",     rgb("ffc14a") },
+		},
+		settings = { BarTexture = "Flat" },
+	},
+	graphite = {
+		name = "Graphite",
+		classTint = { toward = rgb("a8aeb6"), mix = 0.12 },
+		chrome = { Icon=rgb("d7dbe0"), Navigation=rgb("8fb8dd"), Count=rgb("b6c6d4"), Close=rgb("d9605a") },
+		colors = {
+			{ "Window", "Background",   rgb("26282c") },
+			{ "Window", "Title",        rgb("383c42") },
+			{ "Window", "Title Text",   rgb("eceef0") },
+			{ "Ping",    "Title Bar",    rgb("202226") },
+			{ "Ping",    "Window Border",rgb("767c85") },
+			{ "Ping",    "Healer Marker",rgb("56d98a") },
+			{ "Ping",    "Healer Edge",  rgb("56d98a") },
+			{ "Ping",    "Cooldown",     rgb("e0b45c") },
+		},
+		settings = { BarTexture = "Flat" },
+	},
+	serene = {
+		name = "Serenity",
+		classTint = { toward = rgb("3f6fb5"), mix = 0.14 },
+		chrome = { Icon=rgb("cddcf5"), Navigation=rgb("6fa8ff"), Count=rgb("8fc4ff"), Close=rgb("ff5f6d") },
+		colors = {
+			{ "Window", "Background",   rgb("060c1c") },
+			{ "Window", "Title",        rgb("16294d") },
+			{ "Window", "Title Text",   rgb("ffffff") },
+			{ "Ping",    "Title Bar",    rgb("0b142b") },
+			{ "Ping",    "Window Border",rgb("3f6fb5") },
+			{ "Ping",    "Healer Marker",rgb("5ce0a0") },
+			{ "Ping",    "Healer Edge",  rgb("5ce0a0") },
+			{ "Ping",    "Cooldown",     rgb("7fb2ff") },
+		},
+		settings = { BarTexture = "Flat" },
+	},
+	frost = {
+		name = "Frostbite",
+		classTint = { toward = rgb("74d3e6"), mix = 0.18 },
+		chrome = { Icon=rgb("d6f6ff"), Navigation=rgb("62d5f0"), Count=rgb("8ceaff"), Close=rgb("ff6a78") },
+		colors = {
+			{ "Window", "Background",   rgb("08151a") },
+			{ "Window", "Title",        rgb("12303a") },
+			{ "Window", "Title Text",   rgb("eafcff") },
+			{ "Ping",    "Title Bar",    rgb("0b1f27") },
+			{ "Ping",    "Window Border",rgb("74d3e6") },
+			{ "Ping",    "Healer Marker",rgb("6affc0") },
+			{ "Ping",    "Healer Edge",  rgb("6affc0") },
+			{ "Ping",    "Cooldown",     rgb("8ce8ff") },
+		},
+		settings = { BarTexture = "Flat" },
+	},
+	void = {
+		name = "Void",
+		classTint = { toward = rgb("8a55d6"), mix = 0.2 },
+		chrome = { Icon=rgb("dcc9ff"), Navigation=rgb("a97cf0"), Count=rgb("c39cff"), Close=rgb("ff5c86") },
+		colors = {
+			{ "Window", "Background",   rgb("120b1c") },
+			{ "Window", "Title",        rgb("2a1547") },
+			{ "Window", "Title Text",   rgb("ecdcff") },
+			{ "Ping",    "Title Bar",    rgb("180e26") },
+			{ "Ping",    "Window Border",rgb("8a55d6") },
+			{ "Ping",    "Healer Marker",rgb("6fe6a4") },
+			{ "Ping",    "Healer Edge",  rgb("6fe6a4") },
+			{ "Ping",    "Cooldown",     rgb("c78cff") },
+		},
+		settings = { BarTexture = "Flat" },
+	},
+	ember = {
+		name = "Ember",
+		classTint = { toward = rgb("c9822f"), mix = 0.18 },
+		chrome = { Icon=rgb("f2cf9a"), Navigation=rgb("ffab4d"), Count=rgb("ffc46b"), Close=rgb("ff5340") },
+		colors = {
+			{ "Window", "Background",   rgb("17110c") },
+			{ "Window", "Title",        rgb("33210f") },
+			{ "Window", "Title Text",   rgb("ffdcae") },
+			{ "Ping",    "Title Bar",    rgb("1e150d") },
+			{ "Ping",    "Window Border",rgb("c9822f") },
+			{ "Ping",    "Healer Marker",rgb("7ee08f") },
+			{ "Ping",    "Healer Edge",  rgb("7ee08f") },
+			{ "Ping",    "Cooldown",     rgb("ff9a2e") },
+		},
+		settings = { BarTexture = "Flat" },
+	},
 	obsidian = {
 		name = "Obsidian Tactical",
 		classTint = { toward = rgb("53d5da"), mix = 0.22 },
@@ -1388,7 +1489,8 @@ Ping.LookThemes = {
 Ping.LookThemeSeparator = "__separator"
 Ping.LookThemeOrder = {
 	-- color only
-	"classic", "midnight", "horde", "alliance", "emerald", "mono", "blackout",
+	"classic", "midnight", "serene", "alliance", "horde", "ember", "emerald",
+	"frost", "void", "slate", "graphite", "mono", "blackout",
 	Ping.LookThemeSeparator,
 	-- full artwork
 	"obsidian", "arcane", "warcamp", "minimal", "clean", "unitframe", "villain",
@@ -1404,14 +1506,14 @@ local STOCK_CLASS = {
 	WARRIOR = {0.78, 0.61, 0.43}, PET     = {0.09, 0.61, 0.55},
 }
 
--- Class bars are tinted, never replaced. A theme supplies a pull colour and a
+-- Class bars are tinted, never replaced. A theme supplies a pull color and a
 -- strength; each class is blended that far toward it. Blending preserves the
 -- ORDER of the hues, so Warlock stays bluer than Druid and Priest stays the
 -- lightest, which is what makes a class identifiable at a glance. Hand-picking
 -- 126 values per theme would not guarantee that.
 --
 -- Strength is capped at 0.45 for the same reason: past roughly half way the
--- classes converge on the theme colour and stop being distinguishable.
+-- classes converge on the theme color and stop being distinguishable.
 local function tintedClass(class, tint)
 	local base = STOCK_CLASS[class]
 	if not base then return nil end
@@ -1485,6 +1587,7 @@ function Ping:RevertLookTheme()
 	-- to the state the first revert just left, which reads as nothing happening.
 	p.ThemeUndo = nil
 
+	Ping:UpdateBarTextures()
 	Ping:ApplyWindowStyle()
 	Ping:ApplyThemeChrome()
 	Ping:UpdateMainWindow()
@@ -1562,6 +1665,9 @@ function Ping:ApplyLookTheme(key)
 	-- The themed title bar only draws in the solid style, so a theme switches to
 	-- it rather than silently doing nothing on the classic style.
 	Ping.db.profile.TitleBarStyle = "solid"
+	-- Rows take their texture when they are built, so a theme that names one has
+	-- to say so out loud or it lands on the next row only.
+	Ping:UpdateBarTextures()
 	Ping:ApplyWindowStyle()
 	Ping:ApplyThemeChrome()
 	Ping:UpdateMainWindow()

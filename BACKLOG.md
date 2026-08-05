@@ -29,11 +29,15 @@ Shipped since this entry was written:
   colors are clamped to 0-1, unknown branches are dropped, and a name clash is
   suffixed rather than overwritten.
 
+- **Bar texture is themed** (2.9.7). A theme names one in `theme.settings`;
+  applying or reverting repaints the rows already on screen, which it did not
+  before — rows only read the texture when they are built.
+- **Six more themes** (2.9.7): Slate, Graphite, Serenity, Frostbite, Void and
+  Ember, color-only, taking the flat high-contrast look from the damage meters
+  people already run.
+
 Still open:
 
-- **Bar texture is not themed.** The mechanism exists — `theme.settings` writes
-  any profile key, and `BarTexture` is already in the undo snapshot — so this is
-  choosing textures per theme, not code.
 - **A `Ping:InstallTheme(name, table)` registration API**, of the kind Details!
   uses, so other addons could ship Ping themes. The custom theme format is
   already the right shape for it.

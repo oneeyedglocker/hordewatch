@@ -10,6 +10,20 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.9.7
+
+### New Features and Improvements
+
+- **Six new themes**, styled after the flat, high-contrast look of the damage
+  meters people already run: **Slate**, **Graphite**, **Serenity**,
+  **Frostbite**, **Void** and **Ember**. All six sit in the color-only half of
+  the theme list, so they recolor the window without swapping the artwork.
+- **A theme can now set the bar texture.** The six new themes ask for the flat
+  bar, and switching to a theme repaints the bars you already have on screen
+  instead of only the next one drawn. Undo puts your old texture back.
+
+---
+
 ## 2.9.6
 
 ### New Features and Improvements
