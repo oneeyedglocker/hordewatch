@@ -1053,13 +1053,9 @@ Ping.options = {
 									end
 									return t
 								end,
-								-- Explicit order, so the color-only themes come first and
-								-- the artwork ones sit below the separator. Without this
-								-- AceConfig sorts the labels alphabetically and the two
-								-- kinds interleave.
 								-- Built-ins in their fixed order, then saved themes under
 								-- their own divider. Without an explicit order AceConfig
-								-- sorts by label and the three groups interleave.
+								-- sorts by label and the two groups interleave.
 								sorting = function()
 									local order = {}
 									for _, k in ipairs(Ping.LookThemeOrder) do order[#order + 1] = k end
@@ -1360,6 +1356,23 @@ Ping.options = {
 									if value then
 										Ping:BarsChanged()
 									end
+								end,
+							},
+							RowSpacing = {
+								order = 4.5,
+								type = "range",
+								name = L["RowSpacing"],
+								desc = L["RowSpacingDescription"],
+								-- 0 packs the rows edge to edge; the old fixed value was 2.
+								min = 0, max = 10, step = 1,
+								get = function()
+									return Ping.db.profile.MainWindow.RowSpacing
+								end,
+								set = function(info, value)
+									Ping.db.profile.MainWindow.RowSpacing = value
+									-- Re-anchors every row at the new stride and resizes
+									-- the window, same path Row height uses.
+									Ping:BarsChanged()
 								end,
 							},
 							BarTexture = {

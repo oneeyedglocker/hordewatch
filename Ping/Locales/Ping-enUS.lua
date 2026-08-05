@@ -188,6 +188,8 @@ L["SelectFont"] = "Font"
 L["SelectFontDescription"] = "Select a Font for the Ping Window."
 L["RowHeight"] = "Row height"
 L["RowHeightDescription"] = "Select the Row Height for the Ping window."
+L["RowSpacing"] = "Row spacing"
+L["RowSpacingDescription"] = "Vertical gap between rows, in pixels. 0 packs them edge to edge."
 L["Texture"] = "Texture"
 L["TextureDescription"] = "Select a texture for the Ping Window"
 

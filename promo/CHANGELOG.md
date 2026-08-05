@@ -10,6 +10,16 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.10.3
+
+### New Features and Improvements
+
+- **Row spacing is now a setting.** The gap between rows was fixed at 2 pixels;
+  it's a slider under Look → Rows & text now, 0 to 10. Zero packs the rows edge
+  to edge for a denser window.
+
+---
+
 ## 2.10.2
 
 ### Bug Fixes
