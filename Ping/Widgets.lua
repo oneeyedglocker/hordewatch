@@ -49,7 +49,7 @@ function Ping:CreateFrame(Name, Title, Height, Width, ShowFunc, HideFunc)
 	
 	theFrame.Background = theFrame:CreateTexture(nil, "BACKGROUND")	
 	theFrame.Background:ClearAllPoints()
-	theFrame.Background:SetTexture("Interface\\CHARACTERFRAME\\UI-Party-Background")
+	theFrame.Background:SetTexture("Interface\\Buttons\\WHITE8X8")
 	if not Ping.db.profile.InvertPing then
 		theFrame.Background:SetPoint("TOPLEFT", theFrame, "TOPLEFT", 0, -32)
 		theFrame.Background:SetPoint("BOTTOMRIGHT", theFrame, "BOTTOMRIGHT", 0, 2)
@@ -64,9 +64,11 @@ function Ping:CreateFrame(Name, Title, Height, Width, ShowFunc, HideFunc)
 	if Name == "Ping_MainWindow" then
 		Ping.Colors:RegisterBorder("Window", "Title", theFrame)
 		Ping.Colors:RegisterBackground("Window", "Background", theFrame)
+		Ping.Colors:RegisterTexture("Window", "Background", theFrame.Background)
 	else
 		Ping.Colors:RegisterBorder("Other Windows", "Title", theFrame)
 		Ping.Colors:RegisterBackground("Other Windows", "Background", theFrame)
+		Ping.Colors:RegisterTexture("Other Windows", "Background", theFrame.Background)
 	end
 
 --	theFrame.TitleBar = CreateFrame("Frame", "TestFrame", theFrame)

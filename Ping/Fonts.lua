@@ -49,22 +49,26 @@ function Ping:ApplyThemeFonts()
 
 	local p = Ping.db.profile
 
-	-- LockFont has to be honoured HERE, not only where a theme writes
-	-- profile.Font. Villain HUD never used that path: it hardcodes its three
-	-- faces from ArtworkStyle, so guarding the write did nothing and the lock
-	-- appeared broken to anyone wearing Villain.
+	-- LockFont has to be honored HERE, not only where a theme writes
+	-- profile.Font. The old code picked three faces off the artwork style, which
+	-- never went through that write, so guarding it did nothing and the lock
+	-- appeared broken to anyone wearing a themed font.
 	local locked = p.LockFont and true or false
-	local wanted = (locked and p.UserFont) or p.Font or "Friz Quadrata TT"
-	local profileFont = SM:Fetch("font", wanted)
+	local base = SM:Fetch("font", (locked and p.UserFont) or p.Font or "Friz Quadrata TT")
 
-	-- Villain's font hierarchy applies only when the user has not asked to keep
-	-- their own. The OUTLINE and the larger title stay either way - those are
-	-- the artwork's shape, not its typeface.
-	local villain = (p.ArtworkStyle == "villain") and not locked
-	local styled = p.ArtworkStyle == "villain"
-	local titleFont = villain and SM:Fetch("font", "Ping Bangers") or profileFont
-	local rowFont = villain and SM:Fetch("font", "Expressway") or profileFont
-	local dataFont = villain and SM:Fetch("font", "Ping Bebas Neue") or profileFont
+	-- A theme may give the rows and the numeric column their own faces. With the
+	-- lock on, the user's single choice wins for all three.
+	local function face(key)
+		if locked or not p[key] then return base end
+		return SM:Fetch("font", p[key]) or base
+	end
+	local titleFont = base
+	local rowFont = face("RowFont")
+	local dataFont = face("DataFont")
+
+	-- The outline and the larger title are the theme's shape rather than its
+	-- typeface, so they survive the lock.
+	local styled = p.BoldFont and true or false
 	local rowHeight = Ping.db.profile.MainWindow.RowHeight or 15
 
 	if frame.Title then

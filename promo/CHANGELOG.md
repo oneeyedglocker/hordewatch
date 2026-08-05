@@ -10,6 +10,33 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.10.0
+
+### New Features and Improvements
+
+- **Themes are colors now, not artwork.** The seven "artwork" themes carried 56
+  texture files between them. The five button glyphs turned out to be the *same
+  file copied seven times* — already recolored at runtime — and the rest were
+  flat squares with a border. All seven looks are unchanged; they are described
+  by color settings instead of textures. 62 files removed.
+- **One theme list.** With no artwork themes to separate, the divider in the
+  theme dropdown is gone. Twenty themes, one list.
+- **Themes can set the row and number fonts** (`RowFont`, `DataFont`) and ask
+  for outlined text. Villain HUD uses this for the look it always had. "Keep my
+  font" still overrides all of it.
+
+### Bug Fixes
+
+- **The window background color finally works.** It was registered against the
+  frame's backdrop, which Ping removes whenever the border is off — the default
+  for every theme since 2.9.6 — so the color painted nothing and you saw an
+  untinted Blizzard texture instead. Every theme's background color has been
+  inert. This is why themes looked more alike than their palettes suggested.
+- **Switching away from a theme that set fonts no longer keeps them.** Going to
+  Blacked Out skipped the reset that clears them.
+
+---
+
 ## 2.9.8
 
 ### New Features and Improvements

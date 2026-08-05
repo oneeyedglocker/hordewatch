@@ -12,7 +12,7 @@ local APPEARANCE_FIELDS = {
 	"LookPreset", "LookTheme", "ClassColoredNames", "BarOpacity", "Font", "BarTexture",
 	"ShowBackground", "BackgroundOpacity", "ShowBorder", "WindowScale", "TitleBarStyle",
 	"TitleBarOpacity", "HealerGreenEdge",
-	"MarkHealers", "DimNonHealers", "ArtworkStyle",
+	"MarkHealers", "DimNonHealers", "UppercaseTitle", "ButtonPlateAlpha",
 }
 local MAIN_WINDOW_FIELDS = { "RowHeight", "RowSpacing", "TextHeight", "Alpha" }
 local COLOR_BRANCHES = { "Window", "Bar", "Ping", "Class" }

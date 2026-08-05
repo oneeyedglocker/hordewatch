@@ -36,6 +36,13 @@ Shipped since this entry was written:
   Ember, color-only, taking the flat high-contrast look from the damage meters
   people already run.
 
+- **Artwork retired** (2.10.0). The seven artwork styles were 56 textures that
+  amounted to five identical glyphs plus tinted squares. What they controlled is
+  theme data now: `UppercaseTitle`, `ButtonPlateAlpha`, `RowFont`, `DataFont`,
+  `BoldFont`. This also removes the `ArtworkStyle` coupling that broke `LockFont`
+  twice, and makes the theme table plain data - the precondition for sharing a
+  palette with the other addons.
+
 Still open:
 
 - **A `Ping:InstallTheme(name, table)` registration API**, of the kind Details!

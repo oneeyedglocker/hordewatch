@@ -77,10 +77,10 @@ function Ping:CaptureCurrentLook()
 
 	for _, key in ipairs({ "ClassColoredNames", "BarOpacity", "ShowBackground",
 		"BackgroundOpacity", "ShowBorder", "TitleBarOpacity", "TitleBarStyle",
-		"BarTexture", "Font" }) do
+		"BarTexture", "Font", "RowFont", "DataFont", "BoldFont",
+		"UppercaseTitle", "ButtonPlateAlpha" }) do
 		look.settings[key] = p[key]
 	end
-	look.artwork = p.ArtworkStyle or "legacy"
 	return look
 end
 
@@ -160,6 +160,8 @@ local ALLOWED_SETTINGS = {
 	ShowBackground = "boolean", BackgroundOpacity = "number",
 	ShowBorder = "boolean", TitleBarOpacity = "number",
 	TitleBarStyle = "string", BarTexture = "string", Font = "string",
+	RowFont = "string", DataFont = "string", BoldFont = "boolean",
+	UppercaseTitle = "boolean", ButtonPlateAlpha = "number",
 }
 
 local function sanitizeColor(c)
@@ -218,7 +220,6 @@ function Ping:ImportCustomTheme(code)
 			end
 		end
 	end
-	clean.artwork = type(src.artwork) == "string" and src.artwork or "legacy"
 
 	local s = store()
 	if not s then return false end

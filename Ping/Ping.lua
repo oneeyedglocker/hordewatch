@@ -2596,7 +2596,12 @@ local Default_Profile = {
 			LookTheme="classic",		-- which color bundle the Theme tab last applied
 		LockFont=false,		-- when true a theme may not change the font
 		UserFont=nil,		-- the font the user picked by hand, restored when LockFont is on
-			ArtworkStyle="legacy",		-- legacy or one of the full generated-artwork themes
+		UppercaseTitle=false,		-- theme setting: title rendered in caps
+		ButtonPlateAlpha=0,			-- theme setting: backing plate behind header glyphs, 0 = none
+		RowFont=nil,				-- theme setting: face for the row names, nil = use Font
+		DataFont=nil,				-- theme setting: face for the numeric column, nil = use Font
+		BoldFont=false,				-- theme setting: outline the text and enlarge the title
+		ArtworkRetired=false,		-- one-shot flag for the artwork-to-data migration
 		ClassColoredNames=false,	-- color the name text by class (flat look)
 		BarOpacity=1,				-- class-bar fill opacity (0 hides the fill)
 		-- Healer detection & marking
@@ -2914,24 +2919,22 @@ function Ping:CheckDatabase()
 	end
 	p.ExtraCooldownsText = nil
 	if p.LookTheme == nil then p.LookTheme = Default_Profile.profile.LookTheme end
-	if p.ArtworkStyle == nil then
-		local theme = Ping.LookThemes and Ping.LookThemes[p.LookTheme]
-		p.ArtworkStyle = theme and theme.artwork or "legacy"
-	end
-	-- The first Obsidian pass was intentionally subdued, but in the live game
-	-- the class fills did not separate enough from its dark generated panel.
-	-- Apply this once so existing profiles receive the readability correction.
-	if p.ArtworkStyle == "obsidian" and (tonumber(p.ObsidianArtworkRevision) or 0) < 3 then
-		p.BarOpacity = 0.55
-		p.ObsidianArtworkRevision = 3
-	end
-	-- These generated panels already draw their own edge. Earlier presets also
-	-- enabled Ping's overlay border, producing a redundant double outline.
-	local cleanArtwork = p.ArtworkStyle == "minimal" or p.ArtworkStyle == "clean"
-		or p.ArtworkStyle == "unitframe" or p.ArtworkStyle == "villain"
-	if cleanArtwork and (tonumber(p.CleanThemeBorderRevision) or 0) < 1 then
-		p.ShowBorder = false
-		p.CleanThemeBorderRevision = 1
+	-- The seven "artwork" themes turned out to be five identical glyphs copied
+	-- seven times plus a tinted square, so the textures are gone and what they
+	-- controlled is theme data. Re-apply whichever theme is worn to write the
+	-- new keys; anyone on a custom or unknown theme keeps their colors and just
+	-- gets the defaults for the new settings.
+	if not p.ArtworkRetired then
+		p.ArtworkStyle = nil
+		p.ObsidianArtworkRevision = nil
+		p.CleanThemeBorderRevision = nil
+		p.RowFont = nil
+		p.DataFont = nil
+		p.BoldFont = false
+		p.UppercaseTitle = false
+		p.ButtonPlateAlpha = 0
+		p.pendingArtworkRetireTheme = Ping.LookThemes and Ping.LookThemes[p.LookTheme] and p.LookTheme or nil
+		p.ArtworkRetired = true
 	end
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
@@ -3007,6 +3010,18 @@ function Ping:HandleProfileChanges()
 	Ping:ApplyWindowLocks()
 	Ping:ApplyWindowStyle()
 	Ping:ClampToScreen(Ping.db.profile.ClampToScreen)
+	-- Re-apply the worn theme once, so profiles written before the artwork was
+	-- retired pick up the settings that replaced it. Runs here rather than in
+	-- the profile upgrade because ApplyLookTheme paints, and it needs a window.
+	local pending = Ping.db.profile.pendingArtworkRetireTheme
+	if pending then
+		Ping.db.profile.pendingArtworkRetireTheme = nil
+		Ping:ApplyLookTheme(pending)
+		-- ApplyLookTheme snapshots for undo on every call. This one was not the
+		-- user asking for anything, so leaving the snapshot would arm "Undo
+		-- theme" against a change nobody made.
+		Ping.db.profile.ThemeUndo = nil
+	end
 end
 
 function Ping:RegisterModuleOptions(name, optionTbl, displayName)
