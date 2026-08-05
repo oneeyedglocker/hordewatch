@@ -484,21 +484,6 @@ Ping.options = {
 								Ping:RefreshCurrentList()
 							end,
 						},
-						HealerEdgeColor = {
-							name = L["HealerEdgeColor"],
-							type = "color",
-							order = 9,
-							hasAlpha = true,
-							get = function()
-								local c = Ping.db.profile.Colors["Ping"]["Healer Edge"]
-								return c.r, c.g, c.b, c.a
-							end,
-							set = function(_, r, g, b, a)
-								local c = Ping.db.profile.Colors["Ping"]["Healer Edge"]
-								c.r, c.g, c.b, c.a = r, g, b, a
-								Ping:RefreshCurrentList()
-							end,
-						},
 						DimNonHealers = {
 							name = L["DimNonHealers"],
 							desc = L["DimNonHealersDescription"],
@@ -1033,492 +1018,539 @@ Ping.options = {
 			},
 		},
 			Look = {
-			name = L["TPageLook"],
-			desc = L["TPageLook"],
-			type = "group",
-			order = 5,
+				name = L["TPageLook"],
+				desc = L["TPageLook"],
+				type = "group",
+				order = 5,
+				-- Four tabs named for the part of the window they change. The old
+				-- single page had grown a "Window" box holding themes, saved-theme
+				-- import/export, locks, scale, opacity, the title bar and the border -
+				-- 23 of the 34 controls - which is a drawer, not a section. A tab named
+				-- for a thing you can point at cannot collect unrelated settings the
+				-- same way.
+				childGroups = "tab",
 				args = {
-					Rows = {
-					name = L["TTabRows"],
-					desc = L["TTabRows"],
-					type = "group",
-						order = 2,
-						inline = true,
-					args = {
-						LookPreset = {
-							name = L["LookPreset"],
-							desc = L["LookPresetDescription"],
-							type = "select",
-							order = 1,
-							values = {
-								["classbars"] = L["LookClassBars"],
-								["flat"] = L["LookFlat"],
-								["compact"] = L["LookCompact"],
-							},
-							get = function() return Ping.db.profile.LookPreset end,
-							set = function(_, value)
-								Ping:ApplyLookPreset(value)
-							end,
-						},
-						ClassColoredNames = {
-							name = L["ClassColoredNames"],
-							desc = L["ClassColoredNamesDescription"],
-							type = "toggle",
-							order = 2,
-							width = "full",
-							get = function() return Ping.db.profile.ClassColoredNames end,
-							set = function(_, value)
-								Ping.db.profile.ClassColoredNames = value
-								Ping:RefreshCurrentList()
-							end,
-						},
-						SelectFont = {
-							type = "select",
-							order = 3,
-							name = L["SelectFont"],
-							desc = L["SelectFontDescription"],
-							values = fonts,
-							get = function()
-								for info, value in next, fonts do
-									if value == Ping.db.profile.Font then
-										return info
+					ThemeTab = {
+						name = L["TTabTheme"],
+						desc = L["TTabTheme"],
+						type = "group",
+						order = 1,
+						args = {
+							LookTheme = {
+								order = 1,
+								width = "double",
+								name = L["LookTheme"],
+								desc = L["LookThemeDescription"],
+								type = "select",
+								values = function()
+									local t = {}
+									for key, theme in pairs(Ping.LookThemes) do t[key] = theme.name end
+									t[Ping.LookThemeSeparator] = "————————————"
+									for _, key in ipairs(Ping:GetCustomThemeList()) do
+										t[key] = Ping:GetCustomTheme(key).name
 									end
-								end
-							end,
-							set = function(_, value)
-								Ping.db.profile.Font = fonts[value]
-								-- Picking a font here is the act that makes it YOURS.
-								-- LockFont restores this one, not whatever a theme
-								-- happened to leave behind.
-								Ping.db.profile.UserFont = fonts[value]
-								if value then
-									Ping:UpdateBarTextures()
-								end
-							end,
-						},
-						RowHeight = {
-							type = "range",
-							order = 4,
-							name = L["RowHeight"], 
-							desc = L["RowHeightDescription"], 
-							min = 8, max = 20, step = 1,
-							get = function()
-								return Ping.db.profile.MainWindow.RowHeight
-							end,
-							set = function(info, value)
-								Ping.db.profile.MainWindow.RowHeight = value
-								if value then
-									Ping:BarsChanged()
-								end
-							end,
-						},
-						BarTexture = {
-							type = "select",
-							order = 5,
-							name = L["Texture"],
-							desc = L["TextureDescription"],	
-							dialogControl = "LSM30_Statusbar",
-							width = "double",
-							values = SM:HashTable("statusbar"),
-							get = function()
-								return Ping.db.profile.BarTexture
-							end,
-							set = function(_, key)
-								Ping.db.profile.BarTexture = key
-								Ping:UpdateBarTextures()
-							end,
-						},
-						BarOpacity = {
-							name = L["BarOpacity"],
-							desc = L["BarOpacityDescription"],
-							type = "range",
-							order = 6,
-							min = 0, max = 1, step = 0.05,
-							isPercent = true,
-							get = function() return Ping.db.profile.BarOpacity end,
-							set = function(_, value)
-								Ping.db.profile.BarOpacity = value
-								Ping:RefreshCurrentList()
-							end,
-						},
-						KoSEdgeColor = {
-							name = L["KoSEdgeColor"],
-							desc = L["KoSEdgeColorDescription"],
-							type = "color",
-							order = 7,
-							hasAlpha = true,
-							get = function()
-								local c = Ping.db.profile.Colors["Ping"]["KoS Edge"]
-								return c.r, c.g, c.b, c.a
-							end,
-							set = function(_, r, g, b, a)
-								local c = Ping.db.profile.Colors["Ping"]["KoS Edge"]
-								c.r, c.g, c.b, c.a = r, g, b, a
-								Ping:RefreshCurrentList()
-							end,
+									if Ping:HasCustomThemes() then
+										t["__customsep"] = "———— " .. L["CustomThemesHeader"] .. " ————"
+									end
+									return t
+								end,
+								-- Explicit order, so the color-only themes come first and
+								-- the artwork ones sit below the separator. Without this
+								-- AceConfig sorts the labels alphabetically and the two
+								-- kinds interleave.
+								-- Built-ins in their fixed order, then saved themes under
+								-- their own divider. Without an explicit order AceConfig
+								-- sorts by label and the three groups interleave.
+								sorting = function()
+									local order = {}
+									for _, k in ipairs(Ping.LookThemeOrder) do order[#order + 1] = k end
+									if Ping:HasCustomThemes() then
+										order[#order + 1] = "__customsep"
+										for _, k in ipairs(Ping:GetCustomThemeList()) do
+											order[#order + 1] = k
+										end
+									end
+									return order
+								end,
+								get = function() return Ping.db.profile.LookTheme end,
+								set = function(_, v) Ping:ApplyLookTheme(v) end,
+							},
+							RevertLookTheme = {
+								order = 2,
+								name = L["ThemeRevert"],
+								desc = L["ThemeRevertDescription"],
+								type = "execute",
+								disabled = function() return not Ping:CanRevertLookTheme() end,
+								func = function() Ping:RevertLookTheme() end,
+							},
+							LockFont = {
+								order = 3,
+								width = "full",
+								name = L["LockFont"],
+								desc = L["LockFontDescription"],
+								type = "toggle",
+								get = function() return Ping.db.profile.LockFont end,
+								set = function(_, value)
+									Ping.db.profile.LockFont = value
+									-- Turning it on with no font ever chosen by hand adopts
+									-- whatever is showing, so "my font" means something from
+									-- the moment it is switched on.
+									if value and not Ping.db.profile.UserFont then
+										Ping.db.profile.UserFont = Ping.db.profile.Font
+									end
+								end,
+							},
+							CustomThemeHeader = {
+								name = L["CustomThemesHeader"],
+								type = "header",
+								order = 10,
+							},
+							CustomThemeName = {
+								order = 11,
+								name = L["CustomThemeName"],
+								desc = L["CustomThemeNameDescription"],
+								type = "input",
+								get = function() return Ping.CustomThemeNameEntry or "" end,
+								set = function(_, v) Ping.CustomThemeNameEntry = v end,
+							},
+							CustomThemeSave = {
+								order = 12,
+								name = L["CustomThemeSave"],
+								desc = L["CustomThemeSaveDescription"],
+								type = "execute",
+								func = function()
+									if Ping:SaveCustomTheme(Ping.CustomThemeNameEntry) then
+										Ping.CustomThemeNameEntry = ""
+									end
+								end,
+							},
+							CustomThemeDelete = {
+								order = 13,
+								name = L["CustomThemeDelete"],
+								desc = L["CustomThemeDeleteDescription"],
+								type = "execute",
+								disabled = function()
+									return not Ping:IsCustomTheme(Ping.db.profile.LookTheme)
+								end,
+								confirm = function() return L["CustomThemeDeleteConfirm"] end,
+								func = function() Ping:DeleteCustomTheme(Ping.db.profile.LookTheme) end,
+							},
+							CustomThemeExport = {
+								order = 14,
+								name = L["CustomThemeExport"],
+								desc = L["CustomThemeExportDescription"],
+								type = "execute",
+								disabled = function()
+									return not Ping:IsCustomTheme(Ping.db.profile.LookTheme)
+								end,
+								func = function() Ping:ExportCustomTheme(Ping.db.profile.LookTheme) end,
+							},
+							CustomThemeImport = {
+								order = 15,
+								name = L["CustomThemeImport"],
+								desc = L["CustomThemeImportDescription"],
+								type = "execute",
+								func = function() Ping:ImportCustomTheme(Ping.CustomThemeText) end,
+							},
+							CustomThemeCode = {
+								order = 16,
+								width = "full",
+								name = L["CustomThemeCode"],
+								desc = L["CustomThemeCodeDescription"],
+								type = "input",
+								multiline = 6,
+								get = function() return Ping.CustomThemeText or "" end,
+								set = function(_, v) Ping.CustomThemeText = v end,
+							},
 						},
 					},
-				},
-					HeaderTab = {
-						name = L["ChromeColors"],
-					desc = L["ChromeColors"],
-					type = "group",
-					order = 3,
-					inline = true,
+					TitleBarTab = {
+						name = L["TTabTitleBar"],
+						desc = L["TTabTitleBar"],
+						type = "group",
+						order = 2,
 						args = {
-							IconColor = { name = L["IconColor"], type = "color", order = 1,
+							TitleBarStyle = {
+								order = 1,
+								name = L["TitleBarStyle"],
+								desc = L["TitleBarStyleDescription"],
+								type = "select",
+								values = {
+									["classic"] = L["TitleBarClassic"],
+									["solid"] = L["TitleBarSolid"],
+								},
+								get = function() return Ping.db.profile.TitleBarStyle end,
+								set = function(_, value)
+									Ping.db.profile.TitleBarStyle = value
+									Ping:ApplyWindowStyle()
+								end,
+							},
+							TitleBarOpacity = {
+								order = 2,
+								name = L["TitleBarOpacity"],
+								desc = L["TitleBarOpacityDescription"],
+								type = "range",
+								min = 0, max = 1, step = 0.05,
+								isPercent = true,
+								disabled = function() return Ping.db.profile.TitleBarStyle ~= "solid" end,
+								get = function() return Ping.db.profile.TitleBarOpacity end,
+								set = function(_, value)
+									Ping.db.profile.TitleBarOpacity = value
+									Ping:ApplyWindowStyle()
+								end,
+							},
+							TitleBarColor = {
+								order = 3,
+								name = L["TitleBarColor"],
+								desc = L["TitleBarColorDescription"],
+								type = "color",
+								hasAlpha = false,
+								disabled = function() return Ping.db.profile.TitleBarStyle ~= "solid" end,
+								get = function()
+									local c = Ping.db.profile.Colors["Ping"]["Title Bar"]
+									return c.r, c.g, c.b
+								end,
+								set = function(_, r, g, b)
+									local c = Ping.db.profile.Colors["Ping"]["Title Bar"]
+									c.r, c.g, c.b = r, g, b
+									Ping:ApplyWindowStyle()
+								end,
+							},
+							TitleTextColor = {
+								order = 4,
+								name = L["TitleTextColor"],
+								desc = L["TitleTextColorDescription"],
+								type = "color",
+								hasAlpha = true,
+								-- Written through Colors:SetColor, not straight into the
+								-- table: the title is a REGISTERED font, so it is painted
+								-- once at creation and only repaints when the color system
+								-- is told. A direct table write changes the saved value and
+								-- nothing on screen until a reload.
+								get = function()
+									local c = Ping.Colors:GetColor("Window", "Title Text")
+									return c.r, c.g, c.b, c.a or 1
+								end,
+								set = function(_, r, g, b, a)
+									Ping.Colors:SetColor("Window", "Title Text",
+										{ r = r, g = g, b = b, a = a })
+								end,
+							},
+							BorderHeader = {
+								name = L["BorderHeader"],
+								type = "header",
+								order = 10,
+							},
+							ShowBorder = {
+								order = 11,
+								name = L["ShowBorder"],
+								desc = L["ShowBorderDescription"],
+								type = "toggle",
+								get = function() return Ping.db.profile.ShowBorder end,
+								set = function(_, value)
+									Ping.db.profile.ShowBorder = value
+									Ping:ApplyWindowStyle()
+								end,
+							},
+							WindowBorderColor = {
+								order = 12,
+								name = L["WindowBorderColor"],
+								type = "color",
+								hasAlpha = true,
+								get = function()
+									local c = Ping.db.profile.Colors["Ping"]["Window Border"]
+									return c.r, c.g, c.b, c.a
+								end,
+								set = function(_, r, g, b, a)
+									local c = Ping.db.profile.Colors["Ping"]["Window Border"]
+									c.r, c.g, c.b, c.a = r, g, b, a
+									Ping:ApplyWindowStyle()
+								end,
+							},
+							ChromeHeader = {
+								name = L["ChromeColors"],
+								type = "header",
+								order = 20,
+							},
+							IconColor = {
+								order = 21, name = L["IconColor"], type = "color",
 								get = function() local c=Ping.db.profile.Colors.Ping.Icon return c.r,c.g,c.b end,
 								set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Icon",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
-							NavigationColor = { name = L["NavigationColor"], type = "color", order = 2,
+							NavigationColor = {
+								order = 22, name = L["NavigationColor"], type = "color",
 								get = function() local c=Ping.db.profile.Colors.Ping.Navigation return c.r,c.g,c.b end,
 								set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Navigation",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
-							CountColor = { name = L["CountColor"], type = "color", order = 3,
+							CountColor = {
+								order = 23, name = L["CountColor"], type = "color",
 								get = function() local c=Ping.db.profile.Colors.Ping.Count return c.r,c.g,c.b end,
 								set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Count",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
-							CloseColor = { name = L["CloseColor"], type = "color", order = 4,
+							CloseColor = {
+								order = 24, name = L["CloseColor"], type = "color",
 								get = function() local c=Ping.db.profile.Colors.Ping.Close return c.r,c.g,c.b end,
 								set = function(_,r,g,b) Ping.Colors:SetColor("Ping","Close",{r=r,g=g,b=b,a=1}) Ping:ApplyThemeChrome() end },
 						},
 					},
-					WindowTab = {
-					name = L["TTabWindow"],
-					desc = L["TTabWindow"],
-					type = "group",
-						order = 1,
-						inline = true,
-					args = {
-						themeHeader = {
-							name = L["LookThemeHeader"],
-							type = "header",
-							order = 0,
-						},
-							LookTheme = {
-							name = L["LookTheme"],
-							desc = L["LookThemeDescription"],
-							type = "select",
-							order = 0.5,
-							width = "double",
-							values = function()
-								local t = {}
-								for key, theme in pairs(Ping.LookThemes) do t[key] = theme.name end
-								t[Ping.LookThemeSeparator] = "————————————"
-								for _, key in ipairs(Ping:GetCustomThemeList()) do
-									t[key] = Ping:GetCustomTheme(key).name
-								end
-								if Ping:HasCustomThemes() then
-									t["__customsep"] = "———— " .. L["CustomThemesHeader"] .. " ————"
-								end
-								return t
-							end,
-							-- Explicit order, so the color-only themes come first and
-							-- the artwork ones sit below the separator. Without this
-							-- AceConfig sorts the labels alphabetically and the two
-							-- kinds interleave.
-							-- Built-ins in their fixed order, then saved themes under
-							-- their own divider. Without an explicit order AceConfig
-							-- sorts by label and the three groups interleave.
-							sorting = function()
-								local order = {}
-								for _, k in ipairs(Ping.LookThemeOrder) do order[#order + 1] = k end
-								if Ping:HasCustomThemes() then
-									order[#order + 1] = "__customsep"
-									for _, k in ipairs(Ping:GetCustomThemeList()) do
-										order[#order + 1] = k
-									end
-								end
-								return order
-							end,
-							get = function() return Ping.db.profile.LookTheme end,
-							set = function(_, v) Ping:ApplyLookTheme(v) end,
-						},
-						CustomThemeHeader = {
-							name = L["CustomThemesHeader"],
-							type = "header",
-							order = 0.71,
-						},
-						CustomThemeName = {
-							name = L["CustomThemeName"],
-							desc = L["CustomThemeNameDescription"],
-							type = "input",
-							order = 0.72,
-							get = function() return Ping.CustomThemeNameEntry or "" end,
-							set = function(_, v) Ping.CustomThemeNameEntry = v end,
-						},
-						CustomThemeSave = {
-							name = L["CustomThemeSave"],
-							desc = L["CustomThemeSaveDescription"],
-							type = "execute",
-							order = 0.73,
-							func = function()
-								if Ping:SaveCustomTheme(Ping.CustomThemeNameEntry) then
-									Ping.CustomThemeNameEntry = ""
-								end
-							end,
-						},
-						CustomThemeDelete = {
-							name = L["CustomThemeDelete"],
-							desc = L["CustomThemeDeleteDescription"],
-							type = "execute",
-							order = 0.74,
-							disabled = function()
-								return not Ping:IsCustomTheme(Ping.db.profile.LookTheme)
-							end,
-							confirm = function() return L["CustomThemeDeleteConfirm"] end,
-							func = function() Ping:DeleteCustomTheme(Ping.db.profile.LookTheme) end,
-						},
-						CustomThemeExport = {
-							name = L["CustomThemeExport"],
-							desc = L["CustomThemeExportDescription"],
-							type = "execute",
-							order = 0.75,
-							disabled = function()
-								return not Ping:IsCustomTheme(Ping.db.profile.LookTheme)
-							end,
-							func = function() Ping:ExportCustomTheme(Ping.db.profile.LookTheme) end,
-						},
-						CustomThemeImport = {
-							name = L["CustomThemeImport"],
-							desc = L["CustomThemeImportDescription"],
-							type = "execute",
-							order = 0.76,
-							func = function() Ping:ImportCustomTheme(Ping.CustomThemeText) end,
-						},
-						CustomThemeCode = {
-							name = L["CustomThemeCode"],
-							desc = L["CustomThemeCodeDescription"],
-							type = "input",
-							multiline = 6,
-							width = "full",
-							order = 0.77,
-							get = function() return Ping.CustomThemeText or "" end,
-							set = function(_, v) Ping.CustomThemeText = v end,
-						},
-						LockFont = {
-							name = L["LockFont"],
-							desc = L["LockFontDescription"],
-							type = "toggle",
-							order = 0.7,
-							width = "full",
-							get = function() return Ping.db.profile.LockFont end,
-							set = function(_, value)
-								Ping.db.profile.LockFont = value
-								-- Turning it on with no font ever chosen by hand adopts
-								-- whatever is showing, so "my font" means something from
-								-- the moment it is switched on.
-								if value and not Ping.db.profile.UserFont then
-									Ping.db.profile.UserFont = Ping.db.profile.Font
-								end
-							end,
-						},
-						RevertLookTheme = {
-							name = L["ThemeRevert"],
-							desc = L["ThemeRevertDescription"],
-							type = "execute",
-							order = 0.6,
-							disabled = function() return not Ping:CanRevertLookTheme() end,
-							func = function() Ping:RevertLookTheme() end,
-						},
-						LockPosition = {
-							name = L["LockPosition"],
-							desc = L["LockPositionDescription"],
-							type = "toggle",
-							order = 1,
-							get = function() return Ping.db.profile.LockPosition end,
-							set = function(_, value)
-								Ping.db.profile.LockPosition = value
-								Ping:ApplyWindowLocks()
-							end,
-						},
-						LockSize = {
-							name = L["LockSize"],
-							desc = L["LockSizeDescription"],
-							type = "toggle",
-							order = 2,
-							get = function() return Ping.db.profile.LockSize end,
-							set = function(_, value)
-								Ping.db.profile.LockSize = value
-								Ping:ApplyWindowLocks()
-							end,
-						},
-						Lock = {
-							name = L["LockPing"],
-							desc = L["LockPingDescription"],
-							type = "toggle",
-							order = 3,
-							width = 1.6,
-							get = function(info) 
-								return Ping.db.profile.Locked
-							end,
-							set = function(info, value)
-								Ping.db.profile.Locked = value
-								Ping:LockWindows(value)
-								Ping:RefreshCurrentList()
-							end,
-						},
-						ClampToScreen = {
-							name = L["ClampToScreen"],
-							desc = L["ClampToScreenDescription"],
-							type = "toggle",
-							order = 4,
-		--					width = "double",
-							get = function(info) 
-								return Ping.db.profile.ClampToScreen
-							end,
-							set = function(info, value)
-								Ping.db.profile.ClampToScreen = value
-								Ping:ClampToScreen(value)
-							end,
-						},
-						InvertPing = {
-							name = L["InvertPing"],
-							desc = L["InvertPingDescription"],
-							type = "toggle",
-							order = 5,
-							get = function(info)
-								return Ping.db.profile.InvertPing
-							end,
-							set = function(info, value)
-								Ping.db.profile.InvertPing = value
-							end,
-						},
-						WindowScale = {
-							name = L["WindowScale"],
-							desc = L["WindowScaleDescription"],
-							type = "range",
-							order = 6,
-							min = 0.5, max = 2, step = 0.05,
-							isPercent = true,
-							get = function() return Ping.db.profile.WindowScale end,
-							set = function(_, value)
-								Ping.db.profile.WindowScale = value
-								Ping:ApplyWindowStyle()
-							end,
-						},
-						BackgroundOpacity = {
-							name = L["BackgroundOpacity"],
-							desc = L["BackgroundOpacityDescription"],
-							type = "range",
-							order = 8,
-							min = 0, max = 1, step = 0.05,
-							isPercent = true,
-							get = function() return Ping.db.profile.BackgroundOpacity end,
-							set = function(_, value)
-								Ping.db.profile.BackgroundOpacity = value
-								Ping:ApplyWindowStyle()
-							end,
-						},
-						Alpha = {
-							name = L["Alpha"],
-							desc = L["AlphaDescription"],
-							type = "range",
-							order = 9,
-		--					width = "double",
-							min = 0, max = 1, step = 0.01,
-							isPercent = true,
-							get = function()
-								return Ping.db.profile.MainWindow.Alpha end,
-							set = function(info, value)
-								Ping.db.profile.MainWindow.Alpha = value
-								Ping:UpdateMainWindow()
-
-							end,
-						},
-						TitleBarStyle = {
-							name = L["TitleBarStyle"],
-							desc = L["TitleBarStyleDescription"],
-							type = "select",
-							order = 11,
-							values = {
-								["classic"] = L["TitleBarClassic"],
-								["solid"] = L["TitleBarSolid"],
+					RowsTab = {
+						name = L["TTabRows"],
+						desc = L["TTabRows"],
+						type = "group",
+						order = 3,
+						args = {
+							LookPreset = {
+								order = 1,
+								name = L["LookPreset"],
+								desc = L["LookPresetDescription"],
+								type = "select",
+								values = {
+									["classbars"] = L["LookClassBars"],
+									["flat"] = L["LookFlat"],
+									["compact"] = L["LookCompact"],
+								},
+								get = function() return Ping.db.profile.LookPreset end,
+								set = function(_, value)
+									Ping:ApplyLookPreset(value)
+								end,
 							},
-							get = function() return Ping.db.profile.TitleBarStyle end,
-							set = function(_, value)
-								Ping.db.profile.TitleBarStyle = value
-								Ping:ApplyWindowStyle()
-							end,
+							ClassColoredNames = {
+								order = 2,
+								width = "full",
+								name = L["ClassColoredNames"],
+								desc = L["ClassColoredNamesDescription"],
+								type = "toggle",
+								get = function() return Ping.db.profile.ClassColoredNames end,
+								set = function(_, value)
+									Ping.db.profile.ClassColoredNames = value
+									Ping:RefreshCurrentList()
+								end,
+							},
+							SelectFont = {
+								order = 3,
+								type = "select",
+								name = L["SelectFont"],
+								desc = L["SelectFontDescription"],
+								values = fonts,
+								get = function()
+									for info, value in next, fonts do
+										if value == Ping.db.profile.Font then
+											return info
+										end
+									end
+								end,
+								set = function(_, value)
+									Ping.db.profile.Font = fonts[value]
+									-- Picking a font here is the act that makes it YOURS.
+									-- LockFont restores this one, not whatever a theme
+									-- happened to leave behind.
+									Ping.db.profile.UserFont = fonts[value]
+									if value then
+										Ping:UpdateBarTextures()
+									end
+								end,
+							},
+							RowHeight = {
+								order = 4,
+								type = "range",
+								name = L["RowHeight"], 
+								desc = L["RowHeightDescription"], 
+								min = 8, max = 20, step = 1,
+								get = function()
+									return Ping.db.profile.MainWindow.RowHeight
+								end,
+								set = function(info, value)
+									Ping.db.profile.MainWindow.RowHeight = value
+									if value then
+										Ping:BarsChanged()
+									end
+								end,
+							},
+							BarTexture = {
+								order = 5,
+								width = "double",
+								type = "select",
+								name = L["Texture"],
+								desc = L["TextureDescription"],	
+								dialogControl = "LSM30_Statusbar",
+								values = SM:HashTable("statusbar"),
+								get = function()
+									return Ping.db.profile.BarTexture
+								end,
+								set = function(_, key)
+									Ping.db.profile.BarTexture = key
+									Ping:UpdateBarTextures()
+								end,
+							},
+							BarOpacity = {
+								order = 6,
+								name = L["BarOpacity"],
+								desc = L["BarOpacityDescription"],
+								type = "range",
+								min = 0, max = 1, step = 0.05,
+								isPercent = true,
+								get = function() return Ping.db.profile.BarOpacity end,
+								set = function(_, value)
+									Ping.db.profile.BarOpacity = value
+									Ping:RefreshCurrentList()
+								end,
+							},
+							RowEdgeHeader = {
+								name = L["RowEdgeHeader"],
+								type = "header",
+								order = 10,
+							},
+							KoSEdgeColor = {
+								order = 11,
+								name = L["KoSEdgeColor"],
+								desc = L["KoSEdgeColorDescription"],
+								type = "color",
+								hasAlpha = true,
+								get = function()
+									local c = Ping.db.profile.Colors["Ping"]["KoS Edge"]
+									return c.r, c.g, c.b, c.a
+								end,
+								set = function(_, r, g, b, a)
+									local c = Ping.db.profile.Colors["Ping"]["KoS Edge"]
+									c.r, c.g, c.b, c.a = r, g, b, a
+									Ping:RefreshCurrentList()
+								end,
+							},
+							HealerEdgeColor = {
+								order = 12,
+								name = L["HealerEdgeColor"],
+								type = "color",
+								hasAlpha = true,
+								get = function()
+									local c = Ping.db.profile.Colors["Ping"]["Healer Edge"]
+									return c.r, c.g, c.b, c.a
+								end,
+								set = function(_, r, g, b, a)
+									local c = Ping.db.profile.Colors["Ping"]["Healer Edge"]
+									c.r, c.g, c.b, c.a = r, g, b, a
+									Ping:RefreshCurrentList()
+								end,
+							},
 						},
-						TitleBarColor = {
-							name = L["TitleBarColor"],
-							desc = L["TitleBarColorDescription"],
-							type = "color",
-							order = 12,
-							hasAlpha = false,
-							disabled = function() return Ping.db.profile.TitleBarStyle ~= "solid" end,
-							get = function()
-								local c = Ping.db.profile.Colors["Ping"]["Title Bar"]
-								return c.r, c.g, c.b
-							end,
-							set = function(_, r, g, b)
-								local c = Ping.db.profile.Colors["Ping"]["Title Bar"]
-								c.r, c.g, c.b = r, g, b
-								Ping:ApplyWindowStyle()
-							end,
-						},
-						TitleBarOpacity = {
-							name = L["TitleBarOpacity"],
-							desc = L["TitleBarOpacityDescription"],
-							type = "range",
-							order = 13,
-							min = 0, max = 1, step = 0.05,
-							isPercent = true,
-							disabled = function() return Ping.db.profile.TitleBarStyle ~= "solid" end,
-							get = function() return Ping.db.profile.TitleBarOpacity end,
-							set = function(_, value)
-								Ping.db.profile.TitleBarOpacity = value
-								Ping:ApplyWindowStyle()
-							end,
-						},
-						TitleTextColor = {
-							name = L["TitleTextColor"],
-							desc = L["TitleTextColorDescription"],
-							type = "color",
-							order = 13.5,
-							hasAlpha = true,
-							-- Written through Colors:SetColor, not straight into the
-							-- table: the title is a REGISTERED font, so it is painted
-							-- once at creation and only repaints when the color system
-							-- is told. A direct table write changes the saved value and
-							-- nothing on screen until a reload.
-							get = function()
-								local c = Ping.Colors:GetColor("Window", "Title Text")
-								return c.r, c.g, c.b, c.a or 1
-							end,
-							set = function(_, r, g, b, a)
-								Ping.Colors:SetColor("Window", "Title Text",
-									{ r = r, g = g, b = b, a = a })
-							end,
-						},
-						ShowBorder = {
-							name = L["ShowBorder"],
-							desc = L["ShowBorderDescription"],
-							type = "toggle",
-							order = 14,
-							get = function() return Ping.db.profile.ShowBorder end,
-							set = function(_, value)
-								Ping.db.profile.ShowBorder = value
-								Ping:ApplyWindowStyle()
-							end,
-						},
-						WindowBorderColor = {
-							name = L["WindowBorderColor"],
-							type = "color",
-							order = 15,
-							hasAlpha = true,
-							get = function()
-								local c = Ping.db.profile.Colors["Ping"]["Window Border"]
-								return c.r, c.g, c.b, c.a
-							end,
-							set = function(_, r, g, b, a)
-								local c = Ping.db.profile.Colors["Ping"]["Window Border"]
-								c.r, c.g, c.b, c.a = r, g, b, a
-								Ping:ApplyWindowStyle()
-							end,
+					},
+					WindowTab = {
+						name = L["TTabWindow"],
+						desc = L["TTabWindow"],
+						type = "group",
+						order = 4,
+						args = {
+							WindowScale = {
+								order = 1,
+								name = L["WindowScale"],
+								desc = L["WindowScaleDescription"],
+								type = "range",
+								min = 0.5, max = 2, step = 0.05,
+								isPercent = true,
+								get = function() return Ping.db.profile.WindowScale end,
+								set = function(_, value)
+									Ping.db.profile.WindowScale = value
+									Ping:ApplyWindowStyle()
+								end,
+							},
+							Alpha = {
+								order = 2,
+								name = L["Alpha"],
+								desc = L["AlphaDescription"],
+								type = "range",
+							--					width = "double",
+								min = 0, max = 1, step = 0.01,
+								isPercent = true,
+								get = function()
+									return Ping.db.profile.MainWindow.Alpha end,
+								set = function(info, value)
+									Ping.db.profile.MainWindow.Alpha = value
+									Ping:UpdateMainWindow()
+
+								end,
+							},
+							BackgroundOpacity = {
+								order = 3,
+								name = L["BackgroundOpacity"],
+								desc = L["BackgroundOpacityDescription"],
+								type = "range",
+								min = 0, max = 1, step = 0.05,
+								isPercent = true,
+								get = function() return Ping.db.profile.BackgroundOpacity end,
+								set = function(_, value)
+									Ping.db.profile.BackgroundOpacity = value
+									Ping:ApplyWindowStyle()
+								end,
+							},
+							InvertPing = {
+								order = 4,
+								width = "full",
+								name = L["InvertPing"],
+								desc = L["InvertPingDescription"],
+								type = "toggle",
+								get = function(info)
+									return Ping.db.profile.InvertPing
+								end,
+								set = function(info, value)
+									Ping.db.profile.InvertPing = value
+								end,
+							},
+							LockingHeader = {
+								name = L["LockingHeader"],
+								type = "header",
+								order = 10,
+							},
+							LockPosition = {
+								order = 11,
+								name = L["LockPosition"],
+								desc = L["LockPositionDescription"],
+								type = "toggle",
+								get = function() return Ping.db.profile.LockPosition end,
+								set = function(_, value)
+									Ping.db.profile.LockPosition = value
+									Ping:ApplyWindowLocks()
+								end,
+							},
+							LockSize = {
+								order = 12,
+								name = L["LockSize"],
+								desc = L["LockSizeDescription"],
+								type = "toggle",
+								get = function() return Ping.db.profile.LockSize end,
+								set = function(_, value)
+									Ping.db.profile.LockSize = value
+									Ping:ApplyWindowLocks()
+								end,
+							},
+							Lock = {
+								order = 13,
+								name = L["LockPing"],
+								desc = L["LockPingDescription"],
+								type = "toggle",
+								get = function(info) 
+									return Ping.db.profile.Locked
+								end,
+								set = function(info, value)
+									Ping.db.profile.Locked = value
+									Ping:LockWindows(value)
+									Ping:RefreshCurrentList()
+								end,
+							},
+							ClampToScreen = {
+								order = 14,
+								name = L["ClampToScreen"],
+								desc = L["ClampToScreenDescription"],
+								type = "toggle",
+							--					width = "double",
+								get = function(info) 
+									return Ping.db.profile.ClampToScreen
+								end,
+								set = function(info, value)
+									Ping.db.profile.ClampToScreen = value
+									Ping:ClampToScreen(value)
+								end,
+							},
 						},
 					},
 				},
 			},
-		},
+
 		Alerts = {
 			name = L["TPageAlerts"],
 			desc = L["TPageAlerts"],
@@ -1830,7 +1862,8 @@ Ping.options = {
 				name = L["MinimapButtonPage"],
 				desc = L["MinimapButtonDescription"],
 				type = "group",
-				order = 6,
+				order = 6.5,		-- was 6, tied with Alerts; a tie leaves the two pages in
+								-- whatever sequence pairs() happens to hand back
 				args = {
 					ShowMinimapButton = {
 						name = L["ShowMinimapButton"], type = "toggle", order = 1, width = "full",
@@ -2560,9 +2593,9 @@ local Default_Profile = {
 		-- ===== Target-picker enhancements =====
 		-- Rows / look
 			LookPreset="classbars",		-- classbars | flat | compact
-			LookTheme="classic",
+			LookTheme="classic",		-- which color bundle the Theme tab last applied
 		LockFont=false,		-- when true a theme may not change the font
-		UserFont=nil,		-- the font the user picked by hand, restored when LockFont is on		-- which color bundle WindowTab's Theme picker last applied
+		UserFont=nil,		-- the font the user picked by hand, restored when LockFont is on
 			ArtworkStyle="legacy",		-- legacy or one of the full generated-artwork themes
 		ClassColoredNames=false,	-- color the name text by class (flat look)
 		BarOpacity=1,				-- class-bar fill opacity (0 hides the fill)

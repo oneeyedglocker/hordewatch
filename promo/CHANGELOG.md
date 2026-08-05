@@ -10,6 +10,32 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.9.8
+
+### New Features and Improvements
+
+- **The Look page is now four tabs** — **Theme**, **Title bar**, **Rows & text**
+  and **Window** — instead of one long page whose "Window" box held 23 of the 34
+  controls. Each tab fits on screen. Nothing was removed.
+- **The title bar's settings are all in one place.** Its style, color, opacity
+  and text color used to sit in *Window* while the four icon colors on that same
+  strip were in a separate *Header controls* box at the bottom of the page.
+- **Both row edge colors are together.** Kill-on-Sight edge color was on Look;
+  the healer edge color was on a different page entirely (Sort Priority). The
+  healer edge *toggle* stays with the other healer settings.
+- **Clearer labels.** "Select a Font" and "Select the Row Height" are now
+  "Font" and "Row height", and on a tab called Title bar the controls no longer
+  each repeat the words "title bar".
+
+### Bug Fixes
+
+- **Options no longer shuffle position between sessions.** The four header icon
+  colors each carried two `order` values, so they rendered on top of the title
+  bar settings; the Minimap button page was tied with Alerts, leaving those two
+  pages in whatever sequence they happened to come back in.
+
+---
+
 ## 2.9.7
 
 ### New Features and Improvements
