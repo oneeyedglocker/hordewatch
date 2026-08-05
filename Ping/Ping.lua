@@ -1045,7 +1045,6 @@ Ping.options = {
 								values = function()
 									local t = {}
 									for key, theme in pairs(Ping.LookThemes) do t[key] = theme.name end
-									t[Ping.LookThemeSeparator] = "————————————"
 									for _, key in ipairs(Ping:GetCustomThemeList()) do
 										t[key] = Ping:GetCustomTheme(key).name
 									end

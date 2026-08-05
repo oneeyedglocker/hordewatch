@@ -10,6 +10,25 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.10.1
+
+### Bug Fixes
+
+- **Visiting Villain HUD no longer changes the font for every theme after it.**
+  A theme that names a font wrote it into your profile and nothing put it back,
+  so once Villain had been picked, every theme chosen afterwards kept its face —
+  and because the row and number faces fall back to the main one, all three
+  went with it. Picking a theme that names no font now restores the font you
+  chose by hand, or the default if you never chose one. "Keep my font" is
+  unaffected and still wins over everything.
+
+- **Removed the divider from the theme list.** It used to separate the themes
+  that recolored the artwork from the ones that replaced it. Every theme is a
+  recolor now, so it was separating nothing. The divider above your saved
+  themes stays.
+
+---
+
 ## 2.10.0
 
 ### New Features and Improvements

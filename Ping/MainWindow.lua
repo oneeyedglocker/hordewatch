@@ -1474,7 +1474,6 @@ Ping.LookThemes = {
 -- so without this the list shuffles between sessions. There used to be a
 -- separator here splitting "recolors the artwork" from "replaces the artwork";
 -- there is no artwork to replace any more, so it is one list.
-Ping.LookThemeSeparator = "__separator"
 Ping.LookThemeOrder = {
 	"classic", "midnight", "serene", "alliance", "horde", "ember", "emerald",
 	"frost", "void", "slate", "graphite", "mono", "blackout",
@@ -1517,6 +1516,10 @@ local function tintedClass(class, tint)
 	end
 	return { r = r, g = g, b = b, a = 0.6 }
 end
+
+-- The face to fall back to when a theme names none. Matches the profile
+-- default, so "no theme font" and "fresh profile" agree.
+local DEFAULT_FONT = "Friz Quadrata TT"
 
 -- Structural settings a theme is allowed to move. Snapshotted alongside the
 -- colors so a revert puts back everything the theme touched, and nothing else.
@@ -1603,6 +1606,11 @@ function Ping:ApplyLookTheme(key)
 	end
 	-- Cleared unconditionally: the guard above skips blackout, and a theme that
 	-- does not mention these must not inherit them from the one before.
+	-- Font belongs in here too. It is the one a theme is most likely to set, and
+	-- leaving it meant a single visit to a theme with its own face changed the
+	-- font for every theme picked afterwards. Back to the font the user chose by
+	-- hand, or the default if they never did.
+	Ping.db.profile.Font = Ping.db.profile.UserFont or DEFAULT_FONT
 	Ping.db.profile.RowFont = nil
 	Ping.db.profile.DataFont = nil
 	Ping.db.profile.BoldFont = false
