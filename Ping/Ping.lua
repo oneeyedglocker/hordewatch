@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.9.3"
+Ping.Version = "2.9.4"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -1087,6 +1087,10 @@ Ping.options = {
 							end,
 							set = function(_, value)
 								Ping.db.profile.Font = fonts[value]
+								-- Picking a font here is the act that makes it YOURS.
+								-- LockFont restores this one, not whatever a theme
+								-- happened to leave behind.
+								Ping.db.profile.UserFont = fonts[value]
 								if value then
 									Ping:UpdateBarTextures()
 								end
@@ -1275,7 +1279,15 @@ Ping.options = {
 							order = 0.7,
 							width = "full",
 							get = function() return Ping.db.profile.LockFont end,
-							set = function(_, value) Ping.db.profile.LockFont = value end,
+							set = function(_, value)
+								Ping.db.profile.LockFont = value
+								-- Turning it on with no font ever chosen by hand adopts
+								-- whatever is showing, so "my font" means something from
+								-- the moment it is switched on.
+								if value and not Ping.db.profile.UserFont then
+									Ping.db.profile.UserFont = Ping.db.profile.Font
+								end
+							end,
 						},
 						RevertLookTheme = {
 							name = L["ThemeRevert"],
@@ -2572,7 +2584,8 @@ local Default_Profile = {
 		-- Rows / look
 			LookPreset="classbars",		-- classbars | flat | compact
 			LookTheme="classic",
-		LockFont=false,		-- when true a theme may not change the font		-- which color bundle WindowTab's Theme picker last applied
+		LockFont=false,		-- when true a theme may not change the font
+		UserFont=nil,		-- the font the user picked by hand, restored when LockFont is on		-- which color bundle WindowTab's Theme picker last applied
 			ArtworkStyle="legacy",		-- legacy or one of the full generated-artwork themes
 		ClassColoredNames=false,	-- color the name text by class (flat look)
 		BarOpacity=1,				-- class-bar fill opacity (0 hides the fill)
@@ -2913,6 +2926,8 @@ function Ping:CheckDatabase()
 	if p.UseZoneLevelFloor == nil then p.UseZoneLevelFloor = Default_Profile.profile.UseZoneLevelFloor end
 	if p.TomTomOnAltClick == nil then p.TomTomOnAltClick = Default_Profile.profile.TomTomOnAltClick end
 	if p.LockFont == nil then p.LockFont = Default_Profile.profile.LockFont end
+	-- UserFont is deliberately left nil until a font is chosen or the lock is
+	-- turned on; nil means 'no opinion yet'.
 	for _, k in ipairs({"NameplateDistanceMode","NameplateDistanceValue",
 		"MaxNameplateDistanceShowsEnemies","ViewDistanceMode","ViewDistanceValue"}) do
 		if p[k] == nil then p[k] = Default_Profile.profile[k] end

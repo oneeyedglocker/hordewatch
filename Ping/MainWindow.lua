@@ -1552,6 +1552,13 @@ function Ping:ApplyLookTheme(key)
 		end
 	end
 
+	-- With the lock on, restore the font the user actually chose rather than
+	-- simply declining to overwrite - otherwise the "kept" font is whatever the
+	-- previous theme left behind, which is not the user's font at all.
+	if Ping.db.profile.LockFont and Ping.db.profile.UserFont then
+		Ping.db.profile.Font = Ping.db.profile.UserFont
+	end
+
 	-- The themed title bar only draws in the solid style, so a theme switches to
 	-- it rather than silently doing nothing on the classic style.
 	Ping.db.profile.TitleBarStyle = "solid"
