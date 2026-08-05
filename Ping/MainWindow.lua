@@ -1492,7 +1492,11 @@ function Ping:RevertLookTheme()
 end
 
 function Ping:ApplyLookTheme(key)
+	-- Custom themes live in the profile, not the built-in table.
 	local theme = Ping.LookThemes[key]
+	if not theme and Ping.IsCustomTheme and Ping:IsCustomTheme(key) then
+		theme = Ping:GetCustomTheme(key)
+	end
 	if not theme then return end
 	snapshotLook()
 	-- A theme selection is deterministic. Rebuild the structural settings that
@@ -1522,12 +1526,21 @@ function Ping:ApplyLookTheme(key)
 	end
 	for slot, color in pairs(theme.chrome or {}) do Ping.Colors:SetColor("Ping", slot, color) end
 
-	-- Class bars follow the theme. Always recomputed from STOCK_CLASS, so
-	-- switching themes never stacks tint on tint.
-	for class in pairs(STOCK_CLASS) do
-		local c = tintedClass(class, theme.classTint)
-		if c and Ping.db.profile.Colors.Class and Ping.db.profile.Colors.Class[class] then
-			Ping.Colors:SetColor("Class", class, c)
+	-- Class bars follow the theme. A built-in supplies a tint recipe, always
+	-- recomputed from STOCK_CLASS so switching themes never stacks tint on
+	-- tint. A saved theme supplies the finished colors instead, so it looks
+	-- tomorrow exactly as it did when it was saved.
+	local classTable = Ping.db.profile.Colors.Class
+	if classTable then
+		if theme.classes then
+			for class, c in pairs(theme.classes) do
+				if classTable[class] then Ping.Colors:SetColor("Class", class, c) end
+			end
+		else
+			for class in pairs(STOCK_CLASS) do
+				local c = tintedClass(class, theme.classTint)
+				if c and classTable[class] then Ping.Colors:SetColor("Class", class, c) end
+			end
 		end
 	end
 	for setting, value in pairs(theme.settings or {}) do

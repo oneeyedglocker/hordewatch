@@ -7,7 +7,7 @@ local fonts = SM:List("font")
 local _
 
 Ping = LibStub("AceAddon-3.0"):NewAddon("Ping", "AceConsole-3.0", "AceEvent-3.0", "AceComm-3.0", "AceTimer-3.0")
-Ping.Version = "2.9.2"
+Ping.Version = "2.9.3"
 Ping.DatabaseVersion = "1.1"
 Ping.Signature = "[Ping]"
 Ping.ButtonLimit = 15
@@ -1177,15 +1177,96 @@ Ping.options = {
 								local t = {}
 								for key, theme in pairs(Ping.LookThemes) do t[key] = theme.name end
 								t[Ping.LookThemeSeparator] = "————————————"
+								for _, key in ipairs(Ping:GetCustomThemeList()) do
+									t[key] = Ping:GetCustomTheme(key).name
+								end
+								if Ping:HasCustomThemes() then
+									t["__customsep"] = "———— " .. L["CustomThemesHeader"] .. " ————"
+								end
 								return t
 							end,
 							-- Explicit order, so the color-only themes come first and
 							-- the artwork ones sit below the separator. Without this
 							-- AceConfig sorts the labels alphabetically and the two
 							-- kinds interleave.
-							sorting = function() return Ping.LookThemeOrder end,
+							-- Built-ins in their fixed order, then saved themes under
+							-- their own divider. Without an explicit order AceConfig
+							-- sorts by label and the three groups interleave.
+							sorting = function()
+								local order = {}
+								for _, k in ipairs(Ping.LookThemeOrder) do order[#order + 1] = k end
+								if Ping:HasCustomThemes() then
+									order[#order + 1] = "__customsep"
+									for _, k in ipairs(Ping:GetCustomThemeList()) do
+										order[#order + 1] = k
+									end
+								end
+								return order
+							end,
 							get = function() return Ping.db.profile.LookTheme end,
 							set = function(_, v) Ping:ApplyLookTheme(v) end,
+						},
+						CustomThemeHeader = {
+							name = L["CustomThemesHeader"],
+							type = "header",
+							order = 0.71,
+						},
+						CustomThemeName = {
+							name = L["CustomThemeName"],
+							desc = L["CustomThemeNameDescription"],
+							type = "input",
+							order = 0.72,
+							get = function() return Ping.CustomThemeNameEntry or "" end,
+							set = function(_, v) Ping.CustomThemeNameEntry = v end,
+						},
+						CustomThemeSave = {
+							name = L["CustomThemeSave"],
+							desc = L["CustomThemeSaveDescription"],
+							type = "execute",
+							order = 0.73,
+							func = function()
+								if Ping:SaveCustomTheme(Ping.CustomThemeNameEntry) then
+									Ping.CustomThemeNameEntry = ""
+								end
+							end,
+						},
+						CustomThemeDelete = {
+							name = L["CustomThemeDelete"],
+							desc = L["CustomThemeDeleteDescription"],
+							type = "execute",
+							order = 0.74,
+							disabled = function()
+								return not Ping:IsCustomTheme(Ping.db.profile.LookTheme)
+							end,
+							confirm = function() return L["CustomThemeDeleteConfirm"] end,
+							func = function() Ping:DeleteCustomTheme(Ping.db.profile.LookTheme) end,
+						},
+						CustomThemeExport = {
+							name = L["CustomThemeExport"],
+							desc = L["CustomThemeExportDescription"],
+							type = "execute",
+							order = 0.75,
+							disabled = function()
+								return not Ping:IsCustomTheme(Ping.db.profile.LookTheme)
+							end,
+							func = function() Ping:ExportCustomTheme(Ping.db.profile.LookTheme) end,
+						},
+						CustomThemeImport = {
+							name = L["CustomThemeImport"],
+							desc = L["CustomThemeImportDescription"],
+							type = "execute",
+							order = 0.76,
+							func = function() Ping:ImportCustomTheme(Ping.CustomThemeText) end,
+						},
+						CustomThemeCode = {
+							name = L["CustomThemeCode"],
+							desc = L["CustomThemeCodeDescription"],
+							type = "input",
+							multiline = 6,
+							width = "full",
+							order = 0.77,
+							get = function() return Ping.CustomThemeText or "" end,
+							set = function(_, v) Ping.CustomThemeText = v end,
 						},
 						LockFont = {
 							name = L["LockFont"],

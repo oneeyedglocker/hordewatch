@@ -22,15 +22,21 @@ Shipped since this entry was written:
   someone keep their own face.
 - **Undo** (2.9.1). One step, snapshot taken on every apply.
 
+- **Custom themes** (2.9.3). `CustomThemes.lua`. Saves the resolved colors
+  rather than the tint recipe, so a saved theme looks tomorrow as it did when
+  saved. Exports through AceSerializer with a magic string and schema; imports
+  are treated as hostile — only whitelisted settings of the right type survive,
+  colors are clamped to 0-1, unknown branches are dropped, and a name clash is
+  suffixed rather than overwritten.
+
 Still open:
 
 - **Bar texture is not themed.** The mechanism exists — `theme.settings` writes
   any profile key, and `BarTexture` is already in the undo snapshot — so this is
   choosing textures per theme, not code.
-- **Custom themes.** Save the current colors as a named theme, export/import as
-  a string. The natural end state, and the piece that would benefit from a
-  `Ping:InstallTheme(name, table)` registration API of the kind Details! uses,
-  which would also let other addons ship Ping themes.
+- **A `Ping:InstallTheme(name, table)` registration API**, of the kind Details!
+  uses, so other addons could ship Ping themes. The custom theme format is
+  already the right shape for it.
 
 Closed as won't-do:
 

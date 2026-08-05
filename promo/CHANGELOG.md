@@ -10,6 +10,18 @@ then **Bug Fixes**. Keep the order consistent so people can scan.
 
 ---
 
+## 2.9.3
+
+### New Features and Improvements
+
+- **Custom themes.** Tune the colors how you like, give it a name, and save it
+  as a theme. Saved themes appear in the theme list under their own heading.
+- **Share a theme.** Export a saved theme to a code and paste it on another
+  character, or hand it to a guildmate. Importing never overwrites a theme you
+  already have — a name clash gets a number.
+
+---
+
 ## 2.9.2
 
 ### New Features and Improvements
